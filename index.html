@@ -1,0 +1,2518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Morpheus — Workplace Fundamentals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:           #ECEAE3;
+      --card-bg:      #F2F0EA;
+      --card-border:  #D0CEC7;
+      --surface:      #E4E1DA;
+      --text:         #1E1C17;
+      --text-dim:     #6B6860;
+      --text-muted:   #A09D98;
+      --green:        #4D7A6A;
+      --green-bg:     #EBF2EF;
+      --green-border: #B5D0C8;
+      --accent:       #3A5C52;
+      --wrong:        #8B4A3C;
+      --wrong-bg:     #F5EAE8;
+      --wrong-border: #D4A099;
+      --correct:      #4A6B5A;
+      --correct-bg:   #EAF0EC;
+      --correct-border:#A8C8B4;
+      --amber:        #8A7A3A;
+      --amber-bg:     #F5F0E4;
+      --amber-border: #C8BB8A;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      background-image: radial-gradient(circle, #D8D5CE 1px, transparent 1px);
+      background-size: 22px 22px;
+    }
+
+    /* ── SILO PROGRESS BAR ── */
+    #progressBar {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 12px 24px;
+    }
+
+    .silo {
+      flex: 0 0 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      border-radius: 3px;
+      padding: 4px 6px;
+      transition: flex 0.35s cubic-bezier(0.4, 0, 0.2, 1), background 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .silo.active {
+      flex: 1;
+      max-width: 228px;
+    }
+
+    .silo.enabled {
+      cursor: pointer;
+    }
+    .silo.enabled:not(.active):hover {
+      background: var(--surface);
+    }
+
+    .silo.locked {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .silo-label {
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .silo.active .silo-label { color: var(--green); opacity: 1; }
+
+    .lock-icon {
+      font-size: 7px;
+      opacity: 0.6;
+    }
+
+    .silo-segments {
+      display: flex;
+      gap: 3px;
+    }
+
+    .seg {
+      flex: 0 0 7px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      border: 1px solid var(--card-border);
+      background: rgba(0,0,0,0.15);
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .silo.active .seg {
+      flex: 1;
+      width: auto;
+      height: 7px;
+      border-radius: 4px;
+      border-color: var(--green-border);
+    }
+
+    .seg.done {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .seg.skipped {
+      background: var(--amber);
+      border-color: var(--amber);
+    }
+
+    .silo-divider { display: none; }
+
+    /* ── TRACK WRAPPER ── */
+    #trackWrapper {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      min-height: 0;
+    }
+
+    /* ── CHAT BAR ── */
+    #chatBar {
+      flex-shrink: 0;
+      padding: 0 24px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+#chatInputWrap {
+      width: 100%;
+      max-width: 640px;
+      display: flex;
+      align-items: flex-end;
+      gap: 0;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 10px 10px 10px 16px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    #chatInputWrap:focus-within {
+      border-color: #B0AA9A;
+      box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+    }
+
+    #chatInput {
+      flex: 1;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--text);
+      background: transparent;
+      border: none;
+      outline: none;
+      resize: none;
+      min-height: 22px;
+      max-height: 140px;
+      overflow-y: auto;
+      padding-bottom: 5px;
+    }
+
+    #chatInput::placeholder {
+      color: var(--text-muted);
+    }
+
+    #chatSend {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--text);
+      border: none;
+      border-radius: 6px;
+      color: var(--bg);
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+      align-self: flex-end;
+    }
+
+    #chatSend:hover {
+      background: var(--green);
+    }
+
+    #chatSend:disabled {
+      opacity: 0.3;
+      cursor: default;
+      background: var(--text);
+    }
+
+    #track {
+      display: flex;
+      height: 100%;
+      padding: 16px 0 16px 7vw;
+      transform: translateX(0);
+      transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ── CARD ── */
+    .card {
+      flex-shrink: 0;
+      width: 86vw;
+      margin-right: 2vw;
+      height: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      transition: opacity 0.4s, filter 0.4s;
+    }
+
+    .card.inactive {
+      opacity: 0.45;
+      filter: saturate(0.3);
+      pointer-events: none;
+    }
+
+    /* ── CARD HEADER ── */
+    .card-head {
+      flex-shrink: 0;
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      padding: 18px 28px 14px;
+      border-bottom: 1px solid var(--card-border);
+      position: relative;
+    }
+
+    .card-head-progress {
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      height: 3px;
+      width: 0%;
+      background: var(--green);
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1;
+    }
+
+    .card-chapter {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--green);
+    }
+
+    .card-slash {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: 0.02em;
+    }
+
+    /* ── FEED ── */
+    .feed {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 28px 50vh;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .feed::-webkit-scrollbar { width: 3px; }
+    .feed::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 2px; }
+
+    /* ── QUESTION CARD ── */
+    .q-group {
+      border: 1px solid var(--card-border);
+      background: var(--surface);
+      margin-bottom: 24px;
+    }
+
+    /* Active: sticky header so question stays visible while answering */
+    .question-block {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: var(--surface);
+      padding: 20px 20px 16px;
+    }
+
+    /* Feedback rows — system chat bubbles, left-aligned, live inside .q-full */
+    .q-feedback-row {
+      display: block;
+      width: fit-content;
+      max-width: 80%;
+      margin: 14px 0 0;
+      padding: 10px 14px;
+      border-radius: 14px 14px 14px 3px;
+      font-size: 13px;
+      line-height: 1.6;
+      background: var(--surface);
+      color: var(--text-dim);
+      border: 1px solid var(--card-border);
+    }
+    .q-feedback-row.wrong {
+      background: var(--wrong-bg);
+      border-color: var(--wrong-border);
+      color: var(--wrong);
+    }
+    .q-feedback-row.correct-fb {
+      background: var(--correct-bg);
+      border-color: var(--correct-border);
+      color: var(--correct);
+    }
+
+    /* ── COLLAPSED STATE — background/border owned by animations above ── */
+    .q-group.collapsed {
+      cursor: pointer;
+    }
+    .q-group.collapsed:hover { filter: brightness(0.97); }
+
+    .q-group.collapsed .question-block {
+      position: static;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: transparent;
+    }
+
+    /* feedback rows now live inside .q-full — visibility handled by .q-full show/hide */
+    .q-group.collapsed .q-toggle { order: 9; }
+
+    .q-group.collapsed.open .question-block {
+      padding: 16px 20px 14px;
+      border-bottom: 1px solid var(--card-border);
+      flex-wrap: wrap;
+    }
+    .q-group.collapsed.open .q-summary-title { display: none; }
+    .q-group.collapsed.open .q-full { display: contents; }
+    .q-group.collapsed.open .q-text {
+      flex: 1;
+      order: 1;
+      margin-bottom: 0;
+    }
+    .q-group.collapsed.open .options {
+      flex-basis: 100%;
+      order: 10;
+    }
+    .q-group.collapsed.open .q-user-bubble,
+    .q-group.collapsed.open .q-feedback-row {
+      flex-basis: 100%;
+      order: 11;
+    }
+    .q-group.collapsed.open .q-user-bubble { margin-left: auto; width: fit-content; }
+    .q-group.collapsed.open .q-skip {
+      flex-basis: 100%;
+      order: 12;
+    }
+
+    /* ── COLLAPSED SUMMARY ── */
+    .q-summary { display: none; }
+    .q-group.collapsed .q-summary { display: contents; }
+
+    .q-summary-icon {
+      width: 36px; height: 36px;
+      border: 2px solid var(--correct);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--correct);
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .q-summary-title {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .q-toggle {
+      width: 28px; height: 28px;
+      border: 1px solid var(--card-border);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: transform 0.22s ease, border-color 0.15s;
+      user-select: none;
+    }
+    .q-toggle::before {
+      content: '';
+      display: block;
+      width: 0; height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 8px solid var(--text-muted);
+      transition: border-top-color 0.15s;
+    }
+    .q-group.collapsed .q-toggle { border-color: var(--correct-border); }
+    .q-group.collapsed:hover .q-toggle { border-color: var(--correct); }
+    .q-group.collapsed.open .q-toggle { transform: rotate(180deg); }
+
+    /* ── FREE TEXT PLACEHOLDER ── */
+    .q-freetext-hint {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border: 1px solid var(--card-border);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-size: 14px;
+      font-style: italic;
+    }
+
+    /* ── SKIP BUTTON — top-right corner of question block ── */
+    .q-skip {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      font-family: inherit;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      background: none;
+      border: 1px solid var(--card-border);
+      padding: 3px 10px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .q-skip:hover { color: var(--amber); border-color: var(--amber); }
+    .q-group.collapsed .q-skip { display: none; }
+
+    /* ── SKIPPED STATE — background/border owned by groupSkipped animation ── */
+    .q-group.skipped.collapsed {
+    }
+    .q-group.skipped.collapsed .q-toggle {
+      border-color: var(--amber-border);
+    }
+    .q-group.skipped.collapsed:hover .q-toggle {
+      border-color: var(--amber);
+    }
+    .q-group.skipped .q-summary-icon {
+      border-color: var(--amber);
+      color: var(--amber);
+      font-size: 13px;
+    }
+
+    /* ── FULL CONTENT ── */
+    .q-group.collapsed:not(.open) .q-full { display: none; }
+
+    .q-text {
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 1.6;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    .question-block .options {
+      padding-left: 0;
+      margin-bottom: 0;
+    }
+
+    /* ── MESSAGES ── */
+    .msg {
+      margin-bottom: 24px;
+    }
+
+    /* Content blocks: animation applied via JS .bounce-in class to avoid Safari restart on DOM mutation */
+    .msg.content-block {
+      animation: none;
+    }
+
+    /* Spring bounce — applied once via JS bounceIn() */
+    .bounce-in {
+      animation: msgIn 0.52s cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
+    }
+
+    /* Slow fade-rise — for content/video blocks */
+    .content-in {
+      animation: contentIn 0.75s cubic-bezier(0.4, 0, 0.2, 1) both !important;
+    }
+
+    @keyframes contentIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(28px) scale(0.97); filter: blur(1px); }
+      to   { opacity: 1; transform: translateY(0)   scale(1);    filter: blur(0);   }
+    }
+
+    /* ── FEED FOCUS — dim inactive items ── */
+    .feed > * {
+      transition: opacity 0.5s ease 1s, transform 0.5s ease 1s, filter 0.5s ease 1s;
+      transform-origin: top center;
+    }
+    .feed > *.past {
+      opacity: 0.4;
+      transform: scale(0.985);
+      filter: blur(0.4px);
+    }
+
+    /* ── CONTENT BLOCKS ── */
+    .msg.content-block {
+      border: 1px solid;
+      padding: 0;
+      margin-bottom: 16px;
+    }
+
+    .content-block-label {
+      display: block;
+      padding: 7px 14px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      border-bottom: 1px solid;
+    }
+
+    .content-block .msg-body {
+      padding: 14px;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    /* ── MATERIAL CHAT — inline Q&A inside a content block ── */
+    .material-chat {
+      border-top: 1px solid #D8D6CF;
+      padding: 10px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .material-chat-reply {
+      display: block;
+      width: fit-content;
+      max-width: 85%;
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--text-dim);
+      padding: 2px 0;
+    }
+
+    .material-chat-reply::before {
+      content: 'MO //';
+      display: block;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    /* Overview — warm ivory */
+    .content-block.overview {
+      background: #FAF7EF;
+      border-color: #E2D9C4;
+    }
+    .content-block.overview .content-block-label {
+      background: #F0EAD8;
+      border-color: #E2D9C4;
+      color: #8A6830;
+    }
+
+    /* Learning material — neutral */
+    .content-block.material {
+      background: #F5F4F1;
+      border-color: #D8D6CF;
+    }
+    .content-block.material .content-block-label {
+      background: #F5F4F1;
+      border-color: #D8D6CF;
+      color: var(--text);
+    }
+
+    /* Video block */
+    .content-block.video {
+      background: #F5F4F1;
+      border-color: #D8D6CF;
+    }
+    .content-block.video .content-block-label {
+      background: #ECEAE4;
+      border-color: #D8D6CF;
+      color: #6B6860;
+    }
+    .video-player {
+      position: relative;
+      background: #191816;
+      aspect-ratio: 16 / 9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .video-scanlines {
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(255,255,255,0.018) 3px,
+        rgba(255,255,255,0.018) 4px
+      );
+      pointer-events: none;
+    }
+    .video-play-btn {
+      width: 48px; height: 48px;
+      border: 1.5px solid rgba(255,255,255,0.55);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.85);
+      font-size: 16px;
+      padding-left: 3px;
+      transition: background 0.15s, border-color 0.15s;
+      position: relative;
+      z-index: 1;
+    }
+    .video-player:hover .video-play-btn {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.85);
+    }
+    .video-meta {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 10px 14px 10px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.65));
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      z-index: 1;
+    }
+    .video-title {
+      font-size: 11px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.8);
+      letter-spacing: 0.04em;
+    }
+    .video-duration {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.5);
+      font-variant-numeric: tabular-nums;
+    }
+    .video-progress {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: rgba(255,255,255,0.12);
+      z-index: 2;
+    }
+
+    .material-next-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      align-self: center;
+      font-size: 16px;
+      font-family: inherit;
+      background: transparent;
+      border: 1px solid var(--card-border);
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+      flex-shrink: 0;
+    }
+    .material-next-btn:hover {
+      border-color: var(--text);
+      color: var(--text);
+      background: var(--surface);
+    }
+
+    .video-footer {
+      padding: 16px 14px;
+      display: flex;
+      justify-content: center;
+      border-top: 1px solid #D8D6CF;
+    }
+
+    .video-continue-btn {
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 10px 36px;
+      border: 1.5px solid var(--card-border);
+      background: var(--surface);
+      color: var(--text-dim);
+      cursor: not-allowed;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      opacity: 0.4;
+    }
+
+    .video-continue-btn:not(:disabled) {
+      border-color: var(--green);
+      background: var(--green);
+      color: #fff;
+      cursor: pointer;
+      opacity: 1;
+    }
+
+    .video-continue-btn:not(:disabled):hover {
+      background: #fff;
+      color: var(--green);
+    }
+
+    .video-player.played .video-play-btn {
+      opacity: 0.4;
+    }
+
+    .msg-mo-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .mo-dot {
+      width: 20px; height: 20px;
+      border: 1.5px solid var(--green);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .mo-dot::after {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+    }
+
+    .mo-tag {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--green);
+    }
+
+    .msg-body {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text);
+      padding-left: 28px;
+    }
+
+    .msg.question .msg-body {
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 1.6;
+    }
+
+    .msg-user {
+      align-self: flex-end;
+      background: var(--text);
+      color: var(--bg);
+      border-radius: 14px 14px 3px 14px;
+      padding: 9px 14px;
+      font-size: 14px;
+      line-height: 1.5;
+      max-width: 75%;
+    }
+
+    .q-user-bubble {
+      display: block;
+      margin-left: auto;
+      width: fit-content;
+      max-width: 80%;
+      background: var(--text);
+      color: var(--bg);
+      border-radius: 14px 14px 3px 14px;
+      padding: 10px 14px;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-top: 14px;
+    }
+
+    .msg-rule {
+      width: 100%;
+      height: 1px;
+      background: var(--card-border);
+      margin: 4px 0 24px;
+    }
+
+    /* ── OPTIONS ── */
+    .options {
+      padding-left: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 24px;
+      animation: msgIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.08s both;
+    }
+
+    .opt {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--card-border);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      text-align: left;
+      width: 100%;
+      font-family: inherit;
+    }
+
+    .opt:hover:not(:disabled) {
+      border-color: var(--green);
+      background: var(--green-bg);
+    }
+
+    .opt:disabled { cursor: default; }
+
+    .opt.wrong {
+      background: var(--wrong-bg);
+      border-color: var(--wrong-border);
+    }
+
+    .opt.correct {
+      background: var(--correct-bg);
+      border-color: var(--correct-border);
+      animation: correctCelebrate 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes correctCelebrate {
+      0%   { background: var(--correct-bg);  box-shadow: none; }
+      20%  { background: #d4ebe0;            box-shadow: 0 0 0 5px rgba(74,107,90,0.18); border-color: var(--correct); }
+      60%  { background: #ddf0e6;            box-shadow: 0 0 0 3px rgba(74,107,90,0.10); border-color: var(--correct-border); }
+      100% { background: var(--correct-bg);  box-shadow: none; border-color: var(--correct-border); }
+    }
+
+    /* ── GROUP COLLAPSE ANIMATIONS ── */
+    .q-group.collapsed:not(.skipped) {
+      animation: groupCorrect 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes groupCorrect {
+      0%   { background: var(--surface);    border-color: var(--card-border); box-shadow: none; }
+      30%  { background: #c6e6d4;           border-color: var(--correct);      box-shadow: 0 0 0 4px rgba(74,107,90,0.18); }
+      100% { background: var(--correct-bg); border-color: var(--correct-border); box-shadow: none; }
+    }
+
+    .q-group.skipped.collapsed {
+      animation: groupSkipped 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes groupSkipped {
+      0%   { background: var(--surface);   border-color: var(--card-border); box-shadow: none; }
+      30%  { background: #f0e5b8;          border-color: var(--amber);        box-shadow: 0 0 0 4px rgba(138,122,58,0.18); }
+      100% { background: var(--amber-bg);  border-color: var(--amber-border); box-shadow: none; }
+    }
+
+    .opt.used {
+      opacity: 0.4;
+    }
+
+    .opt-key {
+      width: 20px; height: 20px;
+      border: 1px solid var(--card-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      flex-shrink: 0;
+    }
+
+    .opt.wrong .opt-key { border-color: var(--wrong); color: var(--wrong); }
+    .opt.correct .opt-key { border-color: var(--correct); color: var(--correct); }
+
+    .opt-text {
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--text);
+      padding-top: 1px;
+    }
+
+    /* ── FEEDBACK ── */
+    .feedback {
+      padding-left: 28px;
+      margin-bottom: 24px;
+    }
+
+    .feedback-inner {
+      padding: 14px 16px;
+      border: 1px solid;
+    }
+
+    .feedback-inner.wrong {
+      background: var(--wrong-bg);
+      border-color: var(--wrong-border);
+    }
+
+    .feedback-inner.correct {
+      background: var(--correct-bg);
+      border-color: var(--correct-border);
+    }
+
+    .feedback-label {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+    .feedback-inner.wrong .feedback-label { color: var(--wrong); }
+    .feedback-inner.correct .feedback-label { color: var(--correct); }
+
+    .feedback-text {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text);
+    }
+
+    /* Gentle border pulse on completion */
+    .card.completing {
+      animation: border-pulse 1.4s ease forwards;
+    }
+
+    @keyframes border-pulse {
+      0%   { box-shadow: 0 0 0 0px rgba(74,107,90,0);    border-color: var(--card-border); }
+      25%  { box-shadow: 0 0 0 4px rgba(74,107,90,0.25); border-color: var(--correct); }
+      55%  { box-shadow: 0 0 0 7px rgba(74,107,90,0.12); border-color: var(--correct); }
+      100% { box-shadow: 0 0 0 0px rgba(74,107,90,0);    border-color: var(--correct-border); }
+    }
+
+    .card.completed {
+      background: var(--correct-bg);
+      border-color: var(--correct-border);
+      transition: background 0.7s ease, border-color 0.7s ease;
+    }
+
+    .card.completed .card-head {
+      border-bottom-color: var(--correct-border);
+    }
+
+    /* ── PARTIAL (skipped questions) ── */
+    .card.completing-partial {
+      animation: border-pulse-amber 1.4s ease forwards;
+    }
+
+    @keyframes border-pulse-amber {
+      0%   { box-shadow: 0 0 0 0px rgba(138,122,58,0);    border-color: var(--card-border); }
+      25%  { box-shadow: 0 0 0 4px rgba(138,122,58,0.25); border-color: var(--amber); }
+      55%  { box-shadow: 0 0 0 7px rgba(138,122,58,0.12); border-color: var(--amber); }
+      100% { box-shadow: 0 0 0 0px rgba(138,122,58,0);    border-color: var(--amber-border); }
+    }
+
+    .card.partial {
+      background: var(--amber-bg);
+      border-color: var(--amber-border);
+      transition: background 0.7s ease, border-color 0.7s ease;
+    }
+
+    .card.partial .card-head {
+      border-bottom-color: var(--amber-border);
+    }
+
+    .card-complete-badge.skipped .badge-label { color: var(--amber); }
+
+    /* ── FINISH SCREEN ── */
+    .finish-screen {
+      padding: 32px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .finish-btn {
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 12px 32px;
+      border: 1.5px solid var(--amber);
+      background: var(--amber-bg);
+      color: var(--amber);
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .finish-btn:hover {
+      background: var(--amber);
+      color: #fff;
+    }
+
+    /* Completion badge in header */
+    .card-complete-badge {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      opacity: 0;
+      transform: translateY(6px);
+      animation: badge-in 0.5s ease 0.5s forwards;
+    }
+
+    @keyframes badge-in {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .badge-check {
+      width: 18px; height: 18px;
+      border: 1.5px solid var(--correct);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px;
+      color: var(--correct);
+    }
+
+    .badge-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--correct);
+    }
+
+    .complete-label {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--correct);
+      margin-bottom: 3px;
+    }
+
+    /* ── TRAINING COMPLETE ── */
+    .training-done {
+      padding: 32px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .done-circle {
+      width: 56px; height: 56px;
+      border: 2px solid var(--correct);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--correct);
+      font-size: 24px;
+    }
+
+    .done-title {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+    }
+
+    .done-subtitle {
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    /* ── CURSOR ── */
+    .cursor {
+      display: inline-block;
+      width: 0.5em;
+      height: 1em;
+      background: var(--green);
+      margin-left: 1px;
+      vertical-align: text-bottom;
+      border-radius: 1px;
+      box-shadow: 0 0 8px rgba(77,122,106,0.9), 0 0 16px rgba(77,122,106,0.4);
+      animation: cursor-pulse 0.65s ease-in-out infinite;
+    }
+
+    @keyframes cursor-pulse {
+      0%, 100% { opacity: 1;   box-shadow: 0 0 8px rgba(77,122,106,0.9), 0 0 18px rgba(77,122,106,0.5); }
+      50%       { opacity: 0;  box-shadow: none; }
+    }
+    /* ── TOC PANEL ── */
+    #tocToggle {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 200;
+      width: 32px;
+      height: 32px;
+      background: transparent;
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      color: var(--text-dim);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+    #tocToggle:hover { border-color: var(--text-muted); color: var(--text); background: var(--surface); }
+    #tocToggle svg { transition: transform 0.3s ease; }
+    #tocToggle.open svg { transform: scaleX(-1); }
+
+    #tocPanel {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: 260px;
+      background: var(--card-bg);
+      border-right: 1px solid var(--card-border);
+      z-index: 190;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(-100%);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      padding-top: 60px;
+    }
+    #tocPanel.open { transform: translateX(0); }
+
+    .toc-title {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 0 20px 14px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .toc-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 0;
+    }
+
+    .toc-chapter {
+      border-bottom: 1px solid var(--card-border);
+      padding: 12px 20px 10px;
+    }
+
+    .toc-chapter-head {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .toc-roman {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    .toc-chapter.active .toc-roman { color: var(--green); }
+
+    .toc-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .toc-chapter.locked .toc-name { color: var(--text-dim); }
+
+    .toc-chapter.locked { opacity: 0.4; }
+
+    .toc-steps { display: flex; flex-direction: column; gap: 2px; }
+
+    .toc-step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 0 4px 4px;
+      border-radius: 3px;
+    }
+
+    .toc-step-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      border: 1px solid var(--card-border);
+      background: transparent;
+      flex-shrink: 0;
+    }
+    .toc-step.done .toc-step-dot { background: var(--green); border-color: var(--green); }
+    .toc-step.skipped .toc-step-dot { background: var(--amber); border-color: var(--amber); }
+    .toc-step.current .toc-step-dot { border-color: var(--green); background: transparent; box-shadow: 0 0 0 2px rgba(77,122,106,0.2); }
+
+    .toc-step-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .toc-step-text {
+      font-size: 11px;
+      color: var(--text-dim);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+    .toc-step.done .toc-step-text { color: var(--text-muted); }
+    .toc-step.current .toc-step-text { color: var(--text); }
+
+    #tocOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 180;
+      background: transparent;
+      display: none;
+    }
+    #tocOverlay.open { display: block; }
+
+  </style>
+</head>
+<body>
+
+  <button id="tocToggle" aria-label="Table of contents">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.4"/>
+      <line x1="7" y1="2" x2="7" y2="16" stroke="currentColor" stroke-width="1.4"/>
+      <polyline points="10,7 13,9 10,11" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" fill="none"/>
+    </svg>
+  </button>
+
+  <div id="tocOverlay"></div>
+
+  <div id="tocPanel">
+    <div class="toc-title">Table of Contents</div>
+    <div class="toc-list" id="tocList"><!-- built by JS --></div>
+  </div>
+
+  <div id="progressBar"><!-- built by JS --></div>
+
+  <div id="trackWrapper">
+    <div id="track"><!-- cards built by JS --></div>
+  </div>
+
+  <div id="chatBar">
+    <div id="chatInputWrap">
+      <textarea id="chatInput" rows="1" placeholder="Ask Mo anything…"></textarea>
+      <button id="chatSend" aria-label="Send">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M8 13V3M3 8l5-5 5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+<script>
+/* ───────────────────────────────────────────
+   CHAPTER DATA
+─────────────────────────────────────────── */
+const CHAPTERS = [
+  {
+    roman: "I",
+    title: "Lumon Protocol",
+    steps: [
+      {
+        type: 'content',
+        label: "Overview", kind: "overview",
+        pause: true,
+        text: "Chapter I covers the foundational standards that govern all employee conduct at Lumon Industries. These principles are not guidelines — they are operative requirements applied uniformly, without exception, across all departments and seniority levels.\n\nAll conduct at Lumon is subject to two core principles: transparency and escalation. Transparency governs how you communicate, document, and behave. Escalation governs how you respond when something falls outside the expected. Together they form the backbone of the Lumon Protocol.",
+      },
+      {
+        type: 'content',
+        label: "Transparency",
+        text: "All employees must maintain complete transparency in their conduct, documentation, and interdepartmental communications at all times.",
+      },
+      {
+        type: 'question',
+        text: "What does the transparency principle require of employees?",
+        options: [
+          "Report only to direct supervisors",
+          "Maintain transparency in all conduct and communications",
+          "Document only formal decisions",
+          "Transparency applies to written communications only",
+        ],
+        correct: 1,
+        wrongFeedback: "Not quite. Transparency isn't limited to a single channel or document type — it applies across all conduct and communications.",
+      },
+      {
+        type: 'content',
+        label: "Escalation Protocol",
+        text: "Any deviation from standard procedure must be escalated through the correct reporting channel within 24 hours of identification.",
+      },
+      {
+        type: 'freetext',
+        text: "A procedural deviation is identified Monday at 9am. By when must it be escalated?",
+        keywords: ['tuesday', '9am', '24 hour', '24h', 'next day'],
+        correctResponse: "Correct. The escalation window is 24 hours from identification. Monday 9am → Tuesday 9am.",
+        incorrectResponse: "Not quite. The window is 24 hours from the moment of identification. If it's identified Monday at 9am, it must be escalated by Tuesday at 9am.",
+      },
+    ]
+  },
+  {
+    roman: "II",
+    title: "Data Handling",
+    steps: [
+      {
+        type: 'content',
+        label: "Data Minimization",
+        text: "Employees may only access data directly relevant to their assigned tasks. Unauthorized access — even accidental — must be reported immediately.",
+      },
+      {
+        type: 'question',
+        text: "An employee accidentally opens a file outside their assigned scope. What must they do?",
+        options: [
+          "Close it and say nothing",
+          "Delete the access log",
+          "Report it immediately",
+          "Ask a colleague for guidance",
+        ],
+        correct: 2,
+        wrongFeedback: "Any unauthorized access — regardless of intent — must be reported immediately. Inaction is itself a violation.",
+      },
+      {
+        type: 'content',
+        label: "Data Sharing",
+        text: "No organizational data may be shared outside your department without written authorization from your department head.",
+      },
+      {
+        type: 'question',
+        text: "What is required before sharing organizational data with another department?",
+        options: [
+          "A verbal approval from any supervisor",
+          "Written authorization from your department head",
+          "An email confirmation from the recipient",
+          "No authorization if the request is routine",
+        ],
+        correct: 1,
+        wrongFeedback: "Only written authorization from your department head is sufficient. Verbal approvals and assumed permissions do not meet the standard.",
+      },
+    ]
+  },
+  {
+    roman: "III",
+    title: "Interdept. Relations",
+    steps: [
+      {
+        type: 'content',
+        label: "Scope of Authority",
+        text: "Employees must not give or accept instructions from personnel outside their direct reporting structure without documented authorization.",
+      },
+      {
+        type: 'question',
+        text: "A colleague from another department asks you to complete a task outside your scope. What is the correct response?",
+        options: [
+          "Complete it as a professional courtesy",
+          "Decline and escalate to your supervisor",
+          "Do it if it seems low-risk",
+          "Contact the colleague's supervisor directly",
+        ],
+        correct: 1,
+        wrongFeedback: "Cross-departmental requests outside your reporting structure require documented authorization. Decline and escalate to your own supervisor.",
+      },
+      {
+        type: 'question',
+        text: "What is required to accept instructions from outside your reporting structure?",
+        options: [
+          "A verbal agreement between both parties",
+          "Mutual consent",
+          "Documented authorization",
+          "An HR record",
+        ],
+        correct: 2,
+        wrongFeedback: "Documented authorization is the only valid basis. This protects accountability on both sides.",
+      },
+    ]
+  },
+  {
+    roman: "IV",
+    title: "Exit Procedures",
+    steps: [
+      {
+        type: 'content', kind: 'video',
+        label: "Video",
+        videoTitle: "Exit Procedures — What You Need to Know",
+        duration: "5:10",
+      },
+      {
+        type: 'content',
+        label: "Equipment Return",
+        text: "All Lumon-issued equipment must be returned to the designated intake office within 24 hours of separation, regardless of the nature of departure.",
+      },
+      {
+        type: 'question',
+        text: "An employee's last day is Friday at 5pm. By when must equipment be returned?",
+        options: [
+          "By end of day Friday",
+          "Saturday at 5pm",
+          "Within the following week",
+          "Only if equipment was personally assigned",
+        ],
+        correct: 1,
+        wrongFeedback: "The 24-hour window starts from the moment of separation. Friday 5pm → Saturday 5pm.",
+      },
+      {
+        type: 'content',
+        label: "Confidentiality",
+        text: "All information encountered during employment remains confidential indefinitely. Disclosure is prohibited under all circumstances.",
+      },
+      {
+        type: 'question',
+        text: "After leaving Lumon, does the confidentiality obligation still apply?",
+        options: [
+          "No — obligations end at separation",
+          "Only for 12 months post-separation",
+          "Yes — confidentiality applies indefinitely",
+          "Only for information marked confidential",
+        ],
+        correct: 2,
+        wrongFeedback: "Lumon's confidentiality agreement has no expiration. Obligations remain in force indefinitely, regardless of employment status.",
+      },
+    ]
+  },
+];
+
+/* ───────────────────────────────────────────
+   STATE
+─────────────────────────────────────────── */
+let currentChapter = 0;
+let activeQuestion = null;    // { chapterIdx, stepIdx, prevWrong }
+let activeMaterialBlock = null; // { feedId, chatEl } — set when material block is active
+const completedQuestions = CHAPTERS.map(() => 0);
+const completedSteps = CHAPTERS.map(() => 0);
+const allSkipped = []; // { chapterIdx, step } across all chapters
+const skippedQCount = CHAPTERS.map(() => 0);
+const questionCount = CHAPTERS.map(ch => ch.steps.filter(s => s.type === 'question' || s.type === 'freetext').length);
+const totalSteps = CHAPTERS.map(ch => ch.steps.length);
+const unlockedChapters = new Set([0]); // chapter 0 always unlocked
+
+/* ───────────────────────────────────────────
+   BUILD DOM
+─────────────────────────────────────────── */
+function buildDOM() {
+  const track = document.getElementById('track');
+  CHAPTERS.forEach((ch, i) => {
+    const card = document.createElement('div');
+    card.className = 'card' + (i !== 0 ? ' inactive' : '');
+    card.id = `card-${i}`;
+    card.innerHTML = `
+      <div class="card-head">
+        <span class="card-chapter">Chapter ${ch.roman}</span>
+        <span class="card-slash">//</span>
+        <span class="card-title">${ch.title}</span>
+        <div class="card-head-progress" id="chprog-${i}"></div>
+      </div>
+      <div class="feed" id="feed-${i}"></div>
+    `;
+    track.appendChild(card);
+  });
+  buildProgressBar();
+}
+
+function buildProgressBar() {
+  const bar = document.getElementById('progressBar');
+  bar.innerHTML = '';
+  CHAPTERS.forEach((ch, i) => {
+    if (i > 0) {
+      const div = document.createElement('div');
+      div.className = 'silo-divider';
+      bar.appendChild(div);
+    }
+    const isUnlocked = unlockedChapters.has(i);
+    const silo = document.createElement('div');
+    silo.className = `silo ${isUnlocked ? 'enabled' : 'locked'}${i === 0 ? ' active' : ''}`;
+    silo.id = `silo-${i}`;
+
+    const label = document.createElement('div');
+    label.className = 'silo-label';
+    label.innerHTML = `Ch. ${ch.roman}${isUnlocked ? '' : ' <span class="lock-icon">⬛</span>'}`;
+
+    const segs = document.createElement('div');
+    segs.className = 'silo-segments';
+    segs.id = `segs-${i}`;
+    for (let j = 0; j < questionCount[i]; j++) {
+      const seg = document.createElement('div');
+      seg.className = 'seg';
+      seg.id = `seg-${i}-${j}`;
+      segs.appendChild(seg);
+    }
+
+    silo.appendChild(label);
+    silo.appendChild(segs);
+
+    if (isUnlocked) {
+      silo.addEventListener('click', () => {
+        if (currentChapter !== i) goToChapter(i);
+      });
+    }
+
+    bar.appendChild(silo);
+  });
+}
+
+function markSegment(chapterIdx) {
+  const idx = completedQuestions[chapterIdx] + skippedQCount[chapterIdx] - 1;
+  const seg = document.getElementById(`seg-${chapterIdx}-${idx}`);
+  if (seg) seg.classList.add('done');
+}
+
+function markSkippedSegment(chapterIdx) {
+  const idx = completedQuestions[chapterIdx] + skippedQCount[chapterIdx] - 1;
+  const seg = document.getElementById(`seg-${chapterIdx}-${idx}`);
+  if (seg) seg.classList.add('skipped');
+}
+
+function advanceProgress(chapterIdx) {
+  completedSteps[chapterIdx]++;
+  const bar = document.getElementById(`chprog-${chapterIdx}`);
+  if (bar) bar.style.width = `${(completedSteps[chapterIdx] / totalSteps[chapterIdx]) * 100}%`;
+}
+
+function setActiveSilo(idx) {
+  CHAPTERS.forEach((_, i) => {
+    const s = document.getElementById(`silo-${i}`);
+    if (!s) return;
+    s.classList.toggle('active', i === idx);
+  });
+}
+
+function unlockChapter(idx) {
+  if (idx >= CHAPTERS.length || unlockedChapters.has(idx)) return;
+  unlockedChapters.add(idx);
+  const silo = document.getElementById(`silo-${idx}`);
+  if (!silo) return;
+  silo.classList.remove('locked');
+  silo.classList.add('enabled');
+  silo.querySelector('.silo-label').textContent = `Ch. ${CHAPTERS[idx].roman}`;
+  silo.addEventListener('click', () => {
+    if (currentChapter !== idx) goToChapter(idx);
+  });
+}
+
+/* ───────────────────────────────────────────
+   NAVIGATION
+─────────────────────────────────────────── */
+function goToChapter(idx) {
+  currentChapter = idx;
+  const cardStep = window.innerWidth * 0.88;
+  document.getElementById('track').style.transform = `translateX(${-idx * cardStep}px)`;
+  CHAPTERS.forEach((_, i) => {
+    document.getElementById(`card-${i}`).classList.toggle('inactive', i !== idx);
+  });
+  setActiveSilo(idx);
+}
+
+window.addEventListener('resize', () => {
+  const cardStep = window.innerWidth * 0.88;
+  document.getElementById('track').style.transition = 'none';
+  document.getElementById('track').style.transform = `translateX(${-currentChapter * cardStep}px)`;
+  setTimeout(() => {
+    document.getElementById('track').style.transition = 'transform 0.55s cubic-bezier(0.4, 0, 0.2, 1)';
+  }, 50);
+});
+
+/* ───────────────────────────────────────────
+   TYPEWRITER
+─────────────────────────────────────────── */
+function delay(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+/* ── FEED FOCUS UTILITIES ── */
+function bounceIn(el) {
+  el.classList.add('bounce-in');
+  el.addEventListener('animationend', () => el.classList.remove('bounce-in'), { once: true });
+}
+
+function contentIn(el) {
+  el.classList.add('content-in');
+  el.addEventListener('animationend', () => el.classList.remove('content-in'), { once: true });
+}
+
+function setActive(feed, el) {
+  // Dim all siblings, keep el bright
+  Array.from(feed.children).forEach(c => c.classList.toggle('past', c !== el));
+  // Scroll el to vertical center of feed
+  const feedRect = feed.getBoundingClientRect();
+  const elRect = el.getBoundingClientRect();
+  const elTopInFeed = elRect.top - feedRect.top + feed.scrollTop;
+  const scrollTarget = elTopInFeed - (feed.clientHeight - el.offsetHeight) / 2;
+  feed.scrollTo({ top: Math.max(0, scrollTarget), behavior: 'smooth' });
+}
+
+function typeInto(el, text) {
+  return new Promise(resolve => {
+    const cursor = document.createElement('span');
+    cursor.className = 'cursor';
+    el.appendChild(cursor);
+
+    let i = 0;
+    function tick() {
+      if (i < text.length) {
+        const ch = text[i++];
+        cursor.before(ch);
+        // Natural rhythm: pause at sentence boundaries, sprint through words
+        const isPunct = '.!?,—'.includes(ch);
+        const isSpace = ch === ' ';
+        const ms = isPunct ? 25 + Math.random() * 20
+                 : isSpace ? 6
+                 : 3 + Math.random() * 4;
+        setTimeout(tick, ms);
+      } else {
+        cursor.remove();
+        resolve();
+      }
+    }
+    setTimeout(tick, 80);
+  });
+}
+
+/* ───────────────────────────────────────────
+   APPEND MESSAGES
+─────────────────────────────────────────── */
+function appendMoMessage(feedId, type, text, label = null, kind = 'material') {
+  const feed = document.getElementById(feedId);
+  const msg = document.createElement('div');
+
+  if (label) {
+    msg.className = `msg content-block ${kind}`;
+    const labelEl = document.createElement('span');
+    labelEl.className = 'content-block-label';
+    labelEl.textContent = label;
+    const body = document.createElement('div');
+    body.className = 'msg-body';
+    msg.appendChild(labelEl);
+    msg.appendChild(body);
+    feed.appendChild(msg);
+    contentIn(msg);
+    setActive(feed, msg);
+    return typeInto(body, text).then(() => {
+      setActive(feed, msg);
+      // Attach inline chat container and register as active material block
+      const chatEl = document.createElement('div');
+      chatEl.className = 'material-chat';
+      chatEl.style.display = 'none'; // hidden until first message
+      msg.appendChild(chatEl);
+      activeMaterialBlock = { feedId, chatEl };
+    });
+  }
+
+  // Default: MO // style
+  msg.className = `msg ${type}`;
+  const header = document.createElement('div');
+  header.className = 'msg-mo-header';
+  header.innerHTML = `<div class="mo-dot"></div><span class="mo-tag">MO //</span>`;
+  const body = document.createElement('div');
+  body.className = 'msg-body';
+  msg.appendChild(header);
+  msg.appendChild(body);
+  feed.appendChild(msg);
+  bounceIn(msg);
+  setActive(feed, msg);
+  return typeInto(body, text).then(() => setActive(feed, msg));
+}
+
+function appendVideoBlock(feedId, step) {
+  const feed = document.getElementById(feedId);
+  const msg = document.createElement('div');
+  msg.className = 'msg content-block video';
+
+  const labelEl = document.createElement('span');
+  labelEl.className = 'content-block-label';
+  labelEl.textContent = step.label || 'Video';
+
+  const player = document.createElement('div');
+  player.className = 'video-player';
+  player.innerHTML = `
+    <div class="video-scanlines"></div>
+    <div class="video-play-btn">&#9654;</div>
+    <div class="video-meta">
+      <span class="video-title">${step.videoTitle}</span>
+      <span class="video-duration">${step.duration}</span>
+    </div>
+    <div class="video-progress"></div>
+  `;
+
+  msg.appendChild(labelEl);
+  msg.appendChild(player);
+  feed.appendChild(msg);
+  contentIn(msg);
+  setActive(feed, msg);
+
+  const footer = document.createElement('div');
+  footer.className = 'video-footer';
+  const btn = document.createElement('button');
+  btn.className = 'video-continue-btn';
+  btn.textContent = 'Continue';
+  btn.disabled = true;
+  footer.appendChild(btn);
+  msg.appendChild(footer);
+  setActive(feed, msg);
+
+  // Play button click → enable Continue
+  player.querySelector('.video-play-btn').addEventListener('click', () => {
+    player.classList.add('played');
+    btn.disabled = false;
+  });
+
+  return new Promise(resolve => {
+    // Continue click → fade out footer then advance flow
+    btn.addEventListener('click', () => {
+      footer.style.transition = 'opacity 0.2s ease';
+      footer.style.opacity = '0';
+      setTimeout(() => { footer.remove(); resolve(); }, 200);
+    });
+  });
+}
+
+function appendRule(feedId) {
+  const feed = document.getElementById(feedId);
+  const rule = document.createElement('div');
+  rule.className = 'msg-rule';
+  feed.appendChild(rule);
+}
+
+function showFreeTextQuestion(chapterIdx, stepIdx) {
+  activeMaterialBlock = null;
+  const step = CHAPTERS[chapterIdx].steps[stepIdx];
+  const feed = document.getElementById(`feed-${chapterIdx}`);
+  const feedId = `feed-${chapterIdx}`;
+
+  const group = document.createElement('div');
+  group.className = 'q-group';
+  group.id = `qgroup-${chapterIdx}-${stepIdx}`;
+
+  const block = document.createElement('div');
+  block.className = 'question-block';
+  block.id = `qblock-${chapterIdx}-${stepIdx}`;
+
+  const summary = document.createElement('div');
+  summary.className = 'q-summary';
+  const icon = document.createElement('div');
+  icon.className = 'q-summary-icon';
+  icon.textContent = '✓';
+  const ans = document.createElement('div');
+  ans.className = 'q-summary-title';
+  ans.id = `qanswer-${chapterIdx}-${stepIdx}`;
+  summary.appendChild(icon);
+  summary.appendChild(ans);
+
+  const qFull = document.createElement('div');
+  qFull.className = 'q-full';
+
+  const qText = document.createElement('div');
+  qText.className = 'q-text';
+
+  const hint = document.createElement('div');
+  hint.className = 'q-freetext-hint';
+  hint.textContent = 'Type your answer in the chat...';
+
+  const skipBtn = document.createElement('button');
+  skipBtn.className = 'q-skip';
+  skipBtn.textContent = 'Skip';
+  skipBtn.addEventListener('click', () => handleSkip(chapterIdx, stepIdx));
+
+  qFull.appendChild(qText);
+  qFull.appendChild(hint);
+  block.appendChild(summary);
+  block.appendChild(qFull);
+  block.appendChild(skipBtn);
+  group.appendChild(block);
+  feed.appendChild(group);
+  bounceIn(group);
+  setActive(feed, group);
+
+  activeQuestion = { chapterIdx, stepIdx, freetext: true };
+
+  return new Promise(async resolve => {
+    await typeInto(qText, step.text);
+    setActive(feed, group);
+    document.getElementById('chatInput').placeholder = 'Type your answer…';
+    group._resolve = resolve;
+  });
+}
+
+async function handleFreeTextAnswer(chapterIdx, stepIdx, userText) {
+  activeQuestion = null;
+  document.getElementById('chatInput').placeholder = 'Ask Mo anything…';
+
+  const step = CHAPTERS[chapterIdx].steps[stepIdx];
+  const feed = document.getElementById(`feed-${chapterIdx}`);
+  const group = document.getElementById(`qgroup-${chapterIdx}-${stepIdx}`);
+  const qFull = group.querySelector('.q-full');
+
+  // Show user bubble inside the question card
+  const bubble = document.createElement('div');
+  bubble.className = 'q-user-bubble';
+  bubble.textContent = userText;
+  qFull.appendChild(bubble);
+  bubble.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  await delay(500);
+
+  const lower = userText.toLowerCase();
+  const isCorrect = step.keywords.some(k => lower.includes(k));
+
+  if (isCorrect) {
+    await appendFeedbackToGroup(group, 'correct', 'Correct', step.correctResponse);
+    await delay(600);
+    completedQuestions[chapterIdx]++;
+    markSegment(chapterIdx);
+    advanceProgress(chapterIdx);
+    const answerEl = document.getElementById(`qanswer-${chapterIdx}-${stepIdx}`);
+    if (answerEl) answerEl.textContent = step.text.replace(/\?$/, '') + ': ' + userText.toLowerCase();
+    group.classList.add('collapsed');
+    group.addEventListener('click', () => group.classList.toggle('open'));
+    await delay(300);
+    group._resolve && group._resolve();
+  } else {
+    await appendFeedbackToGroup(group, 'wrong', 'Not quite', step.incorrectResponse);
+    await delay(400);
+    // Re-enable for another try
+    activeQuestion = { chapterIdx, stepIdx, freetext: true };
+  }
+}
+
+function showQuestion(chapterIdx, stepIdx) {
+  activeMaterialBlock = null;
+  const step = CHAPTERS[chapterIdx].steps[stepIdx];
+  const feed = document.getElementById(`feed-${chapterIdx}`);
+  const totalQuestions = questionCount[chapterIdx];
+  const qNum = CHAPTERS[chapterIdx].steps.slice(0, stepIdx + 1).filter(s => s.type === 'question').length;
+
+  // Group wraps block + all feedback so they collapse together
+  const group = document.createElement('div');
+  group.className = 'q-group';
+  group.id = `qgroup-${chapterIdx}-${stepIdx}`;
+
+  const block = document.createElement('div');
+  block.className = 'question-block';
+  block.id = `qblock-${chapterIdx}-${stepIdx}`;
+  block.innerHTML = `
+    <div class="q-summary">
+      <div class="q-summary-icon">✓</div>
+      <div class="q-summary-title" id="qanswer-${chapterIdx}-${stepIdx}"></div>
+      <div class="q-toggle"></div>
+    </div>
+    <div class="q-full">
+      <div class="q-text"></div>
+    </div>
+  `;
+
+  group.appendChild(block);
+  feed.appendChild(group);
+  bounceIn(group);
+  setActive(feed, group);
+
+  // Skip button — absolute top-right, added before typing starts
+  const skipBtn = document.createElement('button');
+  skipBtn.className = 'q-skip';
+  skipBtn.textContent = 'Skip';
+  skipBtn.addEventListener('click', () => handleSkip(chapterIdx, stepIdx));
+  block.appendChild(skipBtn);
+
+  return typeInto(block.querySelector('.q-text'), step.text).then(() => {
+    renderOptions(chapterIdx, stepIdx, []);
+    setActive(feed, group);
+  });
+}
+
+function renderOptions(chapterIdx, stepIdx, usedWrong) {
+  const step = CHAPTERS[chapterIdx].steps[stepIdx];
+  const block = document.getElementById(`qblock-${chapterIdx}-${stepIdx}`);
+  const qFull = block.querySelector('.q-full');
+
+  const existing = qFull.querySelector('.options');
+  if (existing) existing.remove();
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'options';
+
+  step.options.forEach((text, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt' + (usedWrong.includes(i) ? ' used' : '');
+    btn.disabled = usedWrong.includes(i);
+    btn.innerHTML = `<span class="opt-key">${String.fromCharCode(65 + i)}</span><span class="opt-text">${text}</span>`;
+    btn.addEventListener('click', () => handleAnswer(chapterIdx, stepIdx, i, usedWrong));
+    wrapper.appendChild(btn);
+  });
+
+  qFull.appendChild(wrapper);
+  activeQuestion = { chapterIdx, stepIdx, prevWrong: usedWrong };
+}
+
+// Append a feedback bubble inside .q-full (same flow as user bubbles)
+function appendFeedbackToGroup(groupEl, type, label, text) {
+  const qFull = groupEl.querySelector('.q-full');
+  const row = document.createElement('div');
+  const cssType = type === 'correct' ? 'correct-fb' : 'wrong';
+  row.className = `q-feedback-row ${cssType}`;
+  qFull.appendChild(row);
+  row.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  return typeInto(row, text).then(() => {
+    row.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  });
+}
+
+function appendFeedback(feedId, type, label, text) {
+  const feed = document.getElementById(feedId);
+  const wrapper = document.createElement('div');
+  wrapper.className = 'feedback';
+  wrapper.innerHTML = `
+    <div class="feedback-inner ${type}">
+      <div class="feedback-label">${label}</div>
+      <div class="feedback-text"></div>
+    </div>
+  `;
+  feed.appendChild(wrapper);
+  feed.scrollTop = feed.scrollHeight;
+  return typeInto(wrapper.querySelector('.feedback-text'), text).then(() => {
+    feed.scrollTop = feed.scrollHeight;
+  });
+}
+
+function playCompletionSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const master = ctx.createGain();
+    master.gain.value = 0.18;
+    master.connect(ctx.destination);
+
+    // Rising arpeggio: C5 → E5 → G5 → C6
+    const freqs = [523.25, 659.25, 783.99, 1046.5];
+    freqs.forEach((freq, i) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(master);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const t = ctx.currentTime + i * 0.13;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(1, t + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 1.1);
+      osc.start(t);
+      osc.stop(t + 1.2);
+    });
+  } catch(e) { /* AudioContext blocked — silent */ }
+}
+
+async function appendChapterComplete(feedId, chapterIdx, hasSkipped = false) {
+  const card = document.getElementById(`card-${chapterIdx}`);
+  const head = card.querySelector('.card-head');
+
+  card.classList.add(hasSkipped ? 'completing-partial' : 'completing');
+  if (!hasSkipped) playCompletionSound();
+  await delay(750);
+  card.classList.remove('completing', 'completing-partial');
+  card.classList.add(hasSkipped ? 'partial' : 'completed');
+
+  const badge = document.createElement('div');
+  if (hasSkipped) {
+    const n = allSkipped.filter(s => s.chapterIdx === chapterIdx).length;
+    badge.className = 'card-complete-badge skipped';
+    badge.innerHTML = `<span class="badge-label">${n} skipped</span>`;
+  } else {
+    badge.className = 'card-complete-badge';
+    badge.innerHTML = `<div class="badge-check">✓</div><span class="badge-label">Complete</span>`;
+  }
+  head.appendChild(badge);
+}
+
+function appendTrainingDone(feedId) {
+  const feed = document.getElementById(feedId);
+  const wrapper = document.createElement('div');
+  wrapper.className = 'training-done';
+  wrapper.innerHTML = `
+    <div class="done-circle">✓</div>
+    <div>
+      <div class="done-title">Training<br>Complete</div>
+      <div class="done-subtitle" style="margin-top: 10px;">Workplace Fundamentals — All chapters passed</div>
+    </div>
+  `;
+  feed.appendChild(wrapper);
+  bounceIn(wrapper);
+  setActive(feed, wrapper);
+}
+
+function awaitMaterialNext(feedId) {
+  const feed = document.getElementById(feedId);
+  const btn = document.createElement('button');
+  btn.className = 'material-next-btn';
+  btn.innerHTML = '↓';
+  feed.appendChild(btn);
+  bounceIn(btn);
+  return new Promise(resolve => {
+    btn.addEventListener('click', () => {
+      btn.remove();
+      resolve();
+    }, { once: true });
+  });
+}
+
+/* ───────────────────────────────────────────
+   STEP RUNNER
+─────────────────────────────────────────── */
+async function runStep(chapterIdx, stepIdx) {
+  const chapter = CHAPTERS[chapterIdx];
+  if (stepIdx >= chapter.steps.length) {
+    await completeChapter(chapterIdx);
+    return;
+  }
+
+  const step = chapter.steps[stepIdx];
+  const feedId = `feed-${chapterIdx}`;
+
+  if (step.type === 'content') {
+    if (step.kind === 'video') {
+      await appendVideoBlock(feedId, step);
+    } else {
+      await appendMoMessage(feedId, 'content', step.text, step.label || null, step.kind || 'material');
+      const nextStep = chapter.steps[stepIdx + 1];
+      if (step.pause || (nextStep && nextStep.type === 'question')) {
+        await awaitMaterialNext(feedId);
+      }
+    }
+    advanceProgress(chapterIdx);
+    await delay(400);
+    await runStep(chapterIdx, stepIdx + 1);
+
+  } else if (step.type === 'freetext') {
+    await showFreeTextQuestion(chapterIdx, stepIdx);
+    await runStep(chapterIdx, stepIdx + 1);
+  } else if (step.type === 'question') {
+    await showQuestion(chapterIdx, stepIdx);
+  }
+}
+
+async function handleAnswer(chapterIdx, stepIdx, optionIdx, prevWrong, userText = null) {
+  activeQuestion = null;
+  activeMaterialBlock = null;
+  const step = CHAPTERS[chapterIdx].steps[stepIdx];
+  const feed = document.getElementById(`feed-${chapterIdx}`);
+  const group = document.getElementById(`qgroup-${chapterIdx}-${stepIdx}`);
+  const block = document.getElementById(`qblock-${chapterIdx}-${stepIdx}`);
+  const qFull = block.querySelector('.q-full');
+
+  // Show user's typed answer as a bubble inside the question block, before processing
+  let userBubble = null;
+  if (userText) {
+    userBubble = document.createElement('div');
+    userBubble.className = 'q-user-bubble';
+    userBubble.textContent = userText;
+    qFull.appendChild(userBubble);
+    bounceIn(userBubble);
+    block.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    await delay(400);
+  }
+
+  // Disable all options while processing
+  block.querySelectorAll('.opt').forEach(b => b.disabled = true);
+  const clicked = block.querySelectorAll('.opt')[optionIdx];
+
+  if (optionIdx === step.correct) {
+    clicked.classList.add('correct');
+    completedQuestions[chapterIdx]++;
+    markSegment(chapterIdx);
+    advanceProgress(chapterIdx);
+
+    const responses = [
+      "Correct. That's the right answer.",
+      "Precisely. Well noted.",
+      "That's correct — let's continue.",
+      "Right. Moving on.",
+    ];
+    await delay(500);
+    // Feedback goes INTO the group — it will collapse with the question
+    await appendFeedbackToGroup(group, 'correct', 'Correct', responses[Math.floor(Math.random() * responses.length)]);
+    await delay(900);
+
+    // Human-language collapsed title: strip the question's trailing "?" and append answer
+    const qShort = step.text.replace(/\?$/, '');
+    const humanTitle = `${qShort}: ${step.options[optionIdx].toLowerCase()}`;
+    const answerEl = document.getElementById(`qanswer-${chapterIdx}-${stepIdx}`);
+    if (answerEl) answerEl.textContent = humanTitle;
+
+    // Collapse entire group — block loses sticky, feedback rows hide
+    group.classList.add('collapsed');
+    group.addEventListener('click', () => group.classList.toggle('open'));
+
+    await delay(400);
+    await runStep(chapterIdx, stepIdx + 1);
+
+  } else {
+    clicked.classList.add('wrong');
+    await delay(300);
+    // Feedback goes INTO the group
+    await appendFeedbackToGroup(group, 'wrong', 'Incorrect', step.wrongFeedback);
+    await delay(400);
+
+    // Refresh options in block (question text stays, wrong option disabled)
+    renderOptions(chapterIdx, stepIdx, [...prevWrong, optionIdx]);
+    // Re-anchor all chat nodes (bubbles + feedback) after the new options, preserving order
+    qFull.querySelectorAll('.q-user-bubble, .q-feedback-row').forEach(b => qFull.appendChild(b));
+  }
+}
+
+async function handleSkip(chapterIdx, stepIdx) {
+  activeQuestion = null;
+  document.getElementById('chatInput').placeholder = 'Ask Mo anything…';
+  const step = CHAPTERS[chapterIdx].steps[stepIdx];
+  const group = document.getElementById(`qgroup-${chapterIdx}-${stepIdx}`);
+  const answerEl = document.getElementById(`qanswer-${chapterIdx}-${stepIdx}`);
+  const iconEl = group.querySelector('.q-summary-icon');
+
+  allSkipped.push({ chapterIdx, step });
+  skippedQCount[chapterIdx]++;
+  markSkippedSegment(chapterIdx);
+
+  if (answerEl) answerEl.textContent = step.text.replace(/\?$/, '');
+  if (iconEl) iconEl.textContent = '→';
+
+  group.classList.add('collapsed', 'skipped');
+  group.addEventListener('click', () => group.classList.toggle('open'));
+  advanceProgress(chapterIdx);
+  await delay(300);
+  if (group._resolve) {
+    group._resolve();
+  } else {
+    await runStep(chapterIdx, stepIdx + 1);
+  }
+}
+
+async function completeChapter(chapterIdx) {
+  const feedId = `feed-${chapterIdx}`;
+  const hasSkipped = allSkipped.some(s => s.chapterIdx === chapterIdx);
+  await appendChapterComplete(feedId, chapterIdx, hasSkipped);
+  await delay(700);
+
+  const nextIdx = chapterIdx + 1;
+  if (nextIdx < CHAPTERS.length) {
+    unlockChapter(nextIdx);
+    goToChapter(nextIdx);
+    await delay(600);
+    await runStep(nextIdx, 0);
+  } else {
+    await delay(200);
+    if (allSkipped.length > 0) {
+      appendFinishScreen(`feed-${chapterIdx}`);
+    } else {
+      appendTrainingDone(`feed-${chapterIdx}`);
+    }
+  }
+}
+
+function appendFinishScreen(feedId) {
+  const feed = document.getElementById(feedId);
+  const count = allSkipped.length;
+  const chapterList = [...new Set(allSkipped.map(s => `Ch. ${CHAPTERS[s.chapterIdx].roman}`))].join(', ');
+  const wrapper = document.createElement('div');
+  wrapper.className = 'finish-screen';
+  wrapper.innerHTML = `
+    <div class="done-circle" style="border-color:var(--amber);color:var(--amber)">!</div>
+    <div>
+      <div class="done-title">Good<br>Progress.</div>
+      <div class="done-subtitle" style="margin-top:10px">${count} skipped question${count !== 1 ? 's' : ''} — ${chapterList}</div>
+      <div class="done-subtitle" style="margin-top:6px">Complete them to finish your training.</div>
+    </div>
+    <button class="finish-btn" id="finishBtn">Finish</button>
+  `;
+  feed.appendChild(wrapper);
+  bounceIn(wrapper);
+  setActive(feed, wrapper);
+  document.getElementById('finishBtn').addEventListener('click', () => {
+    wrapper.remove();
+    buildLeftoversCard();
+  });
+}
+
+async function buildLeftoversCard() {
+  const track = document.getElementById('track');
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.id = 'card-leftovers';
+  card.innerHTML = `
+    <div class="card-head">
+      <span class="card-chapter">Leftovers</span>
+      <span class="card-slash">//</span>
+      <span class="card-title">Unfinished Questions</span>
+    </div>
+    <div class="feed" id="feed-leftovers"></div>
+  `;
+  track.appendChild(card);
+  goToCard(card);
+  await delay(600);
+
+  const queue = allSkipped.splice(0);
+  for (const { chapterIdx, step } of queue) {
+    await showReviewQuestion('feed-leftovers', chapterIdx, step);
+  }
+
+  // All leftovers answered
+  const head = card.querySelector('.card-head');
+  card.classList.add('completing');
+  playCompletionSound();
+  await delay(750);
+  card.classList.remove('completing');
+  card.classList.add('completed');
+  const badge = document.createElement('div');
+  badge.className = 'card-complete-badge';
+  badge.innerHTML = `<div class="badge-check">✓</div><span class="badge-label">Complete</span>`;
+  head.appendChild(badge);
+  await delay(400);
+  appendTrainingDone('feed-leftovers');
+}
+
+function showReviewQuestion(feedId, chapterIdx, step) {
+  const feed = document.getElementById(feedId);
+
+  const group = document.createElement('div');
+  group.className = 'q-group';
+
+  const block = document.createElement('div');
+  block.className = 'question-block';
+  block.innerHTML = `
+    <div class="q-summary">
+      <div class="q-summary-icon">✓</div>
+      <div class="q-summary-title"></div>
+      <div class="q-toggle"></div>
+    </div>
+    <div class="q-full">
+      <div class="q-text"></div>
+    </div>
+  `;
+
+  group.appendChild(block);
+  feed.appendChild(group);
+  bounceIn(group);
+  setActive(feed, group);
+
+  // Returns a Promise that resolves only after the question is correctly answered
+  return new Promise(resolve => {
+    typeInto(block.querySelector('.q-text'), step.text).then(() => {
+      renderReviewOptions(feedId, chapterIdx, step, group, block, [], resolve);
+      setActive(feed, group);
+    });
+  });
+}
+
+function renderReviewOptions(feedId, chapterIdx, step, group, block, usedWrong, resolve) {
+  const qFull = block.querySelector('.q-full');
+  const existing = qFull.querySelector('.options');
+  if (existing) existing.remove();
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'options';
+
+  step.options.forEach((text, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt' + (usedWrong.includes(i) ? ' used' : '');
+    btn.disabled = usedWrong.includes(i);
+    btn.innerHTML = `<span class="opt-key">${String.fromCharCode(65 + i)}</span><span class="opt-text">${text}</span>`;
+    btn.addEventListener('click', () => handleReviewAnswer(feedId, chapterIdx, step, group, block, i, usedWrong, resolve));
+    wrapper.appendChild(btn);
+  });
+  qFull.appendChild(wrapper);
+}
+
+async function handleReviewAnswer(feedId, chapterIdx, step, group, block, optionIdx, prevWrong, resolve) {
+  const feed = document.getElementById(feedId);
+  block.querySelectorAll('.opt').forEach(b => b.disabled = true);
+  const clicked = block.querySelectorAll('.opt')[optionIdx];
+
+  if (optionIdx === step.correct) {
+    clicked.classList.add('correct');
+    completedQuestions[chapterIdx]++;
+    markSegment(chapterIdx);
+
+    const responses = [
+      "Correct. That's the right answer.",
+      "Precisely. Well noted.",
+      "That's correct — let's continue.",
+      "Right. Moving on.",
+    ];
+    await delay(300);
+    await appendFeedbackToGroup(group, 'correct', 'Correct', responses[Math.floor(Math.random() * responses.length)]);
+    await delay(400);
+
+    const summaryTitle = group.querySelector('.q-summary-title');
+    if (summaryTitle) summaryTitle.textContent = step.text.replace(/\?$/, '') + ': ' + step.options[optionIdx].toLowerCase();
+    group.classList.add('collapsed');
+    group.addEventListener('click', () => group.classList.toggle('open'));
+    resolve();
+  } else {
+    clicked.classList.add('wrong');
+    await delay(300);
+    await appendFeedbackToGroup(group, 'wrong', 'Incorrect', step.wrongFeedback);
+    await delay(400);
+    renderReviewOptions(feedId, chapterIdx, step, group, block, [...prevWrong, optionIdx], resolve);
+  }
+}
+
+function goToCard(card) {
+  const track = document.getElementById('track');
+  const idx = Array.from(track.children).indexOf(card);
+  const cardStep = window.innerWidth * 0.88;
+  track.style.transform = `translateX(${-idx * cardStep}px)`;
+  // Mark all cards inactive except this one
+  Array.from(track.children).forEach((c, i) => c.classList.toggle('inactive', i !== idx));
+}
+
+/* ───────────────────────────────────────────
+   INIT
+─────────────────────────────────────────── */
+buildDOM();
+runStep(0, 0);
+
+/* ── TOC ── */
+function buildToc() {
+  const list = document.getElementById('tocList');
+  list.innerHTML = '';
+
+  CHAPTERS.forEach((ch, i) => {
+    const locked = !unlockedChapters.has(i);
+    const isActive = i === currentChapter;
+    const done = completedQuestions[i];
+    const skipped = skippedQCount[i];
+
+    // Track how many questions we've seen to know their state
+    let qSeen = 0;
+
+    const section = document.createElement('div');
+    section.className = ['toc-chapter', locked ? 'locked' : '', isActive ? 'active' : ''].filter(Boolean).join(' ');
+
+    const head = document.createElement('div');
+    head.className = 'toc-chapter-head';
+    head.innerHTML = `<span class="toc-roman">Ch. ${ch.roman}</span><span class="toc-name">${ch.title}</span>`;
+    if (!locked) {
+      head.style.cursor = 'pointer';
+      head.addEventListener('click', () => { goToChapter(i); closeToc(); });
+    }
+    section.appendChild(head);
+
+    const steps = document.createElement('div');
+    steps.className = 'toc-steps';
+
+    ch.steps.forEach(step => {
+      const row = document.createElement('div');
+
+      if (step.type === 'content') {
+        const label = step.label || (step.kind === 'video' ? 'Video' : 'Material');
+        const text = step.kind === 'video' ? step.videoTitle : step.text;
+        row.className = 'toc-step';
+        row.innerHTML = `
+          <span class="toc-step-dot"></span>
+          <span class="toc-step-label">${label}</span>
+          <span class="toc-step-text">${text}</span>
+        `;
+      } else {
+        return;
+      }
+
+      steps.appendChild(row);
+    });
+
+    section.appendChild(steps);
+    list.appendChild(section);
+  });
+}
+
+function openToc() {
+  buildToc();
+  document.getElementById('tocPanel').classList.add('open');
+  document.getElementById('tocOverlay').classList.add('open');
+  document.getElementById('tocToggle').classList.add('open');
+}
+
+function closeToc() {
+  document.getElementById('tocPanel').classList.remove('open');
+  document.getElementById('tocOverlay').classList.remove('open');
+  document.getElementById('tocToggle').classList.remove('open');
+}
+
+document.getElementById('tocToggle').addEventListener('click', () => {
+  document.getElementById('tocPanel').classList.contains('open') ? closeToc() : openToc();
+});
+document.getElementById('tocOverlay').addEventListener('click', closeToc);
+
+/* ── Chat bar ── */
+const chatInput = document.getElementById('chatInput');
+chatInput.addEventListener('input', () => {
+  chatInput.style.height = 'auto';
+  chatInput.style.height = chatInput.scrollHeight + 'px';
+});
+chatInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    document.getElementById('chatSend').click();
+  }
+});
+const MO_CHAT_REPLIES = [
+  "Good question. The material you're working through will address this — keep going.",
+  "Noted. Focus on the core principles here; that context will make this clearer.",
+  "That's worth thinking about. Revisit it once you've completed this section.",
+  "Interesting. The answer is embedded in the framework you're building right now.",
+  "Keep that question in mind — it connects directly to what comes next.",
+  "Fair point. The training covers this from the ground up as you progress.",
+  "Worth asking. Come back to it after you've seen the full picture.",
+];
+
+document.getElementById('chatSend').addEventListener('click', async () => {
+  const raw = chatInput.value.trim();
+  if (!raw) return;
+
+  const letter = raw.toUpperCase();
+  const optionIdx = ['A','B','C','D'].indexOf(letter);
+
+  if (activeQuestion && activeQuestion.freetext) {
+    const { chapterIdx, stepIdx } = activeQuestion;
+    chatInput.value = '';
+    chatInput.style.height = 'auto';
+    handleFreeTextAnswer(chapterIdx, stepIdx, raw);
+    return;
+  }
+
+  if (activeQuestion && optionIdx !== -1 && raw.length === 1) {
+    const { chapterIdx, stepIdx, prevWrong } = activeQuestion;
+    const step = CHAPTERS[chapterIdx].steps[stepIdx];
+    if (optionIdx < step.options.length && !prevWrong.includes(optionIdx)) {
+      const userText = `${letter} — ${step.options[optionIdx]}`;
+      chatInput.value = '';
+      chatInput.style.height = 'auto';
+      setTimeout(() => handleAnswer(chapterIdx, stepIdx, optionIdx, prevWrong, userText), 100);
+      return;
+    }
+  }
+
+  // Free-form question while material block is active
+  if (!activeQuestion && activeMaterialBlock) {
+    chatInput.value = '';
+    chatInput.style.height = 'auto';
+
+    const { chatEl } = activeMaterialBlock;
+
+    // Reveal chat container on first use
+    if (chatEl.style.display === 'none') chatEl.style.display = 'flex';
+
+    // User bubble (reuse .q-user-bubble style — dark, right-aligned)
+    const userBubble = document.createElement('div');
+    userBubble.className = 'q-user-bubble';
+    userBubble.textContent = raw;
+    chatEl.appendChild(userBubble);
+    bounceIn(userBubble);
+    chatEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    await delay(350);
+
+    // Mo's typed reply inline inside the block
+    const reply = MO_CHAT_REPLIES[Math.floor(Math.random() * MO_CHAT_REPLIES.length)];
+    const replyEl = document.createElement('div');
+    replyEl.className = 'material-chat-reply';
+    chatEl.appendChild(replyEl);
+    bounceIn(replyEl);
+    await typeInto(replyEl, reply);
+    chatEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return;
+  }
+
+  // Default: clear input
+  chatInput.value = '';
+  chatInput.style.height = 'auto';
+});
+</script>
+
+</body>
+</html>
