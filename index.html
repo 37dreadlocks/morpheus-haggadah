@@ -7,27 +7,100 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg:           #ECEAE3;
-      --card-bg:      #F2F0EA;
-      --card-border:  #D0CEC7;
-      --surface:      #E4E1DA;
-      --text:         #1E1C17;
-      --text-dim:     #6B6860;
-      --text-muted:   #A09D98;
-      --green:        #4D7A6A;
-      --green-bg:     #EBF2EF;
-      --green-border: #B5D0C8;
-      --accent:       #3A5C52;
-      --wrong:        #8B4A3C;
-      --wrong-bg:     #F5EAE8;
-      --wrong-border: #D4A099;
-      --correct:      #4A6B5A;
-      --correct-bg:   #EAF0EC;
-      --correct-border:#A8C8B4;
-      --amber:        #8A7A3A;
-      --amber-bg:     #F5F0E4;
-      --amber-border: #C8BB8A;
+    :root, [data-theme="light"] {
+      --bg:           #F6F8FA;
+      --card-bg:      rgba(255,255,255,0.6);
+      --card-border:  rgba(0,0,0,0.06);
+      --surface:      #F4F5F7;
+      --text:         #0A2540;
+      --text-dim:     #425466;
+      --text-muted:   #8898AA;
+      --green:        #0ABF53;
+      --green-bg:     rgba(10,191,83,0.08);
+      --green-border: rgba(10,191,83,0.22);
+      --accent:       #635BFF;
+      --accent-bg:    rgba(99,91,255,0.08);
+      --wrong:        #DF1B41;
+      --wrong-bg:     rgba(223,27,65,0.06);
+      --wrong-border: rgba(223,27,65,0.18);
+      --correct:      #0ABF53;
+      --correct-bg:   rgba(10,191,83,0.06);
+      --correct-border:rgba(10,191,83,0.18);
+      --amber:        #F5A623;
+      --amber-bg:     rgba(245,166,35,0.08);
+      --amber-border: rgba(245,166,35,0.2);
+      --glass-shadow: 0 8px 32px rgba(0,0,0,0.06), 0 1px 0 rgba(255,255,255,0.9) inset;
+      --q-group-bg:   #FFFFFF;
+      --q-block-bg:   #FAFBFD;
+      --opt-bg:       #F7F8FA;
+      --opt-border:   #E3E8EE;
+      --content-bg:   #FFFFFF;
+      --content-border:#E3E8EE;
+      --overview-bg:      #F0F0FF;
+      --overview-border:  #D6D3FF;
+      --overview-label-bg:#E8E6FF;
+      --overview-label-color:#635BFF;
+      --material-label-bg:#F7F8FA;
+      --video-label-bg:   #F4F5F7;
+      --video-label-color:#425466;
+      --chat-input-bg:rgba(255,255,255,0.85);
+      --chat-input-border:rgba(0,0,0,0.08);
+      --user-bubble-bg:#0A2540;
+      --user-bubble-color:#FFFFFF;
+      --toc-bg:       rgba(255,255,255,0.92);
+      --mesh-1:       rgba(255,165,80,0.32);
+      --mesh-2:       rgba(130,100,255,0.26);
+      --mesh-3:       rgba(80,180,255,0.22);
+      --mesh-4:       rgba(255,100,180,0.18);
+      color-scheme: light;
+    }
+
+    [data-theme="dark"] {
+      --bg:           #1B1F36;
+      --card-bg:      rgba(30,35,60,0.6);
+      --card-border:  rgba(255,255,255,0.08);
+      --surface:      rgba(255,255,255,0.06);
+      --text:         #F6F9FC;
+      --text-dim:     #ADBDCC;
+      --text-muted:   #6A7B8B;
+      --green:        #3ECF8E;
+      --green-bg:     rgba(62,207,142,0.1);
+      --green-border: rgba(62,207,142,0.25);
+      --accent:       #7A73FF;
+      --accent-bg:    rgba(122,115,255,0.12);
+      --wrong:        #FF6B6B;
+      --wrong-bg:     rgba(255,107,107,0.1);
+      --wrong-border: rgba(255,107,107,0.22);
+      --correct:      #3ECF8E;
+      --correct-bg:   rgba(62,207,142,0.1);
+      --correct-border:rgba(62,207,142,0.22);
+      --amber:        #FFBF47;
+      --amber-bg:     rgba(255,191,71,0.1);
+      --amber-border: rgba(255,191,71,0.22);
+      --glass-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.04) inset;
+      --q-group-bg:   rgba(30,35,60,0.9);
+      --q-block-bg:   rgba(35,40,70,0.9);
+      --opt-bg:       rgba(255,255,255,0.04);
+      --opt-border:   rgba(255,255,255,0.08);
+      --content-bg:   rgba(30,35,60,0.8);
+      --content-border:rgba(255,255,255,0.08);
+      --overview-bg:      rgba(99,91,255,0.08);
+      --overview-border:  rgba(99,91,255,0.2);
+      --overview-label-bg:rgba(99,91,255,0.12);
+      --overview-label-color:#A5A0FF;
+      --material-label-bg:rgba(255,255,255,0.04);
+      --video-label-bg:   rgba(255,255,255,0.04);
+      --video-label-color:#ADBDCC;
+      --chat-input-bg:rgba(30,35,60,0.8);
+      --chat-input-border:rgba(255,255,255,0.08);
+      --user-bubble-bg:#7A73FF;
+      --user-bubble-color:#FFFFFF;
+      --toc-bg:       rgba(25,30,52,0.95);
+      --mesh-1:       rgba(120,80,220,0.22);
+      --mesh-2:       rgba(180,60,200,0.18);
+      --mesh-3:       rgba(60,80,180,0.16);
+      --mesh-4:       rgba(100,50,160,0.12);
+      color-scheme: dark;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -43,9 +116,26 @@
     body {
       display: flex;
       flex-direction: column;
-      background-image: radial-gradient(circle, #D8D5CE 1px, transparent 1px);
-      background-size: 22px 22px;
+      background: var(--bg);
+      transition: background 0.4s ease, color 0.4s ease;
+      position: relative;
     }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 60% at 10% 20%, var(--mesh-1) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 70% at 85% 15%, var(--mesh-2) 0%, transparent 55%),
+        radial-gradient(ellipse 70% 50% at 50% 85%, var(--mesh-3) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 40% at 75% 60%, var(--mesh-4) 0%, transparent 45%);
+      transition: opacity 0.5s ease;
+    }
+
+    body > * { position: relative; z-index: 1; }
 
     /* ── SILO PROGRESS BAR ── */
     #progressBar {
@@ -118,7 +208,7 @@
       height: 7px;
       border-radius: 50%;
       border: 1px solid var(--card-border);
-      background: rgba(0,0,0,0.15);
+      background: var(--surface);
       transition: background 0.3s, border-color 0.3s;
     }
 
@@ -150,35 +240,38 @@
       min-height: 0;
     }
 
-    /* ── CHAT BAR ── */
-    #chatBar {
-      flex-shrink: 0;
-      padding: 0 24px 14px;
+    /* ── BLOCK INPUT (replaces global chat bar) ── */
+    .block-input {
+      margin-top: auto;
+      padding: 12px 14px;
       display: flex;
       flex-direction: column;
-      align-items: center;
       gap: 6px;
     }
 
-#chatInputWrap {
-      width: 100%;
-      max-width: 640px;
+    .block-input-wrap {
       display: flex;
       align-items: flex-end;
       gap: 0;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 10px;
-      padding: 10px 10px 10px 16px;
+      width: 100%;
+      max-width: 580px;
+      margin: 0 auto;
+      background: var(--chat-input-bg);
+      backdrop-filter: blur(24px) saturate(140%);
+      -webkit-backdrop-filter: blur(24px) saturate(140%);
+      border: 1px solid var(--chat-input-border);
+      border-radius: 999px;
+      padding: 8px 8px 8px 18px;
+      box-shadow: var(--glass-shadow);
       transition: border-color 0.15s, box-shadow 0.15s;
     }
 
-    #chatInputWrap:focus-within {
-      border-color: #B0AA9A;
-      box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+    .block-input-wrap.focused {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-bg);
     }
 
-    #chatInput {
+    .block-input-wrap textarea {
       flex: 1;
       font-family: inherit;
       font-size: 14px;
@@ -194,40 +287,92 @@
       padding-bottom: 5px;
     }
 
-    #chatInput::placeholder {
+    .block-input-wrap textarea::placeholder {
       color: var(--text-muted);
     }
 
-    #chatSend {
+    .block-input-wrap .block-send {
       flex-shrink: 0;
-      width: 32px;
-      height: 32px;
+      width: 38px;
+      height: 38px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: var(--text);
+      background: #000000;
       border: none;
-      border-radius: 6px;
-      color: var(--bg);
+      border-radius: 50%;
+      color: #fff;
       cursor: pointer;
       transition: background 0.15s, opacity 0.15s;
       align-self: flex-end;
     }
 
-    #chatSend:hover {
-      background: var(--green);
+    .block-input-wrap .block-send:hover {
+      background: #1a1a1a;
+    }
+    .block-input-wrap .block-send:disabled {
+      background: #c9ced6;
+      border-color: #c9ced6;
+      color: #ffffff;
+      cursor: not-allowed;
+      opacity: 1;
     }
 
-    #chatSend:disabled {
-      opacity: 0.3;
-      cursor: default;
-      background: var(--text);
+    /* ── IN-FOCUS BLOCK ── */
+    /* q-group fills remaining card space; content blocks hug their content */
+    .feed > .in-focus.q-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Scrollable area inside in-focus block — only this region scrolls */
+    .scroll-zone {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Centers content vertically when short; collapses to 0 margin when content overflows */
+    .scroll-content {
+      margin: auto 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Pinned footer — never scrolls away */
+    .sticky-bottom {
+      flex-shrink: 0;
+      padding: 10px 14px 14px;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .q-group.in-focus .sticky-bottom {
+      background: var(--q-block-bg);
+      padding: 10px 24px 14px;
+    }
+
+    /* Content block: when not in-focus, undo the in-focus wrappers */
+    .msg.content-block:not(.in-focus) .scroll-zone {
+      display: contents;
+    }
+    .msg.content-block:not(.in-focus) .sticky-bottom {
+      display: none;
+    }
+
+    /* In-focus content block fills card like q-group */
+    .feed > .in-focus.content-block {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
     }
 
     #track {
       display: flex;
       height: 100%;
-      padding: 16px 0 16px 7vw;
+      padding: 16px 7vw;
       transform: translateX(0);
       transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -235,17 +380,20 @@
     /* ── CARD ── */
     .card {
       flex-shrink: 0;
-      width: 86vw;
-      margin-right: 2vw;
+      width: min(86vw, 1000px);
+      margin-right: 3.5vw;
       height: 100%;
       background: var(--card-bg);
+      backdrop-filter: blur(28px) saturate(140%);
+      -webkit-backdrop-filter: blur(28px) saturate(140%);
       border: 1px solid var(--card-border);
-      border-radius: 6px;
+      border-radius: 24px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
       position: relative;
       transition: opacity 0.4s, filter 0.4s;
+      box-shadow: var(--glass-shadow);
     }
 
     .card.inactive {
@@ -258,7 +406,8 @@
     .card-head {
       flex-shrink: 0;
       display: flex;
-      align-items: baseline;
+      justify-content: flex-start;
+      align-items: center;
       gap: 12px;
       padding: 18px 28px 14px;
       border-bottom: 1px solid var(--card-border);
@@ -271,7 +420,7 @@
       left: 0;
       height: 3px;
       width: 0%;
-      background: var(--green);
+      background: linear-gradient(90deg, var(--accent), var(--green));
       transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 1;
     }
@@ -300,10 +449,10 @@
     .feed {
       flex: 1;
       overflow-y: auto;
-      padding: 28px 28px 50vh;
+      padding: 28px 28px 28px;
       display: flex;
       flex-direction: column;
-      gap: 0;
+      gap: 32px;
     }
 
     .feed::-webkit-scrollbar { width: 3px; }
@@ -312,8 +461,10 @@
     /* ── QUESTION CARD ── */
     .q-group {
       border: 1px solid var(--card-border);
-      background: var(--surface);
-      margin-bottom: 24px;
+      background: var(--q-group-bg);
+      border-radius: 16px;
+      overflow: clip;
+      box-shadow: var(--glass-shadow);
     }
 
     /* Active: sticky header so question stays visible while answering */
@@ -321,8 +472,8 @@
       position: sticky;
       top: 0;
       z-index: 5;
-      background: var(--surface);
-      padding: 20px 20px 16px;
+      background: var(--q-block-bg);
+      padding: 24px 24px 20px;
     }
 
     /* Feedback rows — system chat bubbles, left-aligned, live inside .q-full */
@@ -379,6 +530,7 @@
       flex: 1;
       order: 1;
       margin-bottom: 0;
+      font-size: 16px;
     }
     .q-group.collapsed.open .options {
       flex-basis: 100%;
@@ -438,16 +590,6 @@
     .q-group.collapsed:hover .q-toggle { border-color: var(--correct); }
     .q-group.collapsed.open .q-toggle { transform: rotate(180deg); }
 
-    /* ── FREE TEXT PLACEHOLDER ── */
-    .q-freetext-hint {
-      margin-top: 14px;
-      padding: 14px 16px;
-      border: 1px solid var(--card-border);
-      background: var(--surface);
-      color: var(--text-muted);
-      font-size: 14px;
-      font-style: italic;
-    }
 
     /* ── SKIP BUTTON — top-right corner of question block ── */
     .q-skip {
@@ -468,6 +610,26 @@
     }
     .q-skip:hover { color: var(--amber); border-color: var(--amber); }
     .q-group.collapsed .q-skip { display: none; }
+    .q-group.collapsed .sticky-bottom { display: none; }
+
+    .q-group.in-focus {
+      background: var(--q-block-bg);
+    }
+
+    /* question-block IS the scroll zone for in-focus q-groups */
+    .q-group.in-focus .question-block {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      position: static;
+    }
+
+    /* q-full centers when short, scrolls when tall */
+    .q-group.in-focus .q-full {
+      margin: auto 0;
+    }
 
     /* ── SKIPPED STATE — background/border owned by groupSkipped animation ── */
     .q-group.skipped.collapsed {
@@ -488,11 +650,12 @@
     .q-group.collapsed:not(.open) .q-full { display: none; }
 
     .q-text {
-      font-size: 15px;
-      font-weight: 500;
-      line-height: 1.6;
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.35;
+      letter-spacing: -0.02em;
       color: var(--text);
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
 
     .question-block .options {
@@ -502,7 +665,7 @@
 
     /* ── MESSAGES ── */
     .msg {
-      margin-bottom: 24px;
+      margin-bottom: 0;
     }
 
     /* Content blocks: animation applied via JS .bounce-in class to avoid Safari restart on DOM mutation */
@@ -543,31 +706,35 @@
 
     /* ── CONTENT BLOCKS ── */
     .msg.content-block {
-      border: 1px solid;
+      border: none;
+      border-radius: 16px;
+      overflow: hidden;
       padding: 0;
-      margin-bottom: 16px;
+      margin-bottom: 0px;
     }
+
 
     .content-block-label {
       display: block;
-      padding: 7px 14px;
-      font-size: 9px;
+      background: inherit;
+      padding: 16px 32px;
+      font-size: 11px;
       font-weight: 700;
       letter-spacing: 0.16em;
       text-transform: uppercase;
-      border-bottom: 1px solid;
+      border-bottom: none;
     }
 
     .content-block .msg-body {
-      padding: 14px;
+      padding: 16px 32px;
       font-size: 14px;
       line-height: 1.7;
     }
 
     /* ── MATERIAL CHAT — inline Q&A inside a content block ── */
     .material-chat {
-      border-top: 1px solid #D8D6CF;
-      padding: 10px 14px 14px;
+      border-top: 1px solid var(--content-border);
+      padding: 10px 32px 14px;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -593,41 +760,38 @@
       margin-bottom: 4px;
     }
 
-    /* Overview — warm ivory */
+    /* Overview — accent tint */
     .content-block.overview {
-      background: #FAF7EF;
-      border-color: #E2D9C4;
+      background: var(--overview-bg);
+      border-color: var(--overview-border);
     }
     .content-block.overview .content-block-label {
-      background: #F0EAD8;
-      border-color: #E2D9C4;
-      color: #8A6830;
+      border-color: var(--overview-border);
+      color: var(--overview-label-color);
     }
 
-    /* Learning material — neutral */
+    /* Learning material */
     .content-block.material {
-      background: #F5F4F1;
-      border-color: #D8D6CF;
+      background: var(--content-bg);
+      border-color: var(--content-border);
     }
     .content-block.material .content-block-label {
-      background: #F5F4F1;
-      border-color: #D8D6CF;
+      border-color: var(--content-border);
       color: var(--text);
     }
 
     /* Video block */
     .content-block.video {
-      background: #F5F4F1;
-      border-color: #D8D6CF;
+      background: var(--content-bg);
+      border-color: var(--content-border);
     }
     .content-block.video .content-block-label {
-      background: #ECEAE4;
-      border-color: #D8D6CF;
-      color: #6B6860;
+      border-color: var(--content-border);
+      color: var(--video-label-color);
     }
     .video-player {
       position: relative;
-      background: #191816;
+      background: #0A2540;
       aspect-ratio: 16 / 9;
       display: flex;
       align-items: center;
@@ -703,24 +867,42 @@
       align-self: center;
       font-size: 16px;
       font-family: inherit;
-      background: transparent;
-      border: 1px solid var(--card-border);
-      color: var(--text-dim);
+      background: #000;
+      border: 1px solid #000;
+      border-radius: 10px;
+      color: #fff;
       cursor: pointer;
-      transition: border-color 0.15s, color 0.15s, background 0.15s;
+      transition: border-color 0.15s, color 0.15s, background 0.15s, opacity 0.15s;
       flex-shrink: 0;
     }
     .material-next-btn:hover {
-      border-color: var(--text);
-      color: var(--text);
-      background: var(--surface);
+      background: #1a1a1a;
+      border-color: #1a1a1a;
+    }
+
+    [data-theme="dark"] .block-input-wrap .block-send,
+    [data-theme="dark"] .material-next-btn {
+      background: #fff;
+      border-color: #fff;
+      color: #000;
+    }
+    [data-theme="dark"] .block-input-wrap .block-send:hover,
+    [data-theme="dark"] .material-next-btn:hover {
+      background: #e9e9e9;
+      border-color: #e9e9e9;
+      color: #000;
+    }
+    [data-theme="dark"] .block-input-wrap .block-send:disabled {
+      background: #5f6672;
+      border-color: #5f6672;
+      color: #dce2ea;
     }
 
     .video-footer {
       padding: 16px 14px;
       display: flex;
       justify-content: center;
-      border-top: 1px solid #D8D6CF;
+      border-top: 1px solid var(--content-border);
     }
 
     .video-continue-btn {
@@ -799,8 +981,8 @@
 
     .msg-user {
       align-self: flex-end;
-      background: var(--text);
-      color: var(--bg);
+      background: var(--user-bubble-bg);
+      color: var(--user-bubble-color);
       border-radius: 14px 14px 3px 14px;
       padding: 9px 14px;
       font-size: 14px;
@@ -813,8 +995,8 @@
       margin-left: auto;
       width: fit-content;
       max-width: 80%;
-      background: var(--text);
-      color: var(--bg);
+      background: var(--user-bubble-bg);
+      color: var(--user-bubble-color);
       border-radius: 14px 14px 3px 14px;
       padding: 10px 14px;
       font-size: 14px;
@@ -844,8 +1026,9 @@
       align-items: flex-start;
       gap: 10px;
       padding: 12px 14px;
-      background: var(--surface);
-      border: 1px solid var(--card-border);
+      background: var(--opt-bg);
+      border: 1px solid var(--opt-border);
+      border-radius: 12px;
       cursor: pointer;
       transition: border-color 0.15s, background 0.15s;
       text-align: left;
@@ -873,8 +1056,8 @@
 
     @keyframes correctCelebrate {
       0%   { background: var(--correct-bg);  box-shadow: none; }
-      20%  { background: #d4ebe0;            box-shadow: 0 0 0 5px rgba(74,107,90,0.18); border-color: var(--correct); }
-      60%  { background: #ddf0e6;            box-shadow: 0 0 0 3px rgba(74,107,90,0.10); border-color: var(--correct-border); }
+      20%  { background: var(--correct-bg);  box-shadow: 0 0 0 5px var(--correct-border); border-color: var(--correct); }
+      60%  { background: var(--correct-bg);  box-shadow: 0 0 0 3px var(--correct-border); border-color: var(--correct-border); }
       100% { background: var(--correct-bg);  box-shadow: none; border-color: var(--correct-border); }
     }
 
@@ -885,7 +1068,7 @@
 
     @keyframes groupCorrect {
       0%   { background: var(--surface);    border-color: var(--card-border); box-shadow: none; }
-      30%  { background: #c6e6d4;           border-color: var(--correct);      box-shadow: 0 0 0 4px rgba(74,107,90,0.18); }
+      30%  { background: var(--correct-bg); border-color: var(--correct);      box-shadow: 0 0 0 4px var(--correct-border); }
       100% { background: var(--correct-bg); border-color: var(--correct-border); box-shadow: none; }
     }
 
@@ -895,7 +1078,7 @@
 
     @keyframes groupSkipped {
       0%   { background: var(--surface);   border-color: var(--card-border); box-shadow: none; }
-      30%  { background: #f0e5b8;          border-color: var(--amber);        box-shadow: 0 0 0 4px rgba(138,122,58,0.18); }
+      30%  { background: var(--amber-bg);  border-color: var(--amber);        box-shadow: 0 0 0 4px var(--amber-border); }
       100% { background: var(--amber-bg);  border-color: var(--amber-border); box-shadow: none; }
     }
 
@@ -967,10 +1150,10 @@
     }
 
     @keyframes border-pulse {
-      0%   { box-shadow: 0 0 0 0px rgba(74,107,90,0);    border-color: var(--card-border); }
-      25%  { box-shadow: 0 0 0 4px rgba(74,107,90,0.25); border-color: var(--correct); }
-      55%  { box-shadow: 0 0 0 7px rgba(74,107,90,0.12); border-color: var(--correct); }
-      100% { box-shadow: 0 0 0 0px rgba(74,107,90,0);    border-color: var(--correct-border); }
+      0%   { box-shadow: 0 0 0 0px transparent;              border-color: var(--card-border); }
+      25%  { box-shadow: 0 0 0 4px var(--correct-border);    border-color: var(--correct); }
+      55%  { box-shadow: 0 0 0 7px var(--correct-bg);        border-color: var(--correct); }
+      100% { box-shadow: 0 0 0 0px transparent;              border-color: var(--correct-border); }
     }
 
     .card.completed {
@@ -989,10 +1172,10 @@
     }
 
     @keyframes border-pulse-amber {
-      0%   { box-shadow: 0 0 0 0px rgba(138,122,58,0);    border-color: var(--card-border); }
-      25%  { box-shadow: 0 0 0 4px rgba(138,122,58,0.25); border-color: var(--amber); }
-      55%  { box-shadow: 0 0 0 7px rgba(138,122,58,0.12); border-color: var(--amber); }
-      100% { box-shadow: 0 0 0 0px rgba(138,122,58,0);    border-color: var(--amber-border); }
+      0%   { box-shadow: 0 0 0 0px transparent;            border-color: var(--card-border); }
+      25%  { box-shadow: 0 0 0 4px var(--amber-border);    border-color: var(--amber); }
+      55%  { box-shadow: 0 0 0 7px var(--amber-bg);        border-color: var(--amber); }
+      100% { box-shadow: 0 0 0 0px transparent;            border-color: var(--amber-border); }
     }
 
     .card.partial {
@@ -1113,16 +1296,16 @@
       display: inline-block;
       width: 0.5em;
       height: 1em;
-      background: var(--green);
+      background: var(--accent);
       margin-left: 1px;
       vertical-align: text-bottom;
       border-radius: 1px;
-      box-shadow: 0 0 8px rgba(77,122,106,0.9), 0 0 16px rgba(77,122,106,0.4);
+      box-shadow: 0 0 8px rgba(99,91,255,0.8), 0 0 16px rgba(99,91,255,0.35);
       animation: cursor-pulse 0.65s ease-in-out infinite;
     }
 
     @keyframes cursor-pulse {
-      0%, 100% { opacity: 1;   box-shadow: 0 0 8px rgba(77,122,106,0.9), 0 0 18px rgba(77,122,106,0.5); }
+      0%, 100% { opacity: 1;   box-shadow: 0 0 8px rgba(99,91,255,0.8), 0 0 18px rgba(99,91,255,0.4); }
       50%       { opacity: 0;  box-shadow: none; }
     }
     /* ── TOC PANEL ── */
@@ -1151,7 +1334,9 @@
       position: fixed;
       top: 0; left: 0; bottom: 0;
       width: 260px;
-      background: var(--card-bg);
+      background: var(--toc-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border-right: 1px solid var(--card-border);
       z-index: 190;
       display: flex;
@@ -1229,7 +1414,7 @@
     }
     .toc-step.done .toc-step-dot { background: var(--green); border-color: var(--green); }
     .toc-step.skipped .toc-step-dot { background: var(--amber); border-color: var(--amber); }
-    .toc-step.current .toc-step-dot { border-color: var(--green); background: transparent; box-shadow: 0 0 0 2px rgba(77,122,106,0.2); }
+    .toc-step.current .toc-step-dot { border-color: var(--accent); background: transparent; box-shadow: 0 0 0 2px var(--accent-bg); }
 
     .toc-step-label {
       font-size: 9px;
@@ -1260,9 +1445,51 @@
     }
     #tocOverlay.open { display: block; }
 
+    /* ── THEME TOGGLE ── */
+    #themeToggle {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 200;
+      width: 36px;
+      height: 36px;
+      background: var(--surface);
+      border: 1px solid var(--card-border);
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, transform 0.3s;
+      font-size: 16px;
+      line-height: 1;
+      padding: 0;
+    }
+    #themeToggle:hover {
+      background: var(--accent-bg);
+      border-color: var(--accent);
+      transform: rotate(30deg);
+    }
+    #themeToggle::after {
+      content: '\2600'; /* sun */
+    }
+    [data-theme="dark"] #themeToggle::after {
+      content: '\263D'; /* moon */
+    }
+
+    /* ── SMOOTH THEME TRANSITIONS ── */
+    .card, .q-group, .question-block, .msg.content-block, .opt,
+    .block-input-wrap, #tocPanel, #tocToggle, #themeToggle,
+    .q-feedback-row, .video-footer, .material-next-btn,
+    .video-continue-btn, .q-skip, .silo, .seg {
+      transition: background 0.35s ease, border-color 0.35s ease, color 0.35s ease, box-shadow 0.35s ease;
+    }
+
   </style>
 </head>
 <body>
+
+  <button id="themeToggle" aria-label="Toggle dark mode"></button>
 
   <button id="tocToggle" aria-label="Table of contents">
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -1285,16 +1512,6 @@
     <div id="track"><!-- cards built by JS --></div>
   </div>
 
-  <div id="chatBar">
-    <div id="chatInputWrap">
-      <textarea id="chatInput" rows="1" placeholder="Ask Mo anything…"></textarea>
-      <button id="chatSend" aria-label="Send">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M8 13V3M3 8l5-5 5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-    </div>
-  </div>
 
 <script>
 /* ───────────────────────────────────────────
@@ -1470,7 +1687,8 @@ const CHAPTERS = [
 ─────────────────────────────────────────── */
 let currentChapter = 0;
 let activeQuestion = null;    // { chapterIdx, stepIdx, prevWrong }
-let activeMaterialBlock = null; // { feedId, chatEl } — set when material block is active
+let activeMaterialBlock = null; // { feedId, chatEl, scrollZone } — set when material block is active
+let activeBlockInput = null;  // current .block-input element
 const completedQuestions = CHAPTERS.map(() => 0);
 const completedSteps = CHAPTERS.map(() => 0);
 const allSkipped = []; // { chapterIdx, step } across all chapters
@@ -1478,6 +1696,74 @@ const skippedQCount = CHAPTERS.map(() => 0);
 const questionCount = CHAPTERS.map(ch => ch.steps.filter(s => s.type === 'question' || s.type === 'freetext').length);
 const totalSteps = CHAPTERS.map(ch => ch.steps.length);
 const unlockedChapters = new Set([0]); // chapter 0 always unlocked
+
+/* ── BLOCK INPUT HELPERS ── */
+const SEND_SVG = '<svg width="13" height="14" viewBox="0 0 13 14" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M0.361328 0.112448C0.585462 -0.0283471 0.864308 -0.0374683 1.09668 0.0881427L12.5967 6.31033C12.8444 6.44436 13 6.71024 13 6.99999C13 7.28976 12.8444 7.55562 12.5967 7.68966L1.09668 13.9118C0.864298 14.0375 0.585471 14.0284 0.361328 13.8875C0.137089 13.7466 0 13.4941 0 13.2222V0.777809C1.57229e-05 0.505881 0.13709 0.253411 0.361328 0.112448ZM1.5 6.22222H6.25C6.66421 6.22222 7 6.57044 7 6.99999C7 7.42955 6.66421 7.77777 6.25 7.77777H1.5V11.9391L10.6279 6.99999L1.5 2.05992V6.22222Z" fill="currentColor"/></svg>';
+
+function createBlockInput(placeholder, onSend) {
+  const container = document.createElement('div');
+  container.className = 'block-input';
+
+  const wrap = document.createElement('div');
+  wrap.className = 'block-input-wrap';
+
+  const textarea = document.createElement('textarea');
+  textarea.rows = 1;
+  textarea.placeholder = placeholder;
+  const syncSendState = () => {
+    sendBtn.disabled = textarea.value.trim().length === 0;
+  };
+  textarea.addEventListener('input', () => {
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
+    syncSendState();
+  });
+  textarea.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendBtn.click();
+    }
+  });
+
+  const sendBtn = document.createElement('button');
+  sendBtn.type = 'button';
+  sendBtn.className = 'block-send';
+  sendBtn.innerHTML = SEND_SVG;
+  sendBtn.addEventListener('click', () => {
+    const raw = textarea.value.trim();
+    if (!raw) return;
+    textarea.value = '';
+    textarea.style.height = 'auto';
+    syncSendState();
+    onSend(raw);
+  });
+  syncSendState();
+
+  textarea.addEventListener('focus', () => wrap.classList.add('focused'));
+  textarea.addEventListener('blur',  () => wrap.classList.remove('focused'));
+
+  wrap.appendChild(textarea);
+  wrap.appendChild(sendBtn);
+  container.appendChild(wrap);
+  activeBlockInput = container;
+  return { el: container, focus: () => { wrap.classList.add('focused'); textarea.focus(); } };
+}
+
+function setBlockFocus(feed, el) {
+  // Remove in-focus from all siblings
+  Array.from(feed.children).forEach(c => c.classList.remove('in-focus'));
+  if (el) el.classList.add('in-focus');
+}
+
+const MO_CHAT_REPLIES = [
+  "Good question. The material you're working through will address this — keep going.",
+  "Noted. Focus on the core principles here; that context will make this clearer.",
+  "That's worth thinking about. Revisit it once you've completed this section.",
+  "Interesting. The answer is embedded in the framework you're building right now.",
+  "Keep that question in mind — it connects directly to what comes next.",
+  "Fair point. The training covers this from the ground up as you progress.",
+  "Worth asking. Come back to it after you've seen the full picture.",
+];
 
 /* ───────────────────────────────────────────
    BUILD DOM
@@ -1585,10 +1871,34 @@ function unlockChapter(idx) {
 /* ───────────────────────────────────────────
    NAVIGATION
 ─────────────────────────────────────────── */
+const TRACK_TRANSITION = 'transform 0.55s cubic-bezier(0.4, 0, 0.2, 1)';
+
+function centerCardInViewport(cardEl, { disableTransition = false } = {}) {
+  const track = document.getElementById('track');
+  const wrapper = document.getElementById('trackWrapper');
+  if (!track || !wrapper || !cardEl) return;
+
+  if (disableTransition) track.style.transition = 'none';
+
+  // Center by geometry: card center should align to wrapper center.
+  const cardCenterX = cardEl.offsetLeft + cardEl.offsetWidth / 2;
+  const wrapperCenterX = wrapper.clientWidth / 2;
+  const translateX = wrapperCenterX - cardCenterX;
+  track.style.transform = `translateX(${translateX}px)`;
+
+  if (disableTransition) {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        track.style.transition = TRACK_TRANSITION;
+      });
+    });
+  }
+}
+
 function goToChapter(idx) {
   currentChapter = idx;
-  const cardStep = window.innerWidth * 0.88;
-  document.getElementById('track').style.transform = `translateX(${-idx * cardStep}px)`;
+  const card = document.getElementById(`card-${idx}`);
+  centerCardInViewport(card);
   CHAPTERS.forEach((_, i) => {
     document.getElementById(`card-${i}`).classList.toggle('inactive', i !== idx);
   });
@@ -1596,12 +1906,8 @@ function goToChapter(idx) {
 }
 
 window.addEventListener('resize', () => {
-  const cardStep = window.innerWidth * 0.88;
-  document.getElementById('track').style.transition = 'none';
-  document.getElementById('track').style.transform = `translateX(${-currentChapter * cardStep}px)`;
-  setTimeout(() => {
-    document.getElementById('track').style.transition = 'transform 0.55s cubic-bezier(0.4, 0, 0.2, 1)';
-  }, 50);
+  const card = document.getElementById(`card-${currentChapter}`);
+  centerCardInViewport(card, { disableTransition: true });
 });
 
 /* ───────────────────────────────────────────
@@ -1623,14 +1929,7 @@ function contentIn(el) {
 }
 
 function setActive(feed, el) {
-  // Dim all siblings, keep el bright
   Array.from(feed.children).forEach(c => c.classList.toggle('past', c !== el));
-  // Scroll el to vertical center of feed
-  const feedRect = feed.getBoundingClientRect();
-  const elRect = el.getBoundingClientRect();
-  const elTopInFeed = elRect.top - feedRect.top + feed.scrollTop;
-  const scrollTarget = elTopInFeed - (feed.clientHeight - el.offsetHeight) / 2;
-  feed.scrollTo({ top: Math.max(0, scrollTarget), behavior: 'smooth' });
 }
 
 function typeInto(el, text) {
@@ -1639,17 +1938,20 @@ function typeInto(el, text) {
     cursor.className = 'cursor';
     el.appendChild(cursor);
 
+    if (text.length > 150) {
+      cursor.before(text);
+      cursor.remove();
+      resolve();
+      return;
+    }
     let i = 0;
     function tick() {
       if (i < text.length) {
         const ch = text[i++];
         cursor.before(ch);
-        // Natural rhythm: pause at sentence boundaries, sprint through words
         const isPunct = '.!?,—'.includes(ch);
         const isSpace = ch === ' ';
-        const ms = isPunct ? 25 + Math.random() * 20
-                 : isSpace ? 6
-                 : 3 + Math.random() * 4;
+        const ms = isPunct ? 25 + Math.random() * 20 : isSpace ? 6 : 3 + Math.random() * 4;
         setTimeout(tick, ms);
       } else {
         cursor.remove();
@@ -1663,7 +1965,7 @@ function typeInto(el, text) {
 /* ───────────────────────────────────────────
    APPEND MESSAGES
 ─────────────────────────────────────────── */
-function appendMoMessage(feedId, type, text, label = null, kind = 'material') {
+function appendMoMessage(feedId, type, text, label = null, kind = 'material', willPause = false) {
   const feed = document.getElementById(feedId);
   const msg = document.createElement('div');
 
@@ -1674,19 +1976,60 @@ function appendMoMessage(feedId, type, text, label = null, kind = 'material') {
     labelEl.textContent = label;
     const body = document.createElement('div');
     body.className = 'msg-body';
+
+    // scroll-zone wraps body (+ chat when it appears)
+    const scrollZone = document.createElement('div');
+    scrollZone.className = 'scroll-zone';
+    const scrollContent = document.createElement('div');
+    scrollContent.className = 'scroll-content';
+    scrollContent.appendChild(body);
+    scrollZone.appendChild(scrollContent);
+
     msg.appendChild(labelEl);
-    msg.appendChild(body);
+    msg.appendChild(scrollZone);
     feed.appendChild(msg);
     contentIn(msg);
     setActive(feed, msg);
+    if (willPause) setBlockFocus(feed, msg);
     return typeInto(body, text).then(() => {
       setActive(feed, msg);
-      // Attach inline chat container and register as active material block
+      if (!willPause) return;
+
+      // Chat container lives inside scroll-zone so it scrolls with the content
       const chatEl = document.createElement('div');
       chatEl.className = 'material-chat';
       chatEl.style.display = 'none'; // hidden until first message
-      msg.appendChild(chatEl);
-      activeMaterialBlock = { feedId, chatEl };
+      scrollContent.appendChild(chatEl);
+      activeMaterialBlock = { feedId, chatEl, scrollZone };
+
+      // Block-input goes in sticky-bottom — always visible
+      const stickyBottom = document.createElement('div');
+      stickyBottom.className = 'sticky-bottom';
+      const blockInput = createBlockInput('Ask Mo anything…', async (raw) => {
+        if (!activeMaterialBlock) return;
+        const { chatEl: ce, scrollZone: sz } = activeMaterialBlock;
+        if (ce.style.display === 'none') ce.style.display = 'flex';
+
+        const userBubble = document.createElement('div');
+        userBubble.className = 'q-user-bubble';
+        userBubble.textContent = raw;
+        ce.appendChild(userBubble);
+        bounceIn(userBubble);
+        sz.scrollTop = sz.scrollHeight;
+
+        await delay(350);
+
+        const reply = MO_CHAT_REPLIES[Math.floor(Math.random() * MO_CHAT_REPLIES.length)];
+        const replyEl = document.createElement('div');
+        replyEl.className = 'material-chat-reply';
+        ce.appendChild(replyEl);
+        bounceIn(replyEl);
+        await typeInto(replyEl, reply);
+        sz.scrollTop = sz.scrollHeight;
+      });
+      const { el: biEl } = blockInput;
+      stickyBottom.appendChild(biEl);
+      msg.appendChild(stickyBottom);
     });
   }
 
@@ -1731,6 +2074,7 @@ function appendVideoBlock(feedId, step) {
   feed.appendChild(msg);
   contentIn(msg);
   setActive(feed, msg);
+  setBlockFocus(feed, msg);
 
   const footer = document.createElement('div');
   footer.className = 'video-footer';
@@ -1753,6 +2097,7 @@ function appendVideoBlock(feedId, step) {
     btn.addEventListener('click', () => {
       footer.style.transition = 'opacity 0.2s ease';
       footer.style.opacity = '0';
+      msg.classList.remove('in-focus');
       setTimeout(() => { footer.remove(); resolve(); }, 200);
     });
   });
@@ -1769,7 +2114,6 @@ function showFreeTextQuestion(chapterIdx, stepIdx) {
   activeMaterialBlock = null;
   const step = CHAPTERS[chapterIdx].steps[stepIdx];
   const feed = document.getElementById(`feed-${chapterIdx}`);
-  const feedId = `feed-${chapterIdx}`;
 
   const group = document.createElement('div');
   group.className = 'q-group';
@@ -1796,38 +2140,47 @@ function showFreeTextQuestion(chapterIdx, stepIdx) {
   const qText = document.createElement('div');
   qText.className = 'q-text';
 
-  const hint = document.createElement('div');
-  hint.className = 'q-freetext-hint';
-  hint.textContent = 'Type your answer in the chat...';
-
   const skipBtn = document.createElement('button');
   skipBtn.className = 'q-skip';
   skipBtn.textContent = 'Skip';
-  skipBtn.addEventListener('click', () => handleSkip(chapterIdx, stepIdx));
+  skipBtn.addEventListener('click', () => handleSkip(chapterIdx, stepIdx), { once: true });
 
   qFull.appendChild(qText);
-  qFull.appendChild(hint);
   block.appendChild(summary);
   block.appendChild(qFull);
   block.appendChild(skipBtn);
   group.appendChild(block);
+
+  // Sticky footer holds the input
+  const stickyBottom = document.createElement('div');
+  stickyBottom.className = 'sticky-bottom';
+
+  // Block input for freetext answer
+  const { el: freetextBiEl, focus: focusFreetextInput } = createBlockInput('Type your answer…', (raw) => {
+    if (activeQuestion && activeQuestion.freetext) {
+      handleFreeTextAnswer(chapterIdx, stepIdx, raw);
+    }
+  });
+  stickyBottom.appendChild(freetextBiEl);
+  group.appendChild(stickyBottom);
+
   feed.appendChild(group);
   bounceIn(group);
   setActive(feed, group);
+  setBlockFocus(feed, group);
+  focusFreetextInput();
 
   activeQuestion = { chapterIdx, stepIdx, freetext: true };
 
   return new Promise(async resolve => {
     await typeInto(qText, step.text);
     setActive(feed, group);
-    document.getElementById('chatInput').placeholder = 'Type your answer…';
     group._resolve = resolve;
   });
 }
 
 async function handleFreeTextAnswer(chapterIdx, stepIdx, userText) {
   activeQuestion = null;
-  document.getElementById('chatInput').placeholder = 'Ask Mo anything…';
 
   const step = CHAPTERS[chapterIdx].steps[stepIdx];
   const feed = document.getElementById(`feed-${chapterIdx}`);
@@ -1854,6 +2207,11 @@ async function handleFreeTextAnswer(chapterIdx, stepIdx, userText) {
     advanceProgress(chapterIdx);
     const answerEl = document.getElementById(`qanswer-${chapterIdx}-${stepIdx}`);
     if (answerEl) answerEl.textContent = step.text.replace(/\?$/, '') + ': ' + userText.toLowerCase();
+    // Clean up sticky-bottom and in-focus
+    const sb = group.querySelector('.sticky-bottom');
+    if (sb) sb.remove();
+    group.classList.remove('in-focus');
+    activeBlockInput = null;
     group.classList.add('collapsed');
     group.addEventListener('click', () => group.classList.toggle('open'));
     await delay(300);
@@ -1866,12 +2224,11 @@ async function handleFreeTextAnswer(chapterIdx, stepIdx, userText) {
   }
 }
 
+
 function showQuestion(chapterIdx, stepIdx) {
   activeMaterialBlock = null;
   const step = CHAPTERS[chapterIdx].steps[stepIdx];
   const feed = document.getElementById(`feed-${chapterIdx}`);
-  const totalQuestions = questionCount[chapterIdx];
-  const qNum = CHAPTERS[chapterIdx].steps.slice(0, stepIdx + 1).filter(s => s.type === 'question').length;
 
   // Group wraps block + all feedback so they collapse together
   const group = document.createElement('div');
@@ -1893,20 +2250,42 @@ function showQuestion(chapterIdx, stepIdx) {
   `;
 
   group.appendChild(block);
+
+  // Sticky footer holds the input — never scrolls away
+  const stickyBottom = document.createElement('div');
+  stickyBottom.className = 'sticky-bottom';
+
+  // Block input for typed answers (A/B/C/D)
+  const { el: mcBiEl, focus: focusMcInput } = createBlockInput('Type A, B, C, or D…', (raw) => {
+    const letter = raw.toUpperCase();
+    const optionIdx = ['A','B','C','D'].indexOf(letter);
+    if (activeQuestion && optionIdx !== -1 && raw.length === 1) {
+      const { prevWrong } = activeQuestion;
+      if (optionIdx < step.options.length && !prevWrong.includes(optionIdx)) {
+        const userText = `${letter} — ${step.options[optionIdx]}`;
+        handleAnswer(chapterIdx, stepIdx, optionIdx, prevWrong, userText);
+      }
+    }
+  });
+  stickyBottom.appendChild(mcBiEl);
+  group.appendChild(stickyBottom);
+
   feed.appendChild(group);
   bounceIn(group);
   setActive(feed, group);
+  setBlockFocus(feed, group);
+  focusMcInput();
 
   // Skip button — absolute top-right, added before typing starts
   const skipBtn = document.createElement('button');
   skipBtn.className = 'q-skip';
   skipBtn.textContent = 'Skip';
-  skipBtn.addEventListener('click', () => handleSkip(chapterIdx, stepIdx));
+  skipBtn.addEventListener('click', () => handleSkip(chapterIdx, stepIdx), { once: true });
   block.appendChild(skipBtn);
 
   return typeInto(block.querySelector('.q-text'), step.text).then(() => {
+    if (group.classList.contains('collapsed')) return;
     renderOptions(chapterIdx, stepIdx, []);
-    setActive(feed, group);
   });
 }
 
@@ -2030,14 +2409,38 @@ function appendTrainingDone(feedId) {
 
 function awaitMaterialNext(feedId) {
   const feed = document.getElementById(feedId);
+  const focusedBlock = feed.querySelector('.in-focus');
+  const stickyBottom = focusedBlock && focusedBlock.querySelector('.sticky-bottom');
+
   const btn = document.createElement('button');
   btn.className = 'material-next-btn';
   btn.innerHTML = '↓';
-  feed.appendChild(btn);
+
+  // Wrap in a centered row and append inside sticky-bottom (never pushed off screen)
+  const btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;justify-content:center;padding-top:8px';
+  btnRow.appendChild(btn);
+
+  if (stickyBottom) {
+    stickyBottom.appendChild(btnRow);
+  } else if (focusedBlock) {
+    focusedBlock.appendChild(btnRow);
+  } else {
+    feed.appendChild(btnRow);
+  }
+
   bounceIn(btn);
   return new Promise(resolve => {
     btn.addEventListener('click', () => {
-      btn.remove();
+      if (focusedBlock) {
+        focusedBlock.classList.remove('in-focus');
+        const sb = focusedBlock.querySelector('.sticky-bottom');
+        if (sb) sb.remove();
+      } else {
+        btnRow.remove();
+      }
+      activeMaterialBlock = null;
+      activeBlockInput = null;
       resolve();
     }, { once: true });
   });
@@ -2060,9 +2463,10 @@ async function runStep(chapterIdx, stepIdx) {
     if (step.kind === 'video') {
       await appendVideoBlock(feedId, step);
     } else {
-      await appendMoMessage(feedId, 'content', step.text, step.label || null, step.kind || 'material');
       const nextStep = chapter.steps[stepIdx + 1];
-      if (step.pause || (nextStep && nextStep.type === 'question')) {
+      const willPause = step.pause || (nextStep && (nextStep.type === 'question' || nextStep.type === 'freetext'));
+      await appendMoMessage(feedId, 'content', step.text, step.label || null, step.kind || 'material', willPause);
+      if (willPause) {
         await awaitMaterialNext(feedId);
       }
     }
@@ -2126,6 +2530,12 @@ async function handleAnswer(chapterIdx, stepIdx, optionIdx, prevWrong, userText 
     const answerEl = document.getElementById(`qanswer-${chapterIdx}-${stepIdx}`);
     if (answerEl) answerEl.textContent = humanTitle;
 
+    // Clean up sticky-bottom and in-focus before collapsing
+    const sb = group.querySelector('.sticky-bottom');
+    if (sb) sb.remove();
+    group.classList.remove('in-focus');
+    activeBlockInput = null;
+
     // Collapse entire group — block loses sticky, feedback rows hide
     group.classList.add('collapsed');
     group.addEventListener('click', () => group.classList.toggle('open'));
@@ -2149,7 +2559,6 @@ async function handleAnswer(chapterIdx, stepIdx, optionIdx, prevWrong, userText 
 
 async function handleSkip(chapterIdx, stepIdx) {
   activeQuestion = null;
-  document.getElementById('chatInput').placeholder = 'Ask Mo anything…';
   const step = CHAPTERS[chapterIdx].steps[stepIdx];
   const group = document.getElementById(`qgroup-${chapterIdx}-${stepIdx}`);
   const answerEl = document.getElementById(`qanswer-${chapterIdx}-${stepIdx}`);
@@ -2161,6 +2570,12 @@ async function handleSkip(chapterIdx, stepIdx) {
 
   if (answerEl) answerEl.textContent = step.text.replace(/\?$/, '');
   if (iconEl) iconEl.textContent = '→';
+
+  // Clean up sticky-bottom and in-focus
+  const sb = group.querySelector('.sticky-bottom');
+  if (sb) sb.remove();
+  group.classList.remove('in-focus');
+  activeBlockInput = null;
 
   group.classList.add('collapsed', 'skipped');
   group.addEventListener('click', () => group.classList.toggle('open'));
@@ -2345,8 +2760,7 @@ async function handleReviewAnswer(feedId, chapterIdx, step, group, block, option
 function goToCard(card) {
   const track = document.getElementById('track');
   const idx = Array.from(track.children).indexOf(card);
-  const cardStep = window.innerWidth * 0.88;
-  track.style.transform = `translateX(${-idx * cardStep}px)`;
+  centerCardInViewport(card);
   // Mark all cards inactive except this one
   Array.from(track.children).forEach((c, i) => c.classList.toggle('inactive', i !== idx));
 }
@@ -2354,7 +2768,25 @@ function goToCard(card) {
 /* ───────────────────────────────────────────
    INIT
 ─────────────────────────────────────────── */
+/* ───────────────────────────────────────────
+   THEME TOGGLE
+─────────────────────────────────────────── */
+(function initTheme() {
+  const saved = localStorage.getItem('morpheus-theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = saved || (prefersDark ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', theme);
+
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('morpheus-theme', next);
+  });
+})();
+
 buildDOM();
+goToChapter(0);
 runStep(0, 0);
 
 /* ── TOC ── */
@@ -2428,90 +2860,6 @@ document.getElementById('tocToggle').addEventListener('click', () => {
 });
 document.getElementById('tocOverlay').addEventListener('click', closeToc);
 
-/* ── Chat bar ── */
-const chatInput = document.getElementById('chatInput');
-chatInput.addEventListener('input', () => {
-  chatInput.style.height = 'auto';
-  chatInput.style.height = chatInput.scrollHeight + 'px';
-});
-chatInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    document.getElementById('chatSend').click();
-  }
-});
-const MO_CHAT_REPLIES = [
-  "Good question. The material you're working through will address this — keep going.",
-  "Noted. Focus on the core principles here; that context will make this clearer.",
-  "That's worth thinking about. Revisit it once you've completed this section.",
-  "Interesting. The answer is embedded in the framework you're building right now.",
-  "Keep that question in mind — it connects directly to what comes next.",
-  "Fair point. The training covers this from the ground up as you progress.",
-  "Worth asking. Come back to it after you've seen the full picture.",
-];
-
-document.getElementById('chatSend').addEventListener('click', async () => {
-  const raw = chatInput.value.trim();
-  if (!raw) return;
-
-  const letter = raw.toUpperCase();
-  const optionIdx = ['A','B','C','D'].indexOf(letter);
-
-  if (activeQuestion && activeQuestion.freetext) {
-    const { chapterIdx, stepIdx } = activeQuestion;
-    chatInput.value = '';
-    chatInput.style.height = 'auto';
-    handleFreeTextAnswer(chapterIdx, stepIdx, raw);
-    return;
-  }
-
-  if (activeQuestion && optionIdx !== -1 && raw.length === 1) {
-    const { chapterIdx, stepIdx, prevWrong } = activeQuestion;
-    const step = CHAPTERS[chapterIdx].steps[stepIdx];
-    if (optionIdx < step.options.length && !prevWrong.includes(optionIdx)) {
-      const userText = `${letter} — ${step.options[optionIdx]}`;
-      chatInput.value = '';
-      chatInput.style.height = 'auto';
-      setTimeout(() => handleAnswer(chapterIdx, stepIdx, optionIdx, prevWrong, userText), 100);
-      return;
-    }
-  }
-
-  // Free-form question while material block is active
-  if (!activeQuestion && activeMaterialBlock) {
-    chatInput.value = '';
-    chatInput.style.height = 'auto';
-
-    const { chatEl } = activeMaterialBlock;
-
-    // Reveal chat container on first use
-    if (chatEl.style.display === 'none') chatEl.style.display = 'flex';
-
-    // User bubble (reuse .q-user-bubble style — dark, right-aligned)
-    const userBubble = document.createElement('div');
-    userBubble.className = 'q-user-bubble';
-    userBubble.textContent = raw;
-    chatEl.appendChild(userBubble);
-    bounceIn(userBubble);
-    chatEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-    await delay(350);
-
-    // Mo's typed reply inline inside the block
-    const reply = MO_CHAT_REPLIES[Math.floor(Math.random() * MO_CHAT_REPLIES.length)];
-    const replyEl = document.createElement('div');
-    replyEl.className = 'material-chat-reply';
-    chatEl.appendChild(replyEl);
-    bounceIn(replyEl);
-    await typeInto(replyEl, reply);
-    chatEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    return;
-  }
-
-  // Default: clear input
-  chatInput.value = '';
-  chatInput.style.height = 'auto';
-});
 </script>
 
 </body>
