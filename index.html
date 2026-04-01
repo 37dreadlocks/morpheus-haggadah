@@ -1934,9 +1934,20 @@ function contentIn(el) {
 }
 
 function setActive(feed, el) {
-  Array.from(feed.children).forEach(c => c.classList.toggle('past', c !== el));
-  const elTop = el.getBoundingClientRect().top - feed.getBoundingClientRect().top + feed.scrollTop;
-  feed.scrollTo({ top: Math.max(0, elTop - 28), behavior: 'smooth' });
+  Array.from(feed.children).forEach(c => {
+    c.classList.toggle('past', c !== el);
+    if (c !== el) c.style.minHeight = '';
+  });
+  // Pin in-focus block to at least the full feed content area so the feed can
+  // overflow and scroll when past blocks are above it (flex:1 alone prevents overflow)
+  const pt = parseFloat(getComputedStyle(feed).paddingTop);
+  const pb = parseFloat(getComputedStyle(feed).paddingBottom);
+  el.style.minHeight = (feed.clientHeight - pt - pb) + 'px';
+
+  requestAnimationFrame(() => {
+    const elTop = el.getBoundingClientRect().top - feed.getBoundingClientRect().top + feed.scrollTop;
+    feed.scrollTo({ top: Math.max(0, elTop - 28), behavior: 'smooth' });
+  });
 }
 
 function typeInto(el, text) {
