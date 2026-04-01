@@ -703,6 +703,11 @@
       transform: scale(0.985);
       filter: blur(0.4px);
     }
+    .feed > *.past:hover {
+      opacity: 1;
+      filter: none;
+      transform: scale(1);
+    }
 
     /* ── CONTENT BLOCKS ── */
     .msg.content-block {
@@ -1930,6 +1935,7 @@ function contentIn(el) {
 
 function setActive(feed, el) {
   Array.from(feed.children).forEach(c => c.classList.toggle('past', c !== el));
+  feed.scrollTo({ top: Math.max(0, el.offsetTop - 28), behavior: 'smooth' });
 }
 
 function typeInto(el, text) {
