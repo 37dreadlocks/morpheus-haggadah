@@ -319,9 +319,12 @@
     }
 
     /* ── IN-FOCUS BLOCK ── */
-    /* q-group fills remaining card space; content blocks hug their content */
+    /* In-focus block is at least as tall as the feed — forces overflow so the
+       feed can scroll to show it at the top when past blocks are above it.
+       flex:1 alone prevents overflow (total always == feed height). */
     .feed > .in-focus.q-group {
-      flex: 1;
+      flex: 0 0 auto;
+      min-height: 100%;
       display: flex;
       flex-direction: column;
     }
@@ -364,7 +367,8 @@
 
     /* In-focus content block fills card like q-group */
     .feed > .in-focus.content-block {
-      flex: 1;
+      flex: 0 0 auto;
+      min-height: 100%;
       display: flex;
       flex-direction: column;
     }
@@ -1934,19 +1938,12 @@ function contentIn(el) {
 }
 
 function setActive(feed, el) {
-  Array.from(feed.children).forEach(c => {
-    c.classList.toggle('past', c !== el);
-    if (c !== el) c.style.minHeight = '';
-  });
-  // Pin in-focus block to at least the full feed content area so the feed can
-  // overflow and scroll when past blocks are above it (flex:1 alone prevents overflow)
-  const pt = parseFloat(getComputedStyle(feed).paddingTop);
-  const pb = parseFloat(getComputedStyle(feed).paddingBottom);
-  el.style.minHeight = (feed.clientHeight - pt - pb) + 'px';
-
+  Array.from(feed.children).forEach(c => c.classList.toggle('past', c !== el));
+  // Scroll so the in-focus block is near the top, leaving ~64px of the last
+  // past block visible above it (gap 32px + ~32px of content)
   requestAnimationFrame(() => {
     const elTop = el.getBoundingClientRect().top - feed.getBoundingClientRect().top + feed.scrollTop;
-    feed.scrollTo({ top: Math.max(0, elTop - 28), behavior: 'smooth' });
+    feed.scrollTo({ top: Math.max(0, elTop - 64), behavior: 'smooth' });
   });
 }
 
