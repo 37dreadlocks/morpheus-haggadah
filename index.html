@@ -2192,7 +2192,8 @@ async function handleFreeTextAnswer(chapterIdx, stepIdx, userText) {
   bubble.className = 'q-user-bubble';
   bubble.textContent = userText;
   qFull.appendChild(bubble);
-  bubble.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  const qb = group.querySelector('.question-block');
+  if (qb) qb.scrollTop = qb.scrollHeight;
 
   await delay(500);
 
@@ -2316,13 +2317,14 @@ function renderOptions(chapterIdx, stepIdx, usedWrong) {
 // Append a feedback bubble inside .q-full (same flow as user bubbles)
 function appendFeedbackToGroup(groupEl, type, label, text) {
   const qFull = groupEl.querySelector('.q-full');
+  const qb = groupEl.querySelector('.question-block');
   const row = document.createElement('div');
   const cssType = type === 'correct' ? 'correct-fb' : 'wrong';
   row.className = `q-feedback-row ${cssType}`;
   qFull.appendChild(row);
-  row.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  if (qb) qb.scrollTop = qb.scrollHeight;
   return typeInto(row, text).then(() => {
-    row.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    if (qb) qb.scrollTop = qb.scrollHeight;
   });
 }
 
@@ -2499,7 +2501,7 @@ async function handleAnswer(chapterIdx, stepIdx, optionIdx, prevWrong, userText 
     userBubble.textContent = userText;
     qFull.appendChild(userBubble);
     bounceIn(userBubble);
-    block.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    block.scrollTop = block.scrollHeight;
     await delay(400);
   }
 
