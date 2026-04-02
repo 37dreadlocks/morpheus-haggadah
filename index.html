@@ -209,25 +209,24 @@
       border-radius: 50%;
       border: 1px solid var(--card-border);
       background: var(--surface);
-      transition: background 0.3s, border-color 0.3s, flex 0.3s ease-in-out, border-radius 0.3s ease-in-out;
+      transition: background 0.3s, border-color 0.3s, flex 0.3s ease-in-out, border-radius 0.3s ease-in-out, opacity 0.3s;
     }
 
     .silo.active .seg {
-      flex: 1;
-      width: auto;
-      height: 7px;
-      border-radius: 4px;
       border-color: var(--green-border);
     }
 
-    /* Fix 2 — inactive chapters: more visible segments */
-    .silo.enabled:not(.active) .seg {
-      border-color: rgba(0,0,0,0.22);
-      background: rgba(0,0,0,0.08);
+    /* Current question segment morphs into a pill */
+    .seg.current {
+      flex: 0 0 120px;
+      width: auto;
+      border-radius: 999px;
+      border-color: var(--green-border);
     }
-    [data-theme="dark"] .silo.enabled:not(.active) .seg {
-      border-color: rgba(255,255,255,0.32);
-      background: rgba(255,255,255,0.1);
+
+    /* Inactive chapters: dim segments for lower visual weight */
+    .silo.enabled:not(.active) .seg {
+      opacity: 0.4;
     }
 
     .seg.done {
@@ -345,12 +344,13 @@
       min-height: 0;
       display: flex;
       flex-direction: column;
+      align-items: center;
     }
 
     /* Centers content vertically when short; collapses to 0 margin when content overflows.
        max-width matches the focused reading column width used across all block types. */
     .scroll-content {
-      margin: auto;
+      margin: auto 0;
       max-width: 560px;
       width: 100%;
       display: flex;
@@ -367,6 +367,14 @@
     .q-group.in-focus .sticky-bottom {
       background: var(--q-block-bg);
       padding: 10px 24px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .q-group.in-focus .sticky-bottom .block-input {
+      flex: 1;
+      margin-top: 0;
+      padding: 0;
     }
 
     /* Content block: when not in-focus, undo the in-focus wrappers */
@@ -1821,16 +1829,26 @@ function buildProgressBar() {
   });
 }
 
+function setCurrentSeg(chapterIdx, idx) {
+  document.querySelectorAll(`[id^="seg-${chapterIdx}-"].current`).forEach(el => el.classList.remove('current'));
+  if (idx != null) {
+    const seg = document.getElementById(`seg-${chapterIdx}-${idx}`);
+    if (seg) seg.classList.add('current');
+  }
+}
+
 function markSegment(chapterIdx) {
   const idx = completedQuestions[chapterIdx] + skippedQCount[chapterIdx] - 1;
   const seg = document.getElementById(`seg-${chapterIdx}-${idx}`);
   if (seg) seg.classList.add('done');
+  setCurrentSeg(chapterIdx, null);
 }
 
 function markSkippedSegment(chapterIdx) {
   const idx = completedQuestions[chapterIdx] + skippedQCount[chapterIdx] - 1;
   const seg = document.getElementById(`seg-${chapterIdx}-${idx}`);
   if (seg) seg.classList.add('skipped');
+  setCurrentSeg(chapterIdx, null);
 }
 
 function advanceProgress(chapterIdx) {
@@ -2170,15 +2188,16 @@ function showFreeTextQuestion(chapterIdx, stepIdx) {
   skipBtn.textContent = '⏭';
   skipBtn.title = "Skip for now — you'll come back to this question later.";
   skipBtn.addEventListener('click', () => handleSkip(chapterIdx, stepIdx), { once: true });
-  freetextBiEl.appendChild(skipBtn);
 
   stickyBottom.appendChild(freetextBiEl);
+  stickyBottom.appendChild(skipBtn);
   group.appendChild(stickyBottom);
 
   feed.appendChild(group);
   bounceIn(group);
   setActive(feed, group);
   setBlockFocus(feed, group);
+  setCurrentSeg(chapterIdx, completedQuestions[chapterIdx] + skippedQCount[chapterIdx]);
   focusFreetextInput();
 
   activeQuestion = { chapterIdx, stepIdx, freetext: true };
@@ -2286,15 +2305,16 @@ function showQuestion(chapterIdx, stepIdx) {
   skipBtn.textContent = '⏭';
   skipBtn.title = "Skip for now — you'll come back to this question later.";
   skipBtn.addEventListener('click', () => handleSkip(chapterIdx, stepIdx), { once: true });
-  mcBiEl.appendChild(skipBtn);
 
   stickyBottom.appendChild(mcBiEl);
+  stickyBottom.appendChild(skipBtn);
   group.appendChild(stickyBottom);
 
   feed.appendChild(group);
   bounceIn(group);
   setActive(feed, group);
   setBlockFocus(feed, group);
+  setCurrentSeg(chapterIdx, completedQuestions[chapterIdx] + skippedQCount[chapterIdx]);
   focusMcInput();
 
   return typeInto(block.querySelector('.q-text'), step.text).then(() => {
