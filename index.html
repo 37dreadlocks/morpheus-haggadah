@@ -377,9 +377,10 @@
       padding: 0;
     }
 
-    /* Content block: when not in-focus, undo the in-focus wrappers */
+    /* Content block: when not in-focus, scroll-zone shows at natural height (no scroll) */
     .msg.content-block:not(.in-focus) .scroll-zone {
-      display: contents;
+      flex: none;
+      overflow-y: visible;
     }
     .msg.content-block:not(.in-focus) .sticky-bottom {
       display: none;
@@ -472,10 +473,42 @@
     .feed {
       flex: 1;
       overflow-y: auto;
-      padding: 28px 28px 28px;
+      padding: 28px 28px 40px;
       display: flex;
       flex-direction: column;
       gap: 32px;
+    }
+
+    /* ── GLOBAL CARD INPUT BAR ── */
+    /* Sits below the feed as a flex sibling — never scrolls, always pinned to card bottom */
+    .card-input-bar {
+      flex-shrink: 0;
+      padding: 10px 24px 16px;
+      background: var(--card-bg);
+      border-top: 1px solid var(--card-border);
+      backdrop-filter: blur(28px) saturate(140%);
+      -webkit-backdrop-filter: blur(28px) saturate(140%);
+    }
+    .card-input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 628px;
+      margin: 0 auto;
+    }
+    .card-input-bar .block-input {
+      flex: 1;
+      margin-top: 0;
+      padding: 0;
+    }
+    /* Pulse when input transitions to a new block context */
+    @keyframes inputContextPulse {
+      0%   { box-shadow: var(--glass-shadow); }
+      40%  { box-shadow: var(--glass-shadow), 0 0 0 3px var(--accent-bg); }
+      100% { box-shadow: var(--glass-shadow); }
+    }
+    .block-input-wrap.context-pulse {
+      animation: inputContextPulse 0.45s ease-out;
     }
 
     .feed::-webkit-scrollbar { width: 3px; }
@@ -728,6 +761,8 @@
 
     /* ── CONTENT BLOCKS ── */
     .msg.content-block {
+      display: flex;
+      flex-direction: column;
       border: none;
       border-radius: 16px;
       overflow: hidden;
@@ -1478,7 +1513,7 @@
     }
 
     /* ── SMOOTH THEME TRANSITIONS ── */
-    .card, .q-group, .question-block, .msg.content-block, .opt,
+    .card, .card-input-bar, .q-group, .question-block, .msg.content-block, .opt,
     .block-input-wrap, #tocPanel, #tocToggle, #themeToggle,
     .q-feedback-row, .video-footer, .material-next-btn,
     .q-skip, .silo, .seg {
@@ -1689,6 +1724,7 @@ let currentChapter = 0;
 let activeQuestion = null;    // { chapterIdx, stepIdx, prevWrong }
 let activeMaterialBlock = null; // { feedId, chatEl, scrollZone } — set when material block is active
 let activeBlockInput = null;  // current .block-input element
+const cardState = {};  // feedId → { bar, row, biContainer, biWrap, textarea, sendBtn, skipBtn, nextBtn, _onSend }
 const completedQuestions = CHAPTERS.map(() => 0);
 const completedSteps = CHAPTERS.map(() => 0);
 const allSkipped = []; // { chapterIdx, step } across all chapters
@@ -1700,54 +1736,6 @@ const unlockedChapters = new Set([0]); // chapter 0 always unlocked
 /* ── BLOCK INPUT HELPERS ── */
 const SEND_SVG = '<svg width="13" height="14" viewBox="0 0 13 14" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M0.361328 0.112448C0.585462 -0.0283471 0.864308 -0.0374683 1.09668 0.0881427L12.5967 6.31033C12.8444 6.44436 13 6.71024 13 6.99999C13 7.28976 12.8444 7.55562 12.5967 7.68966L1.09668 13.9118C0.864298 14.0375 0.585471 14.0284 0.361328 13.8875C0.137089 13.7466 0 13.4941 0 13.2222V0.777809C1.57229e-05 0.505881 0.13709 0.253411 0.361328 0.112448ZM1.5 6.22222H6.25C6.66421 6.22222 7 6.57044 7 6.99999C7 7.42955 6.66421 7.77777 6.25 7.77777H1.5V11.9391L10.6279 6.99999L1.5 2.05992V6.22222Z" fill="currentColor"/></svg>';
 
-function createBlockInput(placeholder, onSend) {
-  const container = document.createElement('div');
-  container.className = 'block-input';
-
-  const wrap = document.createElement('div');
-  wrap.className = 'block-input-wrap';
-
-  const textarea = document.createElement('textarea');
-  textarea.rows = 1;
-  textarea.placeholder = placeholder;
-  const syncSendState = () => {
-    sendBtn.disabled = textarea.value.trim().length === 0;
-  };
-  textarea.addEventListener('input', () => {
-    textarea.style.height = 'auto';
-    textarea.style.height = textarea.scrollHeight + 'px';
-    syncSendState();
-  });
-  textarea.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendBtn.click();
-    }
-  });
-
-  const sendBtn = document.createElement('button');
-  sendBtn.type = 'button';
-  sendBtn.className = 'block-send';
-  sendBtn.innerHTML = SEND_SVG;
-  sendBtn.addEventListener('click', () => {
-    const raw = textarea.value.trim();
-    if (!raw) return;
-    textarea.value = '';
-    textarea.style.height = 'auto';
-    syncSendState();
-    onSend(raw);
-  });
-  syncSendState();
-
-  textarea.addEventListener('focus', () => wrap.classList.add('focused'));
-  textarea.addEventListener('blur',  () => wrap.classList.remove('focused'));
-
-  wrap.appendChild(textarea);
-  wrap.appendChild(sendBtn);
-  container.appendChild(wrap);
-  activeBlockInput = container;
-  return { el: container, focus: () => { wrap.classList.add('focused'); textarea.focus(); } };
-}
 
 function setBlockFocus(feed, el) {
   // Remove in-focus from all siblings
@@ -1764,6 +1752,151 @@ const MO_CHAT_REPLIES = [
   "Fair point. The training covers this from the ground up as you progress.",
   "Worth asking. Come back to it after you've seen the full picture.",
 ];
+
+/* ───────────────────────────────────────────
+   GLOBAL INPUT BAR — per-card, persists across block transitions
+─────────────────────────────────────────── */
+
+function createCardInputBar(feedId, cardEl) {
+  const bar = document.createElement('div');
+  bar.className = 'card-input-bar';
+  bar.style.display = 'none';
+
+  const row = document.createElement('div');
+  row.className = 'card-input-row';
+
+  // Persistent block-input (pill)
+  const biContainer = document.createElement('div');
+  biContainer.className = 'block-input';
+
+  const biWrap = document.createElement('div');
+  biWrap.className = 'block-input-wrap';
+
+  const textarea = document.createElement('textarea');
+  textarea.rows = 1;
+
+  const sendBtn = document.createElement('button');
+  sendBtn.type = 'button';
+  sendBtn.className = 'block-send';
+  sendBtn.innerHTML = SEND_SVG;
+  sendBtn.disabled = true;
+
+  const syncSend = () => { sendBtn.disabled = textarea.value.trim().length === 0; };
+  textarea.addEventListener('input', () => {
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
+    syncSend();
+  });
+  textarea.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendBtn.click(); }
+  });
+  textarea.addEventListener('focus', () => biWrap.classList.add('focused'));
+  textarea.addEventListener('blur',  () => biWrap.classList.remove('focused'));
+  sendBtn.addEventListener('click', () => {
+    const raw = textarea.value.trim();
+    if (!raw) return;
+    const fn = cardState[feedId]._onSend;
+    if (!fn) return;
+    textarea.value = '';
+    textarea.style.height = 'auto';
+    syncSend();
+    fn(raw);
+  });
+
+  biWrap.appendChild(textarea);
+  biWrap.appendChild(sendBtn);
+  biContainer.appendChild(biWrap);
+
+  // Skip button (questions only)
+  const skipBtn = document.createElement('button');
+  skipBtn.className = 'q-skip';
+  skipBtn.textContent = '⏭';
+  skipBtn.title = "Skip for now — you'll come back to this question later.";
+  skipBtn.style.display = 'none';
+
+  // Next (↓) button (material / video)
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'material-next-btn';
+  nextBtn.innerHTML = '↓';
+  nextBtn.style.display = 'none';
+
+  row.appendChild(biContainer);
+  row.appendChild(skipBtn);
+  row.appendChild(nextBtn);
+  bar.appendChild(row);
+  cardEl.appendChild(bar);
+
+  cardState[feedId] = { bar, row, biContainer, biWrap, textarea, sendBtn, skipBtn, nextBtn, _onSend: null };
+}
+
+// Show the input pill and configure it for a new block
+function showBlockInput(feedId, placeholder, onSend) {
+  const s = cardState[feedId];
+  if (!s) return { focus: () => {} };
+  s._onSend = onSend;
+  s.textarea.placeholder = placeholder;
+  s.textarea.value = '';
+  s.textarea.style.height = 'auto';
+  s.sendBtn.disabled = true;
+  s.biContainer.style.display = '';
+  s.nextBtn.style.display = 'none';
+  s.bar.style.display = '';
+  activeBlockInput = s.biContainer;
+  // Pulse to signal context switch
+  s.biWrap.classList.remove('context-pulse');
+  void s.biWrap.offsetWidth;  // force reflow to restart animation
+  s.biWrap.classList.add('context-pulse');
+  s.biWrap.addEventListener('animationend', () => s.biWrap.classList.remove('context-pulse'), { once: true });
+  return { focus: () => { s.biWrap.classList.add('focused'); s.textarea.focus(); } };
+}
+
+// Show the skip button bound to a specific question
+function showSkipButton(feedId, chapterIdx, stepIdx) {
+  const s = cardState[feedId];
+  if (!s) return;
+  // Clone to wipe any previous event listeners
+  const fresh = s.skipBtn.cloneNode(true);
+  fresh.style.display = '';
+  fresh.addEventListener('click', () => handleSkip(chapterIdx, stepIdx), { once: true });
+  s.skipBtn.replaceWith(fresh);  // replaces in-place (between input and ↓)
+  cardState[feedId].skipBtn = fresh;
+}
+
+// Show the ↓ next button (used by awaitMaterialNext and video blocks)
+function showNextButton(feedId, disabled) {
+  const s = cardState[feedId];
+  if (!s) return s && s.nextBtn;
+  s.nextBtn.disabled = !!disabled;
+  s.nextBtn.style.display = '';
+  s.bar.style.display = '';
+  return s.nextBtn;
+}
+
+// Show ONLY the ↓ button (video — no text input needed)
+function showVideoNextButton(feedId) {
+  const s = cardState[feedId];
+  if (!s) return null;
+  s._onSend = null;
+  s.biContainer.style.display = 'none';
+  s.skipBtn.style.display = 'none';
+  s.nextBtn.disabled = true;
+  s.nextBtn.style.display = '';
+  s.bar.style.display = '';
+  activeBlockInput = null;
+  return s.nextBtn;
+}
+
+// Clear and hide the input bar
+function hideGlobalInput(feedId) {
+  const s = cardState[feedId];
+  if (!s) return;
+  s._onSend = null;
+  s.biContainer.style.display = '';  // reset for next use
+  s.skipBtn.style.display = 'none';
+  s.nextBtn.style.display = 'none';
+  s.bar.style.display = 'none';
+  activeBlockInput = null;
+}
 
 /* ───────────────────────────────────────────
    BUILD DOM
@@ -1783,6 +1916,7 @@ function buildDOM() {
       </div>
       <div class="feed" id="feed-${i}"></div>
     `;
+    createCardInputBar(`feed-${i}`, card);
     track.appendChild(card);
   });
   buildProgressBar();
@@ -1950,10 +2084,11 @@ function setActive(feed, el) {
     - parseFloat(style.paddingTop)
     - parseFloat(style.paddingBottom);
   el.style.flex = `0 0 ${innerH}px`;
-  // Scroll so top of in-focus block is 28px from feed top (spec: el.offsetTop - 28)
+  // Scroll so the top of the in-focus block is 15% from the feed top,
+  // revealing a sliver of past content above as context.
   requestAnimationFrame(() => {
     const elTop = el.getBoundingClientRect().top - feed.getBoundingClientRect().top + feed.scrollTop;
-    feed.scrollTo({ top: Math.max(0, elTop - 28), behavior: 'smooth' });
+    feed.scrollTo({ top: Math.max(0, elTop - feed.clientHeight * 0.15), behavior: 'smooth' });
   });
 }
 
@@ -2027,10 +2162,8 @@ function appendMoMessage(feedId, type, text, label = null, kind = 'material', wi
       scrollContent.appendChild(chatEl);
       activeMaterialBlock = { feedId, chatEl, scrollZone };
 
-      // Block-input goes in sticky-bottom — always visible
-      const stickyBottom = document.createElement('div');
-      stickyBottom.className = 'sticky-bottom';
-      const blockInput = createBlockInput('Ask Mo anything…', async (raw) => {
+      // Global input bar — shown at card bottom, persists during scroll
+      showBlockInput(feedId, 'Ask Mo anything…', async (raw) => {
         if (!activeMaterialBlock) return;
         const { chatEl: ce, scrollZone: sz } = activeMaterialBlock;
         if (ce.style.display === 'none') ce.style.display = 'flex';
@@ -2052,9 +2185,6 @@ function appendMoMessage(feedId, type, text, label = null, kind = 'material', wi
         await typeInto(replyEl, reply);
         sz.scrollTop = sz.scrollHeight;
       });
-      const { el: biEl } = blockInput;
-      stickyBottom.appendChild(biEl);
-      msg.appendChild(stickyBottom);
     });
   }
 
@@ -2101,14 +2231,8 @@ function appendVideoBlock(feedId, step) {
   setActive(feed, msg);
   setBlockFocus(feed, msg);
 
-  const footer = document.createElement('div');
-  footer.className = 'video-footer';
-  const btn = document.createElement('button');
-  btn.className = 'material-next-btn';
-  btn.textContent = '↓';
-  btn.disabled = true;
-  footer.appendChild(btn);
-  msg.appendChild(footer);
+  // ↓ button lives in global input bar (disabled until play)
+  const btn = showVideoNextButton(feedId);
   setActive(feed, msg);
 
   // Play button click → enable Continue
@@ -2118,14 +2242,12 @@ function appendVideoBlock(feedId, step) {
   });
 
   return new Promise(resolve => {
-    // Continue click → fade out footer then advance flow
     btn.addEventListener('click', () => {
-      footer.style.transition = 'opacity 0.2s ease';
-      footer.style.opacity = '0';
       msg.classList.remove('in-focus');
       msg.style.flex = '';
-      setTimeout(() => { footer.remove(); resolve(); }, 200);
-    });
+      hideGlobalInput(feedId);
+      resolve();
+    }, { once: true });
   });
 }
 
@@ -2171,33 +2293,20 @@ function showFreeTextQuestion(chapterIdx, stepIdx) {
   block.appendChild(qFull);
   group.appendChild(block);
 
-  // Sticky footer holds the input
-  const stickyBottom = document.createElement('div');
-  stickyBottom.className = 'sticky-bottom';
-
-  // Block input for freetext answer
-  const { el: freetextBiEl, focus: focusFreetextInput } = createBlockInput('Type your answer…', (raw) => {
-    if (activeQuestion && activeQuestion.freetext) {
-      handleFreeTextAnswer(chapterIdx, stepIdx, raw);
-    }
-  });
-
-  // Skip button sits to the right of the input
-  const skipBtn = document.createElement('button');
-  skipBtn.className = 'q-skip';
-  skipBtn.textContent = '⏭';
-  skipBtn.title = "Skip for now — you'll come back to this question later.";
-  skipBtn.addEventListener('click', () => handleSkip(chapterIdx, stepIdx), { once: true });
-
-  stickyBottom.appendChild(freetextBiEl);
-  stickyBottom.appendChild(skipBtn);
-  group.appendChild(stickyBottom);
-
   feed.appendChild(group);
   bounceIn(group);
   setActive(feed, group);
   setBlockFocus(feed, group);
   setCurrentSeg(chapterIdx, completedQuestions[chapterIdx] + skippedQCount[chapterIdx]);
+
+  // Configure global input bar for freetext answer
+  const feedId = `feed-${chapterIdx}`;
+  const { focus: focusFreetextInput } = showBlockInput(feedId, 'Type your answer…', (raw) => {
+    if (activeQuestion && activeQuestion.freetext) {
+      handleFreeTextAnswer(chapterIdx, stepIdx, raw);
+    }
+  });
+  showSkipButton(feedId, chapterIdx, stepIdx);
   focusFreetextInput();
 
   activeQuestion = { chapterIdx, stepIdx, freetext: true };
@@ -2238,12 +2347,10 @@ async function handleFreeTextAnswer(chapterIdx, stepIdx, userText) {
     advanceProgress(chapterIdx);
     const answerEl = document.getElementById(`qanswer-${chapterIdx}-${stepIdx}`);
     if (answerEl) answerEl.textContent = step.text.replace(/\?$/, '') + ': ' + userText.toLowerCase();
-    // Clean up sticky-bottom and in-focus
-    const sb = group.querySelector('.sticky-bottom');
-    if (sb) sb.remove();
+    // Clear global input bar and collapse group
+    hideGlobalInput(`feed-${chapterIdx}`);
     group.classList.remove('in-focus');
     group.style.flex = '';
-    activeBlockInput = null;
     group.classList.add('collapsed');
     group.addEventListener('click', () => group.classList.toggle('open'));
     await delay(300);
@@ -2283,12 +2390,15 @@ function showQuestion(chapterIdx, stepIdx) {
 
   group.appendChild(block);
 
-  // Sticky footer holds the input — never scrolls away
-  const stickyBottom = document.createElement('div');
-  stickyBottom.className = 'sticky-bottom';
+  feed.appendChild(group);
+  bounceIn(group);
+  setActive(feed, group);
+  setBlockFocus(feed, group);
+  setCurrentSeg(chapterIdx, completedQuestions[chapterIdx] + skippedQCount[chapterIdx]);
 
-  // Block input for typed answers (A/B/C/D)
-  const { el: mcBiEl, focus: focusMcInput } = createBlockInput('Type A, B, C, or D…', (raw) => {
+  // Configure global input bar for MC answer
+  const feedId = `feed-${chapterIdx}`;
+  const { focus: focusMcInput } = showBlockInput(feedId, 'Type A, B, C, or D…', (raw) => {
     const letter = raw.toUpperCase();
     const optionIdx = ['A','B','C','D'].indexOf(letter);
     if (activeQuestion && optionIdx !== -1 && raw.length === 1) {
@@ -2299,22 +2409,7 @@ function showQuestion(chapterIdx, stepIdx) {
       }
     }
   });
-  // Skip button sits to the right of the input
-  const skipBtn = document.createElement('button');
-  skipBtn.className = 'q-skip';
-  skipBtn.textContent = '⏭';
-  skipBtn.title = "Skip for now — you'll come back to this question later.";
-  skipBtn.addEventListener('click', () => handleSkip(chapterIdx, stepIdx), { once: true });
-
-  stickyBottom.appendChild(mcBiEl);
-  stickyBottom.appendChild(skipBtn);
-  group.appendChild(stickyBottom);
-
-  feed.appendChild(group);
-  bounceIn(group);
-  setActive(feed, group);
-  setBlockFocus(feed, group);
-  setCurrentSeg(chapterIdx, completedQuestions[chapterIdx] + skippedQCount[chapterIdx]);
+  showSkipButton(feedId, chapterIdx, stepIdx);
   focusMcInput();
 
   return typeInto(block.querySelector('.q-text'), step.text).then(() => {
@@ -2445,38 +2540,19 @@ function appendTrainingDone(feedId) {
 function awaitMaterialNext(feedId) {
   const feed = document.getElementById(feedId);
   const focusedBlock = feed.querySelector('.in-focus');
-  const stickyBottom = focusedBlock && focusedBlock.querySelector('.sticky-bottom');
 
-  const btn = document.createElement('button');
-  btn.className = 'material-next-btn';
-  btn.innerHTML = '↓';
-
-  // Wrap in a centered row and append inside sticky-bottom (never pushed off screen)
-  const btnRow = document.createElement('div');
-  btnRow.style.cssText = 'display:flex;justify-content:center;padding-top:8px';
-  btnRow.appendChild(btn);
-
-  if (stickyBottom) {
-    stickyBottom.appendChild(btnRow);
-  } else if (focusedBlock) {
-    focusedBlock.appendChild(btnRow);
-  } else {
-    feed.appendChild(btnRow);
-  }
-
+  // Show ↓ button in global input bar (alongside the Ask Mo input)
+  const btn = showNextButton(feedId, false);
   bounceIn(btn);
+
   return new Promise(resolve => {
     btn.addEventListener('click', () => {
       if (focusedBlock) {
         focusedBlock.classList.remove('in-focus');
         focusedBlock.style.flex = '';
-        const sb = focusedBlock.querySelector('.sticky-bottom');
-        if (sb) sb.remove();
-      } else {
-        btnRow.remove();
       }
+      hideGlobalInput(feedId);
       activeMaterialBlock = null;
-      activeBlockInput = null;
       resolve();
     }, { once: true });
   });
@@ -2566,14 +2642,12 @@ async function handleAnswer(chapterIdx, stepIdx, optionIdx, prevWrong, userText 
     const answerEl = document.getElementById(`qanswer-${chapterIdx}-${stepIdx}`);
     if (answerEl) answerEl.textContent = humanTitle;
 
-    // Clean up sticky-bottom and in-focus before collapsing
-    const sb = group.querySelector('.sticky-bottom');
-    if (sb) sb.remove();
+    // Clear global input bar and collapse group
+    hideGlobalInput(`feed-${chapterIdx}`);
     group.classList.remove('in-focus');
     group.style.flex = '';
-    activeBlockInput = null;
 
-    // Collapse entire group — block loses sticky, feedback rows hide
+    // Collapse entire group — feedback rows hide
     group.classList.add('collapsed');
     group.addEventListener('click', () => group.classList.toggle('open'));
 
@@ -2608,12 +2682,10 @@ async function handleSkip(chapterIdx, stepIdx) {
   if (answerEl) answerEl.textContent = step.text.replace(/\?$/, '');
   if (iconEl) iconEl.textContent = '→';
 
-  // Clean up sticky-bottom and in-focus
-  const sb = group.querySelector('.sticky-bottom');
-  if (sb) sb.remove();
+  // Clear global input bar and collapse group
+  hideGlobalInput(`feed-${chapterIdx}`);
   group.classList.remove('in-focus');
   group.style.flex = '';
-  activeBlockInput = null;
 
   group.classList.add('collapsed', 'skipped');
   group.addEventListener('click', () => group.classList.toggle('open'));
