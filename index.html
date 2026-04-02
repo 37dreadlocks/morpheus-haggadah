@@ -473,7 +473,7 @@
     .feed {
       flex: 1;
       overflow-y: auto;
-      padding: 28px 28px 40px;
+      padding: 28px 28px 0;
       display: flex;
       flex-direction: column;
       gap: 32px;
@@ -483,8 +483,11 @@
     /* Sits below the feed as a flex sibling — never scrolls, always pinned to card bottom */
     .card-input-bar {
       flex-shrink: 0;
+      position: sticky;
+      bottom: 0;
+      z-index: 20;
       padding: 10px 24px 16px;
-      background: var(--card-bg);
+      background: var(--card-bg, #fff);
       border-top: 1px solid var(--card-border);
       backdrop-filter: blur(28px) saturate(140%);
       -webkit-backdrop-filter: blur(28px) saturate(140%);
@@ -765,7 +768,7 @@
       flex-direction: column;
       border: none;
       border-radius: 16px;
-      overflow: hidden;
+      min-height: min-content;
       padding: 0;
       margin-bottom: 0px;
     }
@@ -1760,7 +1763,6 @@ const MO_CHAT_REPLIES = [
 function createCardInputBar(feedId, cardEl) {
   const bar = document.createElement('div');
   bar.className = 'card-input-bar';
-  bar.style.display = 'none';
 
   const row = document.createElement('div');
   row.className = 'card-input-row';
@@ -1820,6 +1822,9 @@ function createCardInputBar(feedId, cardEl) {
   nextBtn.innerHTML = '↓';
   nextBtn.style.display = 'none';
 
+  // biContainer starts hidden; shown when a block activates input
+  biContainer.style.display = 'none';
+
   row.appendChild(biContainer);
   row.appendChild(skipBtn);
   row.appendChild(nextBtn);
@@ -1840,7 +1845,6 @@ function showBlockInput(feedId, placeholder, onSend) {
   s.sendBtn.disabled = true;
   s.biContainer.style.display = '';
   s.nextBtn.style.display = 'none';
-  s.bar.style.display = '';
   activeBlockInput = s.biContainer;
   // Pulse to signal context switch
   s.biWrap.classList.remove('context-pulse');
@@ -1868,7 +1872,6 @@ function showNextButton(feedId, disabled) {
   if (!s) return s && s.nextBtn;
   s.nextBtn.disabled = !!disabled;
   s.nextBtn.style.display = '';
-  s.bar.style.display = '';
   return s.nextBtn;
 }
 
@@ -1881,7 +1884,6 @@ function showVideoNextButton(feedId) {
   s.skipBtn.style.display = 'none';
   s.nextBtn.disabled = true;
   s.nextBtn.style.display = '';
-  s.bar.style.display = '';
   activeBlockInput = null;
   return s.nextBtn;
 }
@@ -1891,10 +1893,9 @@ function hideGlobalInput(feedId) {
   const s = cardState[feedId];
   if (!s) return;
   s._onSend = null;
-  s.biContainer.style.display = '';  // reset for next use
+  s.biContainer.style.display = 'none';
   s.skipBtn.style.display = 'none';
   s.nextBtn.style.display = 'none';
-  s.bar.style.display = 'none';
   activeBlockInput = null;
 }
 
@@ -2084,11 +2085,9 @@ function setActive(feed, el) {
     - parseFloat(style.paddingTop)
     - parseFloat(style.paddingBottom);
   el.style.flex = `0 0 ${innerH}px`;
-  // Scroll so the top of the in-focus block is 15% from the feed top,
-  // revealing a sliver of past content above as context.
+  // Scroll so in-focus block lands at 15% from feed top, with past content peeking above.
   requestAnimationFrame(() => {
-    const elTop = el.getBoundingClientRect().top - feed.getBoundingClientRect().top + feed.scrollTop;
-    feed.scrollTo({ top: Math.max(0, elTop - feed.clientHeight * 0.15), behavior: 'smooth' });
+    feed.scrollTo({ top: el.offsetTop - feed.getBoundingClientRect().height * 0.15, behavior: 'smooth' });
   });
 }
 
