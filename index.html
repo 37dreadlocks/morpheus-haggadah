@@ -209,7 +209,7 @@
       border-radius: 50%;
       border: 1px solid var(--card-border);
       background: var(--surface);
-      transition: background 0.3s, border-color 0.3s;
+      transition: background 0.3s, border-color 0.3s, flex 0.3s ease-in-out, border-radius 0.3s ease-in-out;
     }
 
     .silo.active .seg {
@@ -218,6 +218,16 @@
       height: 7px;
       border-radius: 4px;
       border-color: var(--green-border);
+    }
+
+    /* Fix 2 — inactive chapters: more visible segments */
+    .silo.enabled:not(.active) .seg {
+      border-color: rgba(0,0,0,0.22);
+      background: rgba(0,0,0,0.08);
+    }
+    [data-theme="dark"] .silo.enabled:not(.active) .seg {
+      border-color: rgba(255,255,255,0.32);
+      background: rgba(255,255,255,0.1);
     }
 
     .seg.done {
@@ -337,9 +347,12 @@
       flex-direction: column;
     }
 
-    /* Centers content vertically when short; collapses to 0 margin when content overflows */
+    /* Centers content vertically when short; collapses to 0 margin when content overflows.
+       max-width matches the focused reading column width used across all block types. */
     .scroll-content {
-      margin: auto 0;
+      margin: auto;
+      max-width: 560px;
+      width: 100%;
       display: flex;
       flex-direction: column;
     }
@@ -544,11 +557,6 @@
       order: 11;
     }
     .q-group.collapsed.open .q-user-bubble { margin-left: auto; width: fit-content; }
-    .q-group.collapsed.open .q-skip {
-      flex-basis: 100%;
-      order: 12;
-    }
-
     /* ── COLLAPSED SUMMARY ── */
     .q-summary { display: none; }
     .q-group.collapsed .q-summary { display: contents; }
@@ -593,25 +601,20 @@
     .q-group.collapsed.open .q-toggle { transform: rotate(180deg); }
 
 
-    /* ── SKIP BUTTON — top-right corner of question block ── */
+    /* ── SKIP BUTTON — sits to the right of the block input ── */
     .q-skip {
-      position: absolute;
-      top: 16px;
-      right: 20px;
-      font-family: inherit;
-      font-size: 9px;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-muted);
+      flex-shrink: 0;
+      align-self: center;
       background: none;
-      border: 1px solid var(--card-border);
-      padding: 3px 10px;
+      border: none;
+      padding: 6px 4px;
       cursor: pointer;
-      transition: color 0.15s, border-color 0.15s;
+      color: var(--text-muted);
+      font-size: 17px;
+      line-height: 1;
+      transition: color 0.15s;
     }
-    .q-skip:hover { color: var(--amber); border-color: var(--amber); }
-    .q-group.collapsed .q-skip { display: none; }
+    .q-skip:hover { color: var(--amber); }
     .q-group.collapsed .sticky-bottom { display: none; }
 
     .q-group.in-focus {
@@ -628,9 +631,12 @@
       position: static;
     }
 
-    /* q-full centers when short, scrolls when tall */
+    /* q-full centers when short, scrolls when tall; constrained to focused column width */
     .q-group.in-focus .q-full {
-      margin: auto 0;
+      margin: auto;
+      max-width: 560px;
+      width: 100%;
+      padding: 16px 0;
     }
 
     /* ── SKIPPED STATE — background/border owned by groupSkipped animation ── */
@@ -652,12 +658,13 @@
     .q-group.collapsed:not(.open) .q-full { display: none; }
 
     .q-text {
-      font-size: 22px;
+      font-size: 28px;
       font-weight: 700;
-      line-height: 1.35;
-      letter-spacing: -0.02em;
+      line-height: 1.3;
+      letter-spacing: -0.025em;
       color: var(--text);
-      margin-bottom: 20px;
+      margin-bottom: 28px;
+      text-align: center;
     }
 
     .question-block .options {
@@ -805,6 +812,7 @@
       justify-content: center;
       cursor: pointer;
       overflow: hidden;
+      border-radius: 0 0 16px 16px;
     }
     .video-scanlines {
       position: absolute;
@@ -886,6 +894,10 @@
       background: #1a1a1a;
       border-color: #1a1a1a;
     }
+    .material-next-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
 
     [data-theme="dark"] .block-input-wrap .block-send,
     [data-theme="dark"] .material-next-btn {
@@ -912,33 +924,6 @@
       border-top: 1px solid var(--content-border);
     }
 
-    .video-continue-btn {
-      font-family: inherit;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      padding: 10px 36px;
-      border: 1.5px solid var(--card-border);
-      background: var(--surface);
-      color: var(--text-dim);
-      cursor: not-allowed;
-      transition: background 0.2s, color 0.2s, border-color 0.2s;
-      opacity: 0.4;
-    }
-
-    .video-continue-btn:not(:disabled) {
-      border-color: var(--green);
-      background: var(--green);
-      color: #fff;
-      cursor: pointer;
-      opacity: 1;
-    }
-
-    .video-continue-btn:not(:disabled):hover {
-      background: #fff;
-      color: var(--green);
-    }
 
     .video-player.played .video-play-btn {
       opacity: 0.4;
@@ -1488,7 +1473,7 @@
     .card, .q-group, .question-block, .msg.content-block, .opt,
     .block-input-wrap, #tocPanel, #tocToggle, #themeToggle,
     .q-feedback-row, .video-footer, .material-next-btn,
-    .video-continue-btn, .q-skip, .silo, .seg {
+    .q-skip, .silo, .seg {
       transition: background 0.35s ease, border-color 0.35s ease, color 0.35s ease, box-shadow 0.35s ease;
     }
 
@@ -2101,8 +2086,8 @@ function appendVideoBlock(feedId, step) {
   const footer = document.createElement('div');
   footer.className = 'video-footer';
   const btn = document.createElement('button');
-  btn.className = 'video-continue-btn';
-  btn.textContent = 'Continue';
+  btn.className = 'material-next-btn';
+  btn.textContent = '↓';
   btn.disabled = true;
   footer.appendChild(btn);
   msg.appendChild(footer);
@@ -2163,15 +2148,9 @@ function showFreeTextQuestion(chapterIdx, stepIdx) {
   const qText = document.createElement('div');
   qText.className = 'q-text';
 
-  const skipBtn = document.createElement('button');
-  skipBtn.className = 'q-skip';
-  skipBtn.textContent = 'Skip';
-  skipBtn.addEventListener('click', () => handleSkip(chapterIdx, stepIdx), { once: true });
-
   qFull.appendChild(qText);
   block.appendChild(summary);
   block.appendChild(qFull);
-  block.appendChild(skipBtn);
   group.appendChild(block);
 
   // Sticky footer holds the input
@@ -2184,6 +2163,15 @@ function showFreeTextQuestion(chapterIdx, stepIdx) {
       handleFreeTextAnswer(chapterIdx, stepIdx, raw);
     }
   });
+
+  // Skip button sits to the right of the input
+  const skipBtn = document.createElement('button');
+  skipBtn.className = 'q-skip';
+  skipBtn.textContent = '⏭';
+  skipBtn.title = "Skip for now — you'll come back to this question later.";
+  skipBtn.addEventListener('click', () => handleSkip(chapterIdx, stepIdx), { once: true });
+  freetextBiEl.appendChild(skipBtn);
+
   stickyBottom.appendChild(freetextBiEl);
   group.appendChild(stickyBottom);
 
@@ -2292,6 +2280,14 @@ function showQuestion(chapterIdx, stepIdx) {
       }
     }
   });
+  // Skip button sits to the right of the input
+  const skipBtn = document.createElement('button');
+  skipBtn.className = 'q-skip';
+  skipBtn.textContent = '⏭';
+  skipBtn.title = "Skip for now — you'll come back to this question later.";
+  skipBtn.addEventListener('click', () => handleSkip(chapterIdx, stepIdx), { once: true });
+  mcBiEl.appendChild(skipBtn);
+
   stickyBottom.appendChild(mcBiEl);
   group.appendChild(stickyBottom);
 
@@ -2300,13 +2296,6 @@ function showQuestion(chapterIdx, stepIdx) {
   setActive(feed, group);
   setBlockFocus(feed, group);
   focusMcInput();
-
-  // Skip button — absolute top-right, added before typing starts
-  const skipBtn = document.createElement('button');
-  skipBtn.className = 'q-skip';
-  skipBtn.textContent = 'Skip';
-  skipBtn.addEventListener('click', () => handleSkip(chapterIdx, stepIdx), { once: true });
-  block.appendChild(skipBtn);
 
   return typeInto(block.querySelector('.q-text'), step.text).then(() => {
     if (group.classList.contains('collapsed')) return;
