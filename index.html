@@ -2120,6 +2120,7 @@ function appendVideoBlock(feedId, step) {
       footer.style.transition = 'opacity 0.2s ease';
       footer.style.opacity = '0';
       msg.classList.remove('in-focus');
+      msg.style.flex = '';
       setTimeout(() => { footer.remove(); resolve(); }, 200);
     });
   });
@@ -2234,6 +2235,7 @@ async function handleFreeTextAnswer(chapterIdx, stepIdx, userText) {
     const sb = group.querySelector('.sticky-bottom');
     if (sb) sb.remove();
     group.classList.remove('in-focus');
+    group.style.flex = '';
     activeBlockInput = null;
     group.classList.add('collapsed');
     group.addEventListener('click', () => group.classList.toggle('open'));
@@ -2458,6 +2460,7 @@ function awaitMaterialNext(feedId) {
     btn.addEventListener('click', () => {
       if (focusedBlock) {
         focusedBlock.classList.remove('in-focus');
+        focusedBlock.style.flex = '';
         const sb = focusedBlock.querySelector('.sticky-bottom');
         if (sb) sb.remove();
       } else {
@@ -2558,6 +2561,7 @@ async function handleAnswer(chapterIdx, stepIdx, optionIdx, prevWrong, userText 
     const sb = group.querySelector('.sticky-bottom');
     if (sb) sb.remove();
     group.classList.remove('in-focus');
+    group.style.flex = '';
     activeBlockInput = null;
 
     // Collapse entire group — block loses sticky, feedback rows hide
@@ -2599,6 +2603,7 @@ async function handleSkip(chapterIdx, stepIdx) {
   const sb = group.querySelector('.sticky-bottom');
   if (sb) sb.remove();
   group.classList.remove('in-focus');
+  group.style.flex = '';
   activeBlockInput = null;
 
   group.classList.add('collapsed', 'skipped');
