@@ -766,6 +766,18 @@
       overflow: clip;
       box-shadow: var(--glass-shadow);
     }
+    .q-group.collapsing {
+      overflow: hidden;
+      transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .q-group.collapsing .question-block {
+      opacity: 0;
+      transition: opacity 0.15s ease-out;
+    }
+    .q-group.collapsing.collapsed .question-block {
+      opacity: 1;
+      transition: opacity 0.25s 0.2s ease-in;
+    }
 
     /* Active: sticky header so question stays visible while answering */
     .question-block {
@@ -3504,14 +3516,13 @@ async function handleFreeTextAnswer(chapterIdx, stepIdx, userText) {
 
     const answerEl = document.getElementById(`qanswer-${chapterIdx}-${stepIdx}`);
     if (answerEl) answerEl.textContent = step.text.replace(/\?$/, '') + ': ' + userText.toLowerCase();
-    // Collapse question card
+    // Collapse question card with animation
     hideGlobalInput(`feed-${chapterIdx}`);
     group.classList.remove('in-focus');
     group.style.flex = '';
-    group.classList.add('collapsed');
+    await collapseQuestionGroup(group);
     group.addEventListener('click', () => group.classList.toggle('open'));
 
-    await delay(300);
     group._resolve && group._resolve();
   } else {
     await appendFeedbackToGroup(group, 'wrong', 'Not quite', step.incorrectResponse);
@@ -3606,6 +3617,54 @@ function renderOptions(chapterIdx, stepIdx, usedWrong) {
    A ring counts down DURATION_MS, then auto-resolves.
    Clicking early resolves immediately.
 ──────────────────────────────────────────────────────────────── */
+
+/* ── Animated collapse: shrinks from full height → collapsed summary ── */
+function collapseQuestionGroup(group, extraClasses = []) {
+  return new Promise(resolve => {
+    let resolved = false;
+    function finish() {
+      if (resolved) return;
+      resolved = true;
+      group.removeEventListener('transitionend', onEnd);
+      group.classList.remove('collapsing');
+      group.style.height = '';
+      resolve();
+    }
+
+    // 1. Measure current (expanded) height
+    const startH = group.getBoundingClientRect().height;
+    group.style.height = startH + 'px';
+
+    // 2. Add collapsing class (enables transitions)
+    group.classList.add('collapsing');
+    // Force reflow so the browser registers the fixed height
+    group.offsetHeight;
+
+    // 3. Now add collapsed (+ any extras like 'skipped') to switch layout
+    group.classList.add('collapsed', ...extraClasses);
+
+    // 4. Measure the target (collapsed) height
+    const savedH = group.style.height;
+    group.style.height = 'auto';
+    const endH = group.getBoundingClientRect().height;
+    group.style.height = savedH;
+
+    // 5. Force reflow, then animate to target
+    group.offsetHeight;
+    group.style.height = endH + 'px';
+
+    // 6. Clean up after transition ends
+    function onEnd(e) {
+      if (e.propertyName !== 'height') return;
+      finish();
+    }
+    group.addEventListener('transitionend', onEnd);
+
+    // Safety timeout in case transitionend doesn't fire
+    setTimeout(finish, 600);
+  });
+}
+
 function awaitContinueTimer(groupEl, durationMs = 3000) {
   const qFull = groupEl.querySelector('.q-full');
   const qb    = groupEl.querySelector('.question-block');
@@ -3879,14 +3938,13 @@ async function handleAnswer(chapterIdx, stepIdx, optionIdx, prevWrong, userText 
     const answerEl = document.getElementById(`qanswer-${chapterIdx}-${stepIdx}`);
     if (answerEl) answerEl.textContent = humanTitle;
 
-    // Collapse question card
+    // Collapse question card with animation
     hideGlobalInput(`feed-${chapterIdx}`);
     group.classList.remove('in-focus');
     group.style.flex = '';
-    group.classList.add('collapsed');
+    await collapseQuestionGroup(group);
     group.addEventListener('click', () => group.classList.toggle('open'));
 
-    await delay(300);
     await runStep(chapterIdx, stepIdx + 1);
 
   } else {
@@ -3922,10 +3980,9 @@ async function handleSkip(chapterIdx, stepIdx) {
   group.classList.remove('in-focus');
   group.style.flex = '';
 
-  group.classList.add('collapsed', 'skipped');
+  await collapseQuestionGroup(group, ['skipped']);
   group.addEventListener('click', () => group.classList.toggle('open'));
   advanceProgress(chapterIdx);
-  await delay(300);
   if (group._resolve) {
     group._resolve();
   } else {
@@ -4090,7 +4147,7 @@ async function handleReviewAnswer(feedId, chapterIdx, step, group, block, option
 
     const summaryTitle = group.querySelector('.q-summary-title');
     if (summaryTitle) summaryTitle.textContent = step.text.replace(/\?$/, '') + ': ' + step.options[optionIdx].toLowerCase();
-    group.classList.add('collapsed');
+    await collapseQuestionGroup(group);
     group.addEventListener('click', () => group.classList.toggle('open'));
     resolve();
   } else {
