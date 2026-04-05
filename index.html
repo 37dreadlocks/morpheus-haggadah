@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Morpheus — Workplace Fundamentals</title>
+  <title>Morpheus — The Passover Haggadah</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -48,10 +48,9 @@
       --user-bubble-bg:#0A2540;
       --user-bubble-color:#FFFFFF;
       --toc-bg:       rgba(255,255,255,0.92);
-      --mesh-1:       rgba(255,165,80,0.32);
-      --mesh-2:       rgba(130,100,255,0.26);
-      --mesh-3:       rgba(80,180,255,0.22);
-      --mesh-4:       rgba(255,100,180,0.18);
+      --illus-base:   #5B5752;
+      --illus-line:   #8A847D;
+      --illus-gold:   #B89A5A;
       color-scheme: light;
     }
 
@@ -96,10 +95,9 @@
       --user-bubble-bg:#7A73FF;
       --user-bubble-color:#FFFFFF;
       --toc-bg:       rgba(25,30,52,0.95);
-      --mesh-1:       rgba(120,80,220,0.22);
-      --mesh-2:       rgba(180,60,200,0.18);
-      --mesh-3:       rgba(60,80,180,0.16);
-      --mesh-4:       rgba(100,50,160,0.12);
+      --illus-base:   #D4CCC2;
+      --illus-line:   #9F9488;
+      --illus-gold:   #C6A76A;
       color-scheme: dark;
     }
 
@@ -121,18 +119,125 @@
       position: relative;
     }
 
-    body::before {
-      content: '';
+    /* ── CHAPTER BACKGROUND SYSTEM ── */
+    #chapter-bg {
       position: fixed;
       inset: 0;
       z-index: 0;
       pointer-events: none;
+      overflow: hidden;
+    }
+    .chapter-bg-layer {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 1s ease, background 0.6s ease;
+    }
+    .chapter-bg-layer.active {
+      opacity: 1;
+    }
+
+    /* ── Egypt — big diagonal stripe bands, SVG ── */
+    .chapter-bg-layer.ch-egypt {
       background:
-        radial-gradient(ellipse 80% 60% at 10% 20%, var(--mesh-1) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 70% at 85% 15%, var(--mesh-2) 0%, transparent 55%),
-        radial-gradient(ellipse 70% 50% at 50% 85%, var(--mesh-3) 0%, transparent 50%),
-        radial-gradient(ellipse 50% 40% at 75% 60%, var(--mesh-4) 0%, transparent 45%);
-      transition: opacity 0.5s ease;
+        /* warm glow bottom-right */
+        radial-gradient(circle 30vmin at 90% 90%, rgba(255,220,120,0.30) 0%, transparent 100%),
+        /* subtle pink-violet top-right */
+        radial-gradient(ellipse 50% 40% at 85% 15%, rgba(200,180,210,0.12) 0%, transparent 100%),
+        /* diagonal bands */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='eg1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23d4c4a0' stop-opacity='0.25'/%3E%3Cstop offset='1' stop-color='%23c8b890' stop-opacity='0.15'/%3E%3C/linearGradient%3E%3ClinearGradient id='eg2' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23e0d0b0' stop-opacity='0.30'/%3E%3Cstop offset='1' stop-color='%23d8c8a8' stop-opacity='0.18'/%3E%3C/linearGradient%3E%3ClinearGradient id='eg3' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23c8b898' stop-opacity='0.20'/%3E%3Cstop offset='1' stop-color='%23bca880' stop-opacity='0.10'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points='0,0 350,0 1000,750 1000,1000 650,1000 0,250' fill='url(%23eg2)'/%3E%3Cpolygon points='0,0 0,250 650,1000 350,1000 0,580' fill='url(%23eg1)'/%3E%3Cpolygon points='350,0 700,0 1000,350 1000,750' fill='url(%23eg3)'/%3E%3C/svg%3E");
+      background-size: cover;
+      background-position: center;
+    }
+    [data-theme="dark"] .chapter-bg-layer.ch-egypt {
+      background:
+        /* warm glow bottom-right */
+        radial-gradient(circle 30vmin at 90% 90%, rgba(120,100,40,0.18) 0%, transparent 100%),
+        /* diagonal bands — dark */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='eg1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23504020' stop-opacity='0.25'/%3E%3Cstop offset='1' stop-color='%23403518' stop-opacity='0.15'/%3E%3C/linearGradient%3E%3ClinearGradient id='eg2' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23605030' stop-opacity='0.30'/%3E%3Cstop offset='1' stop-color='%23504525' stop-opacity='0.18'/%3E%3C/linearGradient%3E%3ClinearGradient id='eg3' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23453820' stop-opacity='0.20'/%3E%3Cstop offset='1' stop-color='%233a3018' stop-opacity='0.10'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points='0,0 350,0 1000,750 1000,1000 650,1000 0,250' fill='url(%23eg2)'/%3E%3Cpolygon points='0,0 0,250 650,1000 350,1000 0,580' fill='url(%23eg1)'/%3E%3Cpolygon points='350,0 700,0 1000,350 1000,750' fill='url(%23eg3)'/%3E%3C/svg%3E");
+      background-size: cover;
+      background-position: center;
+    }
+
+    /* ── Miracle — bold diagonal bands, blue/violet + center glow ── */
+    .chapter-bg-layer.ch-miracle {
+      background:
+        /* center miracle glow */
+        radial-gradient(circle 16vmin at 50% 40%, rgba(255,250,230,0.38) 0%, transparent 100%),
+        linear-gradient(135deg,
+          rgba(80,100,220,0.35) 0%,
+          rgba(100,80,200,0.30) 15%,
+          rgba(120,100,210,0.22) 30%,
+          rgba(140,120,220,0.16) 45%,
+          rgba(160,140,230,0.10) 60%,
+          rgba(180,165,240,0.06) 75%,
+          transparent 90%
+        ),
+        linear-gradient(140deg,
+          rgba(60,80,200,0.28) 0%,
+          rgba(80,100,210,0.18) 20%,
+          transparent 50%
+        ),
+        linear-gradient(125deg,
+          transparent 40%,
+          rgba(100,120,230,0.15) 60%,
+          rgba(120,100,220,0.10) 80%,
+          rgba(140,120,240,0.06) 100%
+        );
+    }
+    [data-theme="dark"] .chapter-bg-layer.ch-miracle {
+      background:
+        /* center miracle glow — dark */
+        radial-gradient(circle 14vmin at 50% 40%, rgba(180,175,255,0.28) 0%, transparent 100%),
+        linear-gradient(135deg,
+          rgba(30,35,120,0.45) 0%,
+          rgba(40,30,100,0.38) 15%,
+          rgba(50,40,110,0.30) 30%,
+          rgba(40,35,90,0.22) 45%,
+          rgba(35,30,75,0.14) 60%,
+          rgba(25,22,60,0.08) 75%,
+          transparent 90%
+        ),
+        linear-gradient(140deg,
+          rgba(25,30,110,0.32) 0%,
+          rgba(35,30,90,0.20) 20%,
+          transparent 50%
+        ),
+        linear-gradient(125deg,
+          transparent 40%,
+          rgba(40,35,100,0.16) 60%,
+          rgba(30,28,80,0.10) 80%,
+          rgba(22,20,60,0.06) 100%
+        );
+    }
+
+    /* ── Desert — curvy dune lines + bluish sky, SVG ── */
+    .chapter-bg-layer.ch-desert {
+      background:
+        /* bluish sky top */
+        linear-gradient(to bottom, rgba(160,195,230,0.28) 0%, rgba(190,210,235,0.18) 25%, rgba(220,225,235,0.08) 45%, transparent 60%),
+        /* sun glow */
+        radial-gradient(circle 16vmin at 65% 15%, rgba(255,220,130,0.30) 0%, transparent 100%),
+        /* curvy dune lines SVG */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='d1' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23d4b878' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23d4b878' stop-opacity='0.25'/%3E%3C/linearGradient%3E%3ClinearGradient id='d2' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23c8a868' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23c8a868' stop-opacity='0.20'/%3E%3C/linearGradient%3E%3ClinearGradient id='d3' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23dcc080' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23dcc080' stop-opacity='0.30'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 620 Q150 560 300 590 Q500 630 650 580 Q800 540 1000 570 L1000 1000 L0 1000Z' fill='url(%23d2)'/%3E%3Cpath d='M0 720 Q200 670 400 710 Q550 740 700 690 Q850 650 1000 680 L1000 1000 L0 1000Z' fill='url(%23d1)'/%3E%3Cpath d='M0 810 Q180 770 350 800 Q520 830 700 790 Q880 760 1000 780 L1000 1000 L0 1000Z' fill='url(%23d3)'/%3E%3Cpath d='M0 890 Q250 860 450 880 Q650 900 800 870 Q920 850 1000 865 L1000 1000 L0 1000Z' fill='url(%23d1)'/%3E%3C/svg%3E");
+      background-size: cover;
+      background-position: center;
+    }
+    [data-theme="dark"] .chapter-bg-layer.ch-desert {
+      background:
+        /* dark blue sky top */
+        linear-gradient(to bottom, rgba(20,30,60,0.45) 0%, rgba(30,40,70,0.30) 25%, rgba(40,45,65,0.15) 45%, transparent 60%),
+        /* moon glow */
+        radial-gradient(circle 7vmin at 35% 10%, rgba(200,210,240,0.18) 0%, transparent 100%),
+        /* stars */
+        radial-gradient(circle 1.2px at 20% 8%, rgba(255,255,230,0.30) 0%, transparent 100%),
+        radial-gradient(circle 1px at 55% 5%, rgba(255,255,230,0.22) 0%, transparent 100%),
+        radial-gradient(circle 1.5px at 80% 12%, rgba(255,255,230,0.28) 0%, transparent 100%),
+        radial-gradient(circle 1px at 45% 18%, rgba(255,255,230,0.18) 0%, transparent 100%),
+        /* curvy dune lines SVG — dark */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='d1' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23504020' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23504020' stop-opacity='0.28'/%3E%3C/linearGradient%3E%3ClinearGradient id='d2' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23453818' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23453818' stop-opacity='0.22'/%3E%3C/linearGradient%3E%3ClinearGradient id='d3' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23584828' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23584828' stop-opacity='0.32'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 620 Q150 560 300 590 Q500 630 650 580 Q800 540 1000 570 L1000 1000 L0 1000Z' fill='url(%23d2)'/%3E%3Cpath d='M0 720 Q200 670 400 710 Q550 740 700 690 Q850 650 1000 680 L1000 1000 L0 1000Z' fill='url(%23d1)'/%3E%3Cpath d='M0 810 Q180 770 350 800 Q520 830 700 790 Q880 760 1000 780 L1000 1000 L0 1000Z' fill='url(%23d3)'/%3E%3Cpath d='M0 890 Q250 860 450 880 Q650 900 800 870 Q920 850 1000 865 L1000 1000 L0 1000Z' fill='url(%23d1)'/%3E%3C/svg%3E");
+      background-size: cover;
+      background-position: center;
     }
 
     body > * { position: relative; z-index: 1; }
@@ -141,38 +246,28 @@
     #progressBar {
       flex-shrink: 0;
       display: flex;
-      align-items: center;
+      align-items: flex-end;
       justify-content: center;
-      gap: 6px;
-      padding: 12px 24px;
+      gap: 24px;
+      padding: 28px 0 12px;
+      margin: 0 auto;
+      overflow: visible;
     }
 
     .silo {
-      flex: 0 0 32px;
       display: flex;
       flex-direction: column;
-      gap: 5px;
-      border-radius: 3px;
-      padding: 4px 6px;
-      transition: flex 0.35s cubic-bezier(0.4, 0, 0.2, 1), background 0.15s;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .silo.active {
-      flex: 1;
-      max-width: 228px;
+      align-items: flex-start;
+      gap: 4px;
+      overflow: visible;
     }
 
     .silo.enabled {
       cursor: pointer;
     }
-    .silo.enabled:not(.active):hover {
-      background: var(--surface);
-    }
 
     .silo.locked {
-      opacity: 0.4;
+      opacity: 0.5;
       cursor: not-allowed;
     }
 
@@ -182,15 +277,18 @@
       letter-spacing: 0.16em;
       text-transform: uppercase;
       color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 4px;
       white-space: nowrap;
+      height: 0;
+      overflow: hidden;
       opacity: 0;
-      transition: opacity 0.25s ease;
+      transition: opacity 0.35s ease, height 0.35s ease;
     }
 
-    .silo.active .silo-label { color: var(--green); opacity: 1; }
+    .silo.active .silo-label {
+      color: var(--text-muted);
+      opacity: 1;
+      height: 12px;
+    }
 
     .lock-icon {
       font-size: 7px;
@@ -200,38 +298,47 @@
     .silo-segments {
       display: flex;
       gap: 3px;
+      overflow: visible;
+      color: var(--text-muted);
     }
 
     .seg {
-      flex: 0 0 7px;
-      width: 7px;
-      height: 7px;
+      flex: 0 0 8px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
-      border: 1px solid var(--card-border);
-      background: var(--surface);
-      transition: background 0.3s, border-color 0.3s, flex 0.3s ease-in-out, border-radius 0.3s ease-in-out, opacity 0.3s;
+      border: 1.5px solid var(--text-muted);
+      background: var(--text-muted);           /* grey for unseen questions */
+      transition: background 0.35s, border-color 0.35s,
+                  flex 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+                  width 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+                  border-radius 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 0.3s;
     }
 
+    /* Active chapter: all segments become wide pills */
     .silo.active .seg {
-      border-color: var(--green-border);
-    }
-
-    /* Current question segment morphs into a pill */
-    .seg.current {
-      flex: 0 0 120px;
-      width: auto;
+      flex: 0 0 48px;
+      width: 48px;
       border-radius: 999px;
-      border-color: var(--green-border);
     }
 
-    /* Inactive chapters: dim segments for lower visual weight */
-    .silo.enabled:not(.active) .seg {
-      opacity: 0.4;
+    /* Current question segment: hollow outlined pill */
+    .silo.active .seg.current {
+      background: transparent;
+      border-color: var(--text);               /* dark outline */
+    }
+
+    /* Locked chapters */
+    .silo.locked .seg {
+      background: var(--text-muted);
+      border-color: var(--text-muted);
+      opacity: 0.5;
     }
 
     .seg.done {
-      background: var(--green);
-      border-color: var(--green);
+      background: var(--text);                 /* black from palette for answered */
+      border-color: var(--text);
     }
 
     .seg.skipped {
@@ -283,7 +390,7 @@
     .block-input-wrap textarea {
       flex: 1;
       font-family: inherit;
-      font-size: 14px;
+      font-size: 16px;
       line-height: 1.55;
       color: var(--text);
       background: transparent;
@@ -328,29 +435,39 @@
     }
 
     /* ── IN-FOCUS BLOCK ── */
-    /* In-focus block is at least as tall as the feed — forces overflow so the
-       feed can scroll to show it at the top when past blocks are above it.
-       flex:1 alone prevents overflow (total always == feed height). */
+    /* In-focus q-group: flex column so question-block scrolls, input pins at bottom */
     .feed > .in-focus.q-group {
       flex: 0 0 auto;
       display: flex;
       flex-direction: column;
+      overflow: hidden;          /* override clip — let flex children handle scroll */
+    }
+    /* question-block becomes the scroll container in-focus;
+       content centers vertically when short, scrolls when tall */
+    .q-group.in-focus > .question-block {
+      position: static;          /* drop sticky — we ARE the scroll zone now */
+      flex: 1;
+      min-height: 0;             /* allow flex shrink below intrinsic size */
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;   /* vertical-center question + options */
     }
 
     /* Scrollable area inside in-focus block — only this region scrolls */
     .scroll-zone {
       flex: 1;
       overflow-y: auto;
-      min-height: 0;
+      min-height: 60px;          /* never collapse below 60px so content stays reachable */
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
-    /* Centers content vertically when short; collapses to 0 margin when content overflows.
-       max-width matches the focused reading column width used across all block types. */
+    /* Max-width matches the focused reading column width used across all block types.
+       Content blocks: text flows from top. Question blocks: centered via .question-block. */
     .scroll-content {
-      margin: auto 0;
+      margin: auto;           /* vertical + horizontal center when content is short */
       max-width: 560px;
       width: 100%;
       display: flex;
@@ -386,11 +503,22 @@
       display: none;
     }
 
-    /* In-focus content block fills card like q-group */
+    /* In-focus content block: video fills viewport; text/material hugs content (see _layoutActive) */
     .feed > .in-focus.content-block {
       flex: 0 0 auto;
       display: flex;
       flex-direction: column;
+      min-height: 0;        /* override min-content — respect flex basis from setActive */
+      overflow: hidden;      /* clip to border-radius, scroll-zone handles inner scroll */
+    }
+    .feed > .in-focus.content-block:not(.video) {
+      align-self: flex-start;
+      width: 100%;
+    }
+    .feed > .in-focus.content-block:not(.video) .scroll-zone {
+      flex: none;
+      overflow-y: visible;
+      min-height: 0;
     }
 
     #track {
@@ -423,7 +551,126 @@
     .card.inactive {
       opacity: 0.45;
       filter: saturate(0.3);
+    }
+    .card.inactive .feed,
+    .card.inactive .card-head,
+    .card.inactive .card-input-bar {
       pointer-events: none;
+    }
+
+    /* ── CARD NAV ARROW ── */
+    .card-nav-arrow {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      pointer-events: auto;
+      cursor: pointer;
+      z-index: 10;
+      transition: opacity 0.3s ease;
+    }
+    /* Right cards: arrow at left edge */
+    .card.inactive.card-right .card-nav-arrow {
+      justify-content: flex-start;
+      padding-left: 24px;
+    }
+    /* Left cards: arrow at right edge */
+    .card.inactive.card-left .card-nav-arrow {
+      justify-content: flex-end;
+      padding-right: 24px;
+    }
+    /* Hide arrow on active card */
+    .card:not(.inactive) .card-nav-arrow { display: none; }
+    .card.inactive:hover { opacity: 0.65; filter: saturate(0.5); }
+
+    .card-nav-arrow .nav-circle {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1.5px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    }
+    .card.inactive:hover .nav-circle {
+      transform: scale(1.08);
+      box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+      background: #fff;
+    }
+    [data-theme="dark"] .card.inactive:hover .nav-circle {
+      background: rgba(255,255,255,0.12);
+    }
+
+    .card-nav-arrow .nav-circle svg {
+      width: 20px;
+      height: 20px;
+      color: var(--text);
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    .card.inactive:hover .nav-circle svg { opacity: 1; }
+
+    .card-nav-tooltip {
+      position: absolute;
+      top: calc(50% + 40px);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+    }
+    .card.inactive.card-right .card-nav-tooltip { left: 24px; }
+    .card.inactive.card-left .card-nav-tooltip { right: 24px; }
+    .card.inactive:hover .card-nav-tooltip { opacity: 1; }
+
+    /* ── PROGRESS BAR TOOLTIPS ── */
+    .seg {
+      position: relative;
+      cursor: pointer;
+    }
+    .seg-tooltip {
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%) translateY(-4px);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: #fff;
+      background: var(--text);
+      padding: 5px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 100;
+    }
+    .seg-tooltip::before {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 4px solid transparent;
+      border-bottom-color: var(--text);
+    }
+    .seg:hover .seg-tooltip {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .silo.active .seg:hover {
+      filter: brightness(0.85);
     }
 
     /* ── CARD HEADER ── */
@@ -444,7 +691,7 @@
       left: 0;
       height: 3px;
       width: 0%;
-      background: linear-gradient(90deg, var(--accent), var(--green));
+      background: linear-gradient(90deg, rgba(123, 97, 255, 0.4), rgba(123, 97, 255, 1));
       transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 1;
     }
@@ -454,7 +701,7 @@
       font-weight: 700;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: var(--green);
+      color: var(--text-muted);
     }
 
     .card-slash {
@@ -473,24 +720,18 @@
     .feed {
       flex: 1;
       overflow-y: auto;
-      padding: 28px 28px 0;
+      scroll-behavior: smooth;
+      padding: 28px 28px 16px;
       display: flex;
       flex-direction: column;
-      gap: 32px;
+      gap: 16px;
     }
 
-    /* ── GLOBAL CARD INPUT BAR ── */
-    /* Sits below the feed as a flex sibling — never scrolls, always pinned to card bottom */
+    /* ── CARD INPUT BAR — pinned at bottom of the active block ── */
     .card-input-bar {
       flex-shrink: 0;
-      position: sticky;
-      bottom: 0;
-      z-index: 20;
-      padding: 10px 24px 16px;
-      background: var(--card-bg, #fff);
-      border-top: 1px solid var(--card-border);
-      backdrop-filter: blur(28px) saturate(140%);
-      -webkit-backdrop-filter: blur(28px) saturate(140%);
+      padding: 8px 24px 12px;
+      background: none;
     }
     .card-input-row {
       display: flex;
@@ -532,32 +773,100 @@
       top: 0;
       z-index: 5;
       background: var(--q-block-bg);
-      padding: 24px 24px 20px;
+      padding: 0;
     }
 
-    /* Feedback rows — system chat bubbles, left-aligned, live inside .q-full */
+    /* Feedback rows — same bubble treatment as .material-chat-reply */
     .q-feedback-row {
       display: block;
       width: fit-content;
-      max-width: 80%;
+      max-width: 85%;
       margin: 14px 0 0;
       padding: 10px 14px;
-      border-radius: 14px 14px 14px 3px;
-      font-size: 13px;
-      line-height: 1.6;
-      background: var(--surface);
+      border-radius: 12px 12px 12px 2px;
+      font-size: 16px;
+      line-height: 1.55;
+      background: #fff;
       color: var(--text-dim);
       border: 1px solid var(--card-border);
+      box-shadow: none;
     }
     .q-feedback-row.wrong {
-      background: var(--wrong-bg);
+      background: #fff;
       border-color: var(--wrong-border);
-      color: var(--wrong);
     }
     .q-feedback-row.correct-fb {
-      background: var(--correct-bg);
+      background: #fff;
       border-color: var(--correct-border);
+    }
+    [data-theme="dark"] .q-feedback-row {
+      background: rgba(255,255,255,0.08);
+    }
+    [data-theme="dark"] .q-feedback-row.wrong {
+      border-color: var(--wrong-border);
+    }
+    [data-theme="dark"] .q-feedback-row.correct-fb {
+      border-color: var(--correct-border);
+    }
+
+    /* ── CONTINUE TIMER BUTTON ── */
+    .q-continue-wrap {
+      display: flex;
+      justify-content: center;
+      padding: 14px 0 4px;
+    }
+    .q-continue-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 18px 9px 10px;
+      border-radius: 999px;
+      border: 1.5px solid var(--correct-border);
+      background: var(--correct-bg);
       color: var(--correct);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    }
+    .q-continue-btn:hover {
+      background: rgba(10,191,83,0.14);
+      transform: translateY(-1px);
+    }
+    .q-continue-btn:active { transform: translateY(0); }
+
+    /* SVG ring */
+    .q-timer-ring {
+      position: relative;
+      width: 26px;
+      height: 26px;
+      flex-shrink: 0;
+    }
+    .q-timer-ring svg {
+      transform: rotate(-90deg);
+    }
+    .q-timer-track {
+      fill: none;
+      stroke: rgba(10,191,83,0.18);
+      stroke-width: 2.5;
+    }
+    .q-timer-progress {
+      fill: none;
+      stroke: var(--correct);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.1s linear;
+    }
+    .q-timer-count {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--correct);
+      line-height: 1;
     }
 
     /* ── COLLAPSED STATE — background/border owned by animations above ── */
@@ -567,16 +876,20 @@
     .q-group.collapsed:hover { filter: brightness(0.97); }
 
     .q-group.collapsed .question-block {
-      position: static;
       padding: 20px;
       display: flex;
       align-items: center;
       gap: 16px;
       background: transparent;
+      max-width: 560px;
+      margin: 0 auto;
+      width: 100%;
     }
 
-    /* feedback rows now live inside .q-full — visibility handled by .q-full show/hide */
     .q-group.collapsed .q-toggle { order: 9; }
+    .q-group.collapsed .q-toggle { border-color: var(--correct-border); }
+    .q-group.collapsed:hover .q-toggle { border-color: var(--correct); }
+    .q-group.collapsed.open .q-toggle { transform: rotate(180deg); }
 
     .q-group.collapsed.open .question-block {
       padding: 16px 20px 14px;
@@ -584,26 +897,16 @@
       flex-wrap: wrap;
     }
     .q-group.collapsed.open .q-summary-title { display: none; }
-    .q-group.collapsed.open .q-full { display: contents; }
-    .q-group.collapsed.open .q-text {
-      flex: 1;
-      order: 1;
-      margin-bottom: 0;
-      font-size: 16px;
-    }
-    .q-group.collapsed.open .options {
-      flex-basis: 100%;
-      order: 10;
-    }
-    .q-group.collapsed.open .q-user-bubble,
-    .q-group.collapsed.open .q-feedback-row {
-      flex-basis: 100%;
-      order: 11;
-    }
-    .q-group.collapsed.open .q-user-bubble { margin-left: auto; width: fit-content; }
+    .q-group.collapsed.open .q-full { display: block; padding: 16px 20px; }
+    .q-group.collapsed:not(.open) .q-full { display: none; }
+
     /* ── COLLAPSED SUMMARY ── */
     .q-summary { display: none; }
     .q-group.collapsed .q-summary { display: contents; }
+
+    /* ── SKIPPED STATE ── */
+    .q-group.skipped.collapsed .q-toggle { border-color: var(--amber-border); }
+    .q-group.skipped.collapsed:hover .q-toggle { border-color: var(--amber); }
 
     .q-summary-icon {
       width: 36px; height: 36px;
@@ -640,25 +943,29 @@
       border-top: 8px solid var(--text-muted);
       transition: border-top-color 0.15s;
     }
-    .q-group.collapsed .q-toggle { border-color: var(--correct-border); }
-    .q-group.collapsed:hover .q-toggle { border-color: var(--correct); }
-    .q-group.collapsed.open .q-toggle { transform: rotate(180deg); }
 
 
-    /* ── SKIP BUTTON — sits to the right of the block input ── */
+    /* ── SKIP BUTTON — circular, same size as send button ── */
     .q-skip {
       flex-shrink: 0;
-      align-self: center;
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       background: none;
-      border: none;
-      padding: 6px 4px;
+      border: 1px solid rgba(156, 163, 175, 0.35);
+      border-radius: 50%;
+      color: #9ca3af;
       cursor: pointer;
-      color: var(--text-muted);
-      font-size: 17px;
+      font-size: 13px;
       line-height: 1;
-      transition: color 0.15s;
+      transition: border-color 0.15s, background 0.15s;
     }
-    .q-skip:hover { color: var(--amber); }
+    .q-skip:hover {
+      border-color: #9ca3af;
+      background: rgba(156, 163, 175, 0.1);
+    }
     .q-group.collapsed .sticky-bottom { display: none; }
 
     .q-group.in-focus {
@@ -675,31 +982,17 @@
       position: static;
     }
 
-    /* q-full centers when short, scrolls when tall; constrained to focused column width */
-    .q-group.in-focus .q-full {
-      margin: auto;
+    /* q-full always constrained to the focused column width — in-focus and past alike */
+    .q-full {
+      margin: 0 auto;
       max-width: 560px;
       width: 100%;
       padding: 16px 0;
     }
 
     /* ── SKIPPED STATE — background/border owned by groupSkipped animation ── */
-    .q-group.skipped.collapsed {
-    }
-    .q-group.skipped.collapsed .q-toggle {
-      border-color: var(--amber-border);
-    }
-    .q-group.skipped.collapsed:hover .q-toggle {
-      border-color: var(--amber);
-    }
-    .q-group.skipped .q-summary-icon {
-      border-color: var(--amber);
-      color: var(--amber);
-      font-size: 13px;
-    }
 
     /* ── FULL CONTENT ── */
-    .q-group.collapsed:not(.open) .q-full { display: none; }
 
     .q-text {
       font-size: 28px;
@@ -760,6 +1053,15 @@
       opacity: 1;
       filter: none;
       transform: scale(1);
+      cursor: pointer;
+      transition: opacity 0.3s ease, transform 0.3s ease, filter 0.3s ease;
+    }
+    /* Smooth navigation mode — no delay, applied via JS */
+    .feed > *.nav-transition {
+      transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+                  transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+                  filter 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+                  flex-basis 0.55s cubic-bezier(0.22, 1, 0.36, 1) !important;
     }
 
     /* ── CONTENT BLOCKS ── */
@@ -768,9 +1070,21 @@
       flex-direction: column;
       border: none;
       border-radius: 16px;
-      min-height: min-content;
+      overflow: hidden;
+      min-height: 0;           /* in-focus blocks must respect flex basis; past blocks use .past rule */
       padding: 0;
       margin-bottom: 0px;
+    }
+    .msg.content-block.past {
+      min-height: min-content; /* past blocks show at natural height */
+    }
+
+    /* Next button wrapper — sits below the active block in the feed */
+    .content-block-next {
+      display: flex;
+      justify-content: center;
+      padding: 6px 0 8px;
+      margin-top: -8px;           /* halve the feed gap (16→8) */
     }
 
 
@@ -783,12 +1097,14 @@
       letter-spacing: 0.16em;
       text-transform: uppercase;
       border-bottom: none;
+      text-align: center;
     }
 
     .content-block .msg-body {
       padding: 16px 32px;
-      font-size: 14px;
+      font-size: 16px;
       line-height: 1.7;
+      text-align: left;
     }
 
     /* ── MATERIAL CHAT — inline Q&A inside a content block ── */
@@ -804,20 +1120,21 @@
       display: block;
       width: fit-content;
       max-width: 85%;
-      font-size: 13px;
+      font-size: 16px;
       line-height: 1.55;
       color: var(--text-dim);
-      padding: 2px 0;
+      padding: 10px 14px;
+      background: #fff;
+      border-radius: 12px 12px 12px 2px;
+      border: 1px solid var(--card-border);
+      box-shadow: none;
+    }
+    [data-theme="dark"] .material-chat-reply {
+      background: rgba(255,255,255,0.08);
     }
 
     .material-chat-reply::before {
-      content: 'MO //';
-      display: block;
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      color: var(--text-muted);
-      margin-bottom: 4px;
+      content: none;
     }
 
     /* Overview — accent tint */
@@ -975,6 +1292,103 @@
       opacity: 0.4;
     }
 
+    /* ── Illustration blocks ── */
+    .illustration-block {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      padding: 8px 0 12px;
+    }
+    .illustration-block svg {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+    }
+    .text-after-image {
+      margin-top: 12px;
+    }
+
+    /* ── Audio player ── */
+    .audio-player {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 32px;
+      cursor: pointer;
+    }
+    .audio-scanlines { display: none; }
+    .audio-play-btn {
+      width: 38px; height: 38px;
+      border: 1.5px solid rgba(0,0,0,0.3);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(0,0,0,0.65);
+      font-size: 13px;
+      padding-left: 2px;
+      transition: background 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+    [data-theme="dark"] .audio-play-btn {
+      border-color: rgba(255,255,255,0.35);
+      color: rgba(255,255,255,0.75);
+    }
+    .audio-player:hover .audio-play-btn {
+      background: rgba(0,0,0,0.06);
+      border-color: rgba(0,0,0,0.55);
+    }
+    [data-theme="dark"] .audio-player:hover .audio-play-btn {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.7);
+    }
+    .audio-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .audio-title {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: 0.04em;
+    }
+    .audio-duration {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+    .audio-waveform {
+      flex: 1;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .audio-waveform .bar {
+      width: 2px;
+      background: rgba(0,0,0,0.18);
+      border-radius: 1px;
+      transition: background 0.3s;
+    }
+    [data-theme="dark"] .audio-waveform .bar {
+      background: rgba(255,255,255,0.2);
+    }
+    .audio-player.played .audio-play-btn {
+      opacity: 0.4;
+    }
+    .audio-player.played .audio-waveform .bar {
+      background: rgba(0,0,0,0.35);
+    }
+    [data-theme="dark"] .audio-player.played .audio-waveform .bar {
+      background: rgba(255,255,255,0.45);
+    }
+    .audio-footer {
+      padding: 16px 14px;
+      display: flex;
+      justify-content: center;
+    }
+
     .msg-mo-header {
       display: flex;
       align-items: center;
@@ -984,7 +1398,7 @@
 
     .mo-dot {
       width: 20px; height: 20px;
-      border: 1.5px solid var(--green);
+      border: 1.5px solid var(--text-muted);
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
@@ -992,7 +1406,7 @@
     .mo-dot::after {
       content: '';
       width: 6px; height: 6px;
-      background: var(--green);
+      background: var(--text-muted);
       border-radius: 50%;
     }
 
@@ -1001,7 +1415,7 @@
       font-weight: 700;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: var(--green);
+      color: var(--text-muted);
     }
 
     .msg-body {
@@ -1023,7 +1437,7 @@
       color: var(--user-bubble-color);
       border-radius: 14px 14px 3px 14px;
       padding: 9px 14px;
-      font-size: 14px;
+      font-size: 16px;
       line-height: 1.5;
       max-width: 75%;
     }
@@ -1037,7 +1451,7 @@
       color: var(--user-bubble-color);
       border-radius: 14px 14px 3px 14px;
       padding: 10px 14px;
-      font-size: 14px;
+      font-size: 16px;
       line-height: 1.5;
       margin-top: 14px;
     }
@@ -1075,8 +1489,8 @@
     }
 
     .opt:hover:not(:disabled) {
-      border-color: var(--green);
-      background: var(--green-bg);
+      border-color: var(--accent);
+      background: var(--accent-bg);
     }
 
     .opt:disabled { cursor: default; }
@@ -1139,7 +1553,7 @@
     .opt.correct .opt-key { border-color: var(--correct); color: var(--correct); }
 
     .opt-text {
-      font-size: 13px;
+      font-size: 16px;
       line-height: 1.45;
       color: var(--text);
       padding-top: 1px;
@@ -1177,7 +1591,7 @@
     .feedback-inner.correct .feedback-label { color: var(--correct); }
 
     .feedback-text {
-      font-size: 13px;
+      font-size: 16px;
       line-height: 1.6;
       color: var(--text);
     }
@@ -1414,17 +1828,17 @@
     }
 
     .toc-roman {
-      font-size: 8px;
+      font-size: 10px;
       font-weight: 700;
       letter-spacing: 0.14em;
       text-transform: uppercase;
       color: var(--text-muted);
       flex-shrink: 0;
     }
-    .toc-chapter.active .toc-roman { color: var(--green); }
+    .toc-chapter.active .toc-roman { color: var(--text-muted); }
 
     .toc-name {
-      font-size: 12px;
+      font-size: 14px;
       font-weight: 600;
       color: var(--text);
     }
@@ -1455,7 +1869,7 @@
     .toc-step.current .toc-step-dot { border-color: var(--accent); background: transparent; box-shadow: 0 0 0 2px var(--accent-bg); }
 
     .toc-step-label {
-      font-size: 9px;
+      font-size: 11px;
       font-weight: 600;
       letter-spacing: 0.1em;
       text-transform: uppercase;
@@ -1464,7 +1878,7 @@
     }
 
     .toc-step-text {
-      font-size: 11px;
+      font-size: 14px;
       color: var(--text-dim);
       white-space: nowrap;
       overflow: hidden;
@@ -1519,13 +1933,238 @@
     .card, .card-input-bar, .q-group, .question-block, .msg.content-block, .opt,
     .block-input-wrap, #tocPanel, #tocToggle, #themeToggle,
     .q-feedback-row, .video-footer, .material-next-btn,
-    .q-skip, .silo, .seg {
+    .q-skip, .silo {
       transition: background 0.35s ease, border-color 0.35s ease, color 0.35s ease, box-shadow 0.35s ease;
     }
+    /* Seg keeps its morph transitions AND gets theme transitions */
+    .seg {
+      transition: background 0.35s ease, border-color 0.35s ease, color 0.35s ease, box-shadow 0.35s ease,
+                  flex 0.3s ease-in-out, width 0.3s ease-in-out, border-radius 0.3s ease-in-out, opacity 0.3s ease;
+    }
+
+    /* ── WELCOME POPUP ── */
+    #welcomeOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 150;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
+    }
+    #welcomeOverlay.exit {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+    #welcomeOverlay.hidden { display: none; }
+
+    .welcome-card {
+      width: min(420px, 88vw);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 40px 32px 36px;
+      box-shadow: var(--glass-shadow);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+
+    .welcome-illus {
+      width: 260px;
+      height: 200px;
+      margin-bottom: 4px;
+    }
+
+    .welcome-title {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .welcome-desc {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-dim);
+      max-width: 360px;
+    }
+
+    .welcome-meta {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .welcome-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .welcome-meta-item .meta-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .welcome-start {
+      margin-top: 8px;
+      padding: 14px 48px;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      border: none;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+      box-shadow: 0 4px 16px rgba(99,91,255,0.25);
+    }
+    .welcome-start:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(99,91,255,0.35);
+    }
+    .welcome-start:active {
+      transform: translateY(0);
+    }
+
+    /* ── PRE-START HIDE ── */
+    body.pre-start #progressBar,
+    body.pre-start #trackWrapper,
+    body.pre-start #tocToggle {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ── REVEAL ANIMATIONS ── */
+    @keyframes slideDownIn {
+      from { opacity: 0; transform: translateY(-24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideUpIn {
+      from { opacity: 0; transform: translateY(40px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    body.revealing #progressBar {
+      animation: slideDownIn 0.5s ease both;
+    }
+    body.revealing #trackWrapper {
+      animation: slideUpIn 0.6s ease 0.15s both;
+    }
+    body.revealing #tocToggle {
+      animation: slideDownIn 0.4s ease 0.1s both;
+    }
+
+    /* staggered card entrance: fade in with elastic bounce */
+    @keyframes cardFadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    body.revealing .card {
+      animation: cardFadeIn 0.4s ease-out both;
+    }
+    body.revealing .card:nth-child(1) { animation-delay: 0.35s; }
+    body.revealing .card:nth-child(2) { animation-delay: 0.45s; }
+    body.revealing .card:nth-child(3) { animation-delay: 0.55s; }
 
   </style>
 </head>
-<body>
+<body class="pre-start">
+
+  <!-- Welcome popup -->
+  <div id="welcomeOverlay">
+    <div class="welcome-card">
+      <svg class="welcome-illus" viewBox="0 0 260 200" xmlns="http://www.w3.org/2000/svg">
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Seder plate (large circle) -->
+          <ellipse cx="130" cy="112" rx="100" ry="62" stroke="var(--illus-base)" stroke-width="2.8" opacity="0.7"/>
+          <ellipse cx="130" cy="112" rx="82" ry="50" stroke="var(--illus-line)" stroke-width="1.6" opacity="0.4"/>
+
+          <!-- Matzah (center, layered rectangles) -->
+          <g transform="translate(130,105)">
+            <rect x="-20" y="-10" width="40" height="8" rx="2" fill="var(--illus-gold)" opacity="0.7" stroke="var(--illus-base)" stroke-width="1.2"/>
+            <rect x="-18" y="-18" width="36" height="8" rx="2" fill="var(--illus-gold)" opacity="0.5" stroke="var(--illus-base)" stroke-width="1.2"/>
+            <line x1="-14" y1="-6" x2="14" y2="-6" stroke="var(--illus-line)" stroke-width="0.8" opacity="0.5"/>
+            <line x1="-12" y1="-14" x2="12" y2="-14" stroke="var(--illus-line)" stroke-width="0.8" opacity="0.5"/>
+          </g>
+
+          <!-- Wine cup (left) -->
+          <g transform="translate(56,96)">
+            <path d="M-10,10 L-6,-18 L6,-18 L10,10" stroke="var(--illus-base)" stroke-width="2.2" fill="none"/>
+            <line x1="0" y1="10" x2="0" y2="22" stroke="var(--illus-base)" stroke-width="2"/>
+            <ellipse cx="0" cy="24" rx="10" ry="3" stroke="var(--illus-base)" stroke-width="1.6" fill="none"/>
+            <path d="M-5,-12 Q0,-18 5,-12" stroke="var(--illus-gold)" stroke-width="1.4" opacity="0.6" fill="none"/>
+          </g>
+
+          <!-- Herb sprig (right) -->
+          <g transform="translate(202,88)">
+            <path d="M0,24 Q2,10 -4,-4 Q-6,-12 0,-20" stroke="var(--illus-base)" stroke-width="2" fill="none"/>
+            <path d="M-4,-4 Q-14,-8 -12,-16" stroke="var(--illus-gold)" stroke-width="1.6" opacity="0.7" fill="none"/>
+            <path d="M-4,-4 Q6,-10 8,-18" stroke="var(--illus-gold)" stroke-width="1.6" opacity="0.7" fill="none"/>
+            <circle cx="-12" cy="-16" r="2.5" fill="var(--illus-gold)" opacity="0.5"/>
+            <circle cx="8" cy="-18" r="2.5" fill="var(--illus-gold)" opacity="0.5"/>
+            <circle cx="0" cy="-20" r="2.5" fill="var(--illus-gold)" opacity="0.5"/>
+          </g>
+
+          <!-- Egg (top-left) -->
+          <g transform="translate(90,72)">
+            <ellipse cx="0" cy="0" rx="12" ry="15" stroke="var(--illus-base)" stroke-width="2" fill="none" transform="rotate(-12)"/>
+            <path d="M-4,-8 Q0,-14 4,-8" stroke="var(--illus-line)" stroke-width="1" opacity="0.4" fill="none"/>
+          </g>
+
+          <!-- Bone (top-right) -->
+          <g transform="translate(170,72)">
+            <line x1="-14" y1="6" x2="12" y2="-8" stroke="var(--illus-base)" stroke-width="2.4"/>
+            <circle cx="-14" cy="6" r="4" stroke="var(--illus-base)" stroke-width="1.6" fill="none"/>
+            <circle cx="12" cy="-8" r="3.5" stroke="var(--illus-base)" stroke-width="1.6" fill="none"/>
+          </g>
+
+          <!-- Stars (top decorative) -->
+          <g stroke="var(--illus-gold)" stroke-width="1.2" opacity="0.45">
+            <line x1="46" y1="24" x2="46" y2="34"/>
+            <line x1="41" y1="29" x2="51" y2="29"/>
+            <line x1="210" y1="20" x2="210" y2="30"/>
+            <line x1="205" y1="25" x2="215" y2="25"/>
+            <line x1="128" y1="14" x2="128" y2="26"/>
+            <line x1="122" y1="20" x2="134" y2="20"/>
+          </g>
+
+          <!-- Subtle decorative curves around plate -->
+          <path d="M24,130 Q60,170 130,176 Q200,170 236,130" stroke="var(--illus-line)" stroke-width="1.2" opacity="0.25" fill="none"/>
+        </g>
+      </svg>
+
+      <div class="welcome-title">The Passover Haggadah</div>
+      <div class="welcome-desc">A guided journey through the ancient text of the Seder — from the story of the Exodus to the songs and symbols that bring it to life.</div>
+      <div class="welcome-meta">
+        <span class="welcome-meta-item"><span class="meta-dot"></span> Beginner</span>
+        <span class="welcome-meta-item"><span class="meta-dot"></span> 3 Chapters</span>
+        <span class="welcome-meta-item"><span class="meta-dot"></span> ~15 min</span>
+      </div>
+      <button class="welcome-start" id="startCourseBtn">Start Course</button>
+    </div>
+  </div>
+
+  <div id="chapter-bg">
+    <div class="chapter-bg-layer ch-egypt active"></div>
+    <div class="chapter-bg-layer"></div>
+  </div>
 
   <button id="themeToggle" aria-label="Toggle dark mode"></button>
 
@@ -1558,163 +2197,163 @@
 const CHAPTERS = [
   {
     roman: "I",
-    title: "Lumon Protocol",
+    title: "Why Is This Night Different?",
     steps: [
       {
         type: 'content',
-        label: "Overview", kind: "overview",
+        label: "Introduction", kind: "overview",
         pause: true,
-        text: "Chapter I covers the foundational standards that govern all employee conduct at Lumon Industries. These principles are not guidelines — they are operative requirements applied uniformly, without exception, across all departments and seniority levels.\n\nAll conduct at Lumon is subject to two core principles: transparency and escalation. Transparency governs how you communicate, document, and behave. Escalation governs how you respond when something falls outside the expected. Together they form the backbone of the Lumon Protocol.",
+        text: "The Haggadah — from the Hebrew root meaning \"to tell\" — is the ancient text that guides the Passover Seder. It is not merely a book of prayers. It is a script for collective memory, a framework for retelling the story of the Exodus from Egypt as though each person at the table lived it themselves.",
+        illustration: 'haggadah-intro',
       },
       {
         type: 'content',
-        label: "Transparency",
-        text: "All employees must maintain complete transparency in their conduct, documentation, and interdepartmental communications at all times.",
+        label: "Ma Nishtana",
+        pause: true,
+        text: "At the heart of the Seder are the Four Questions — Ma Nishtana — traditionally chanted by the youngest child at the table. \"Why is this night different from all other nights?\" The questions ask about four distinctive practices: dipping vegetables twice, eating only matzah, tasting bitter herbs, and reclining while eating.\n\nThese are not riddles awaiting answers. They are invitations — doorways into the telling. The entire Haggadah, in a sense, is the response to a child's curiosity. The questions create the obligation to explain, to remember, and to pass the story forward.",
+        audio: { title: "Ma Nishtana — The Four Questions", duration: "2:15" },
       },
       {
         type: 'question',
-        text: "What does the transparency principle require of employees?",
+        text: "What is the meaning of the word 'Haggadah'?",
         options: [
-          "Report only to direct supervisors",
-          "Maintain transparency in all conduct and communications",
-          "Document only formal decisions",
-          "Transparency applies to written communications only",
+          "The Prayer",
+          "The Telling",
+          "The Remembrance",
+          "The Passage",
         ],
         correct: 1,
-        wrongFeedback: "Not quite. Transparency isn't limited to a single channel or document type — it applies across all conduct and communications.",
+        wrongFeedback: "The word 'Haggadah' comes from the Hebrew root meaning 'to tell.' It is, at its core, a text of storytelling and retelling.",
       },
       {
         type: 'content',
-        label: "Escalation Protocol",
-        text: "Any deviation from standard procedure must be escalated through the correct reporting channel within 24 hours of identification.",
+        label: "Avadim Hayinu",
+        text: "\"We were slaves to Pharaoh in Egypt, and the Lord our God brought us out from there with a mighty hand and an outstretched arm.\" This single sentence — Avadim Hayinu — is the foundation of the entire Seder narrative. It is the answer to the Four Questions, the reason for every ritual on the table. If God had not brought our ancestors out of Egypt, the Haggadah says, then we and our children and our children's children would still be enslaved.",
       },
       {
-        type: 'freetext',
-        text: "A procedural deviation is identified Monday at 9am. By when must it be escalated?",
-        keywords: ['tuesday', '9am', '24 hour', '24h', 'next day'],
-        correctResponse: "Correct. The escalation window is 24 hours from identification. Monday 9am → Tuesday 9am.",
-        incorrectResponse: "Not quite. The window is 24 hours from the moment of identification. If it's identified Monday at 9am, it must be escalated by Tuesday at 9am.",
+        type: 'question',
+        text: "What is the purpose of the Four Questions (Ma Nishtana)?",
+        options: [
+          "To test children's knowledge of Hebrew",
+          "To open the storytelling — they invite the retelling of the Exodus",
+          "To list the foods eaten during the Seder",
+          "To recite a blessing before the meal",
+        ],
+        correct: 1,
+        wrongFeedback: "The Four Questions are not a test. They serve as an invitation — a doorway into the telling of the Exodus story. The entire Haggadah is, in a sense, the answer.",
       },
     ]
   },
   {
     roman: "II",
-    title: "Data Handling",
+    title: "From Slavery to Freedom",
     steps: [
       {
         type: 'content',
-        label: "Data Minimization",
-        text: "Employees may only access data directly relevant to their assigned tasks. Unauthorized access — even accidental — must be reported immediately.",
+        label: "The Oppression",
+        pause: true,
+        text: "The story begins long before the plagues. Jacob's family — seventy souls — descended into Egypt during a famine. Over generations they multiplied and became a great nation. A new Pharaoh arose \"who did not know Joseph,\" and he grew fearful of their numbers.",
+        illustration: 'oppression',
+        textAfterImage: "The Egyptians set taskmasters over the Israelites and crushed them with forced labor — building the store-cities of Pithom and Raamses. They made their lives bitter with hard service in mortar and brick. Pharaoh decreed that every newborn son be cast into the Nile. Yet the more the Israelites were oppressed, the more they multiplied.",
+      },
+      {
+        type: 'content', kind: 'video',
+        label: "Video",
+        videoTitle: "The Ten Plagues — Blood to Darkness to the Final Night",
+        duration: "4:30",
       },
       {
         type: 'question',
-        text: "An employee accidentally opens a file outside their assigned scope. What must they do?",
+        text: "What was the final plague that led Pharaoh to release the Israelites?",
         options: [
-          "Close it and say nothing",
-          "Delete the access log",
-          "Report it immediately",
-          "Ask a colleague for guidance",
+          "Darkness over all of Egypt",
+          "The plague of locusts",
+          "Death of the firstborn",
+          "The splitting of the sea",
         ],
         correct: 2,
-        wrongFeedback: "Any unauthorized access — regardless of intent — must be reported immediately. Inaction is itself a violation.",
+        wrongFeedback: "The tenth and final plague — the death of the firstborn — was what finally broke Pharaoh's resistance. It is for this reason the holiday is called Passover: God 'passed over' the homes of the Israelites.",
       },
       {
         type: 'content',
-        label: "Data Sharing",
-        text: "No organizational data may be shared outside your department without written authorization from your department head.",
+        label: "Liberation & the Sea",
+        pause: true,
+        illustration: 'crossing-sea',
+        text: "\"And the Lord drove the sea back by a strong east wind all night, and made the sea dry land, and the waters were divided.\"\n— Exodus 14:21",
       },
       {
         type: 'question',
-        text: "What is required before sharing organizational data with another department?",
+        text: "Why do we eat matzah on Passover?",
         options: [
-          "A verbal approval from any supervisor",
-          "Written authorization from your department head",
-          "An email confirmation from the recipient",
-          "No authorization if the request is routine",
+          "It was the traditional bread of Egyptian slaves",
+          "The Israelites left in such haste that their dough had no time to rise",
+          "It symbolizes the bitter herbs of slavery",
+          "It was a Temple offering",
         ],
         correct: 1,
-        wrongFeedback: "Only written authorization from your department head is sufficient. Verbal approvals and assumed permissions do not meet the standard.",
+        wrongFeedback: "Matzah is the bread of haste. When Pharaoh finally let the Israelites go, they fled so quickly that their bread dough had no time to rise — and so they baked it flat under the desert sun.",
+      },
+      {
+        type: 'question',
+        text: "What does 'Dayenu' express?",
+        options: [
+          "A plea for God to end the plagues",
+          "A lament for the years of slavery",
+          "Gratitude — each miracle alone would have been enough",
+          "A prayer for the coming year",
+        ],
+        correct: 2,
+        wrongFeedback: "Dayenu means 'it would have been enough.' It is a song of radical gratitude — listing fifteen gifts from God and declaring that any single one would have sufficed.",
       },
     ]
   },
   {
     roman: "III",
-    title: "Interdept. Relations",
+    title: "Signs, Symbols & Songs",
     steps: [
       {
         type: 'content',
-        label: "Scope of Authority",
-        text: "Employees must not give or accept instructions from personnel outside their direct reporting structure without documented authorization.",
-      },
-      {
-        type: 'question',
-        text: "A colleague from another department asks you to complete a task outside your scope. What is the correct response?",
-        options: [
-          "Complete it as a professional courtesy",
-          "Decline and escalate to your supervisor",
-          "Do it if it seems low-risk",
-          "Contact the colleague's supervisor directly",
-        ],
-        correct: 1,
-        wrongFeedback: "Cross-departmental requests outside your reporting structure require documented authorization. Decline and escalate to your own supervisor.",
-      },
-      {
-        type: 'question',
-        text: "What is required to accept instructions from outside your reporting structure?",
-        options: [
-          "A verbal agreement between both parties",
-          "Mutual consent",
-          "Documented authorization",
-          "An HR record",
-        ],
-        correct: 2,
-        wrongFeedback: "Documented authorization is the only valid basis. This protects accountability on both sides.",
-      },
-    ]
-  },
-  {
-    roman: "IV",
-    title: "Exit Procedures",
-    steps: [
-      {
-        type: 'content', kind: 'video',
-        label: "Video",
-        videoTitle: "Exit Procedures — What You Need to Know",
-        duration: "5:10",
+        label: "Rabban Gamliel's Teaching",
+        pause: true,
+        text: "Rabban Gamliel used to say: \"Whoever does not explain these three things on Passover has not fulfilled their obligation — Pesach, Matzah, and Maror.\" This teaching forms the interpretive heart of the Seder. The symbols on the table are not decorations. Each one carries a story, and that story must be spoken aloud.",
       },
       {
         type: 'content',
-        label: "Equipment Return",
-        text: "All Lumon-issued equipment must be returned to the designated intake office within 24 hours of separation, regardless of the nature of departure.",
+        label: "The Three Symbols",
+        pause: true,
+        illustration: 'three-symbols',
+        text: "Pesach — the Passover lamb — recalls that God passed over the houses of the Israelites during the final plague. Matzah — the unleavened bread — is the bread of affliction and of haste, eaten because there was no time to let the dough rise. Maror — the bitter herb — embodies the bitterness of slavery, the taste of tears and hard labor that our ancestors endured in Egypt.",
       },
       {
         type: 'question',
-        text: "An employee's last day is Friday at 5pm. By when must equipment be returned?",
+        text: "What does 'Maror' (bitter herb) symbolize?",
         options: [
-          "By end of day Friday",
-          "Saturday at 5pm",
-          "Within the following week",
-          "Only if equipment was personally assigned",
+          "The sweetness of freedom",
+          "The tears and bitterness of slavery in Egypt",
+          "The haste of leaving Egypt",
+          "God's judgment on the Egyptians",
         ],
         correct: 1,
-        wrongFeedback: "The 24-hour window starts from the moment of separation. Friday 5pm → Saturday 5pm.",
-      },
-      {
-        type: 'content',
-        label: "Confidentiality",
-        text: "All information encountered during employment remains confidential indefinitely. Disclosure is prohibited under all circumstances.",
+        wrongFeedback: "Maror — the bitter herb — symbolizes the bitterness of slavery. We taste it so that we remember, physically, the suffering of our ancestors.",
       },
       {
         type: 'question',
-        text: "After leaving Lumon, does the confidentiality obligation still apply?",
+        text: "How does the Seder traditionally conclude?",
         options: [
-          "No — obligations end at separation",
-          "Only for 12 months post-separation",
-          "Yes — confidentiality applies indefinitely",
-          "Only for information marked confidential",
+          "With a moment of silence",
+          "By reading the Ten Commandments",
+          "With the words 'Next year in Jerusalem'",
+          "By extinguishing the candles",
         ],
         correct: 2,
-        wrongFeedback: "Lumon's confidentiality agreement has no expiration. Obligations remain in force indefinitely, regardless of employment status.",
+        wrongFeedback: "The Seder ends with the declaration 'L'shanah haba'ah b'Yerushalayim' — 'Next year in Jerusalem.' It is both a hope and a promise, closing the evening with longing for complete redemption.",
+      },
+      {
+        type: 'freetext',
+        text: "What does the idea of freedom in the Haggadah mean to you personally?",
+        keywords: ['free', 'freedom', 'liber', 'slave', 'hope', 'remember', 'grat', 'person', 'family', 'story', 'tell', 'pass', 'justice', 'equal', 'right', 'human', 'digni', 'oppress'],
+        correctResponse: "A thoughtful reflection. The Haggadah teaches that freedom is not merely a historical event — it is a living experience, renewed each year at the Seder table.",
+        incorrectResponse: "Consider what it means to retell a story of liberation each year — what does that act of remembering awaken in you? Try again with a fuller thought.",
       },
     ]
   },
@@ -1727,13 +2366,26 @@ let currentChapter = 0;
 let activeQuestion = null;    // { chapterIdx, stepIdx, prevWrong }
 let activeMaterialBlock = null; // { feedId, chatEl, scrollZone } — set when material block is active
 let activeBlockInput = null;  // current .block-input element
-const cardState = {};  // feedId → { bar, row, biContainer, biWrap, textarea, sendBtn, skipBtn, nextBtn, _onSend }
+const cardState = {};  // feedId → { bar, row, biContainer, biWrap, textarea, sendBtn, skipBtn, _onSend }
 const completedQuestions = CHAPTERS.map(() => 0);
 const completedSteps = CHAPTERS.map(() => 0);
 const allSkipped = []; // { chapterIdx, step } across all chapters
 const skippedQCount = CHAPTERS.map(() => 0);
 const questionCount = CHAPTERS.map(ch => ch.steps.filter(s => s.type === 'question' || s.type === 'freetext').length);
 const totalSteps = CHAPTERS.map(ch => ch.steps.length);
+
+/* Map any step index to the pill index it belongs to.
+   Material steps before a question share that question's pill.
+   e.g. [content, content, Q, content, Q] → pill indices [0, 0, 0, 1, 1] */
+function stepToPill(chapterIdx, stepIdx) {
+  const steps = CHAPTERS[chapterIdx].steps;
+  let pill = 0;
+  for (let i = 0; i < steps.length; i++) {
+    if (i === stepIdx) return pill;
+    if (steps[i].type === 'question' || steps[i].type === 'freetext') pill++;
+  }
+  return pill;
+}
 const unlockedChapters = new Set([0]); // chapter 0 always unlocked
 
 /* ── BLOCK INPUT HELPERS ── */
@@ -1747,13 +2399,13 @@ function setBlockFocus(feed, el) {
 }
 
 const MO_CHAT_REPLIES = [
-  "Good question. The material you're working through will address this — keep going.",
-  "Noted. Focus on the core principles here; that context will make this clearer.",
-  "That's worth thinking about. Revisit it once you've completed this section.",
-  "Interesting. The answer is embedded in the framework you're building right now.",
-  "Keep that question in mind — it connects directly to what comes next.",
-  "Fair point. The training covers this from the ground up as you progress.",
-  "Worth asking. Come back to it after you've seen the full picture.",
+  "A worthy question. The Haggadah says we should ask — that is how the story lives on.",
+  "Consider this as we continue. The answer often reveals itself through the telling.",
+  "The Sages would say: this is exactly the kind of question the Seder was designed to provoke.",
+  "Hold that thought. Like the afikoman, some answers are hidden until the right moment.",
+  "Good — curiosity is the engine of the Seder. The next section may illuminate this.",
+  "That connects to what comes next. As we say: the telling is never quite finished.",
+  "A question worth returning to. The Haggadah is meant to be read again and again.",
 ];
 
 /* ───────────────────────────────────────────
@@ -1812,39 +2464,39 @@ function createCardInputBar(feedId, cardEl) {
   // Skip button (questions only)
   const skipBtn = document.createElement('button');
   skipBtn.className = 'q-skip';
-  skipBtn.textContent = '⏭';
-  skipBtn.title = "Skip for now — you'll come back to this question later.";
+  skipBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3.5L7 7L2 10.5V3.5Z" fill="currentColor"/><rect x="10" y="3" width="2" height="8" rx="1" fill="currentColor"/></svg>';
+  skipBtn.title = "Skip for now — you'll return to this later";
   skipBtn.style.display = 'none';
 
-  // Next (↓) button (material / video)
-  const nextBtn = document.createElement('button');
-  nextBtn.className = 'material-next-btn';
-  nextBtn.innerHTML = '↓';
-  nextBtn.style.display = 'none';
-
-  // biContainer starts hidden; shown when a block activates input
+  // biContainer and bar start hidden; showBlockInput moves bar into active block
   biContainer.style.display = 'none';
+  bar.style.display = 'none';
 
   row.appendChild(biContainer);
   row.appendChild(skipBtn);
-  row.appendChild(nextBtn);
   bar.appendChild(row);
-  cardEl.appendChild(bar);
+  // NOTE: bar is NOT appended to the card here —
+  // showBlockInput() moves it into whichever block is currently in-focus.
 
-  cardState[feedId] = { bar, row, biContainer, biWrap, textarea, sendBtn, skipBtn, nextBtn, _onSend: null };
+  cardState[feedId] = { bar, row, biContainer, biWrap, textarea, sendBtn, skipBtn, _onSend: null };
 }
 
-// Show the input pill and configure it for a new block
+// Show the input pill and configure it for a new block.
+// The bar DOM element is MOVED into the currently in-focus block (instant, no flicker).
 function showBlockInput(feedId, placeholder, onSend) {
   const s = cardState[feedId];
   if (!s) return { focus: () => {} };
+  // Move the persistent bar into the active block (DOM move = instant, input never disappears)
+  const feed = document.getElementById(feedId);
+  const activeBlock = feed && feed.querySelector('.in-focus');
+  if (activeBlock && !activeBlock.contains(s.bar)) activeBlock.appendChild(s.bar);
+  s.bar.style.display = '';
   s._onSend = onSend;
   s.textarea.placeholder = placeholder;
   s.textarea.value = '';
   s.textarea.style.height = 'auto';
   s.sendBtn.disabled = true;
   s.biContainer.style.display = '';
-  s.nextBtn.style.display = 'none';
   activeBlockInput = s.biContainer;
   // Pulse to signal context switch
   s.biWrap.classList.remove('context-pulse');
@@ -1866,36 +2518,29 @@ function showSkipButton(feedId, chapterIdx, stepIdx) {
   cardState[feedId].skipBtn = fresh;
 }
 
-// Show the ↓ next button (used by awaitMaterialNext and video blocks)
-function showNextButton(feedId, disabled) {
-  const s = cardState[feedId];
-  if (!s) return s && s.nextBtn;
-  s.nextBtn.disabled = !!disabled;
-  s.nextBtn.style.display = '';
-  return s.nextBtn;
+// Create a ↓ next button inside the given block element
+function createNextButtonIn(blockEl) {
+  const btn = document.createElement('button');
+  btn.className = 'material-next-btn';
+  btn.innerHTML = '↓';
+  const wrap = document.createElement('div');
+  wrap.className = 'content-block-next';
+  wrap.appendChild(btn);
+  const scrollContent = blockEl && blockEl.querySelector('.scroll-content');
+  if (scrollContent) scrollContent.appendChild(wrap);
+  else if (blockEl) blockEl.appendChild(wrap);
+  bounceIn(btn);
+  return btn;
 }
 
-// Show ONLY the ↓ button (video — no text input needed)
-function showVideoNextButton(feedId) {
-  const s = cardState[feedId];
-  if (!s) return null;
-  s._onSend = null;
-  s.biContainer.style.display = 'none';
-  s.skipBtn.style.display = 'none';
-  s.nextBtn.disabled = true;
-  s.nextBtn.style.display = '';
-  activeBlockInput = null;
-  return s.nextBtn;
-}
-
-// Clear and hide the input bar
+// Clear and hide the input bar (bar stays in block DOM but invisible)
 function hideGlobalInput(feedId) {
   const s = cardState[feedId];
   if (!s) return;
   s._onSend = null;
   s.biContainer.style.display = 'none';
   s.skipBtn.style.display = 'none';
-  s.nextBtn.style.display = 'none';
+  s.bar.style.display = 'none';
   activeBlockInput = null;
 }
 
@@ -1908,6 +2553,8 @@ function buildDOM() {
     const card = document.createElement('div');
     card.className = 'card' + (i !== 0 ? ' inactive' : '');
     card.id = `card-${i}`;
+    const isLeft = i < 0; // direction determined dynamically
+    const arrowSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
     card.innerHTML = `
       <div class="card-head">
         <span class="card-chapter">Chapter ${ch.roman}</span>
@@ -1916,7 +2563,16 @@ function buildDOM() {
         <div class="card-head-progress" id="chprog-${i}"></div>
       </div>
       <div class="feed" id="feed-${i}"></div>
+      <div class="card-nav-arrow" data-chapter="${i}">
+        <div class="nav-circle">${arrowSvg}</div>
+        <div class="card-nav-tooltip">Go to chapter</div>
+      </div>
     `;
+    // Nav arrow click — go to this chapter
+    card.querySelector('.card-nav-arrow').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (unlockedChapters.has(i)) goToChapter(i);
+    });
     createCardInputBar(`feed-${i}`, card);
     track.appendChild(card);
   });
@@ -1944,10 +2600,28 @@ function buildProgressBar() {
     const segs = document.createElement('div');
     segs.className = 'silo-segments';
     segs.id = `segs-${i}`;
+    // Collect question texts for tooltips
+    const qTexts = ch.steps
+      .filter(s => s.type === 'question' || s.type === 'freetext')
+      .map(s => s.text.length > 42 ? s.text.slice(0, 40) + '…' : s.text);
+
     for (let j = 0; j < questionCount[i]; j++) {
       const seg = document.createElement('div');
       seg.className = 'seg';
       seg.id = `seg-${i}-${j}`;
+      // Tooltip
+      const tip = document.createElement('div');
+      tip.className = 'seg-tooltip';
+      tip.textContent = qTexts[j] || `Question ${j + 1}`;
+      seg.appendChild(tip);
+      // Click pill → go to chapter & scroll to that question
+      seg.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!unlockedChapters.has(i)) return;
+        if (currentChapter !== i) goToChapter(i);
+        // Scroll feed to the j-th question group
+        setTimeout(() => scrollToQuestion(i, j), currentChapter !== i ? 600 : 50);
+      });
       segs.appendChild(seg);
     }
 
@@ -2040,12 +2714,60 @@ function centerCardInViewport(cardEl, { disableTransition = false } = {}) {
   }
 }
 
+/* Scroll feed to the j-th question/freetext in a chapter */
+function scrollToQuestion(chapterIdx, pillIdx) {
+  const feed = document.getElementById(`feed-${chapterIdx}`);
+  if (!feed) return;
+  const qGroups = feed.querySelectorAll('.q-group');
+  const target = qGroups[pillIdx];
+  if (!target) return;
+  const feedTop = feed.getBoundingClientRect().top;
+  const targetTop = target.getBoundingClientRect().top;
+  const offset = targetTop - feedTop + feed.scrollTop - 12;
+  feed.scrollTo({ top: offset, behavior: 'smooth' });
+}
+
+/* ── Chapter background crossfade ── */
+const CHAPTER_BG_CLASSES = ['ch-egypt', 'ch-miracle', 'ch-desert'];
+let chapterBgActive = 0; // which of the two layers is currently visible (0 or 1)
+
+function setChapterBg(idx) {
+  const container = document.getElementById('chapter-bg');
+  if (!container) return;
+  const layers = container.querySelectorAll('.chapter-bg-layer');
+  const activeLayer = layers[chapterBgActive];
+  const nextLayer = layers[1 - chapterBgActive];
+
+  // Set the new chapter class on the hidden layer
+  nextLayer.className = 'chapter-bg-layer ' + (CHAPTER_BG_CLASSES[idx] || CHAPTER_BG_CLASSES[0]);
+
+  // Crossfade
+  requestAnimationFrame(() => {
+    nextLayer.classList.add('active');
+    activeLayer.classList.remove('active');
+  });
+
+  chapterBgActive = 1 - chapterBgActive;
+}
+
 function goToChapter(idx) {
   currentChapter = idx;
+  setChapterBg(idx);
   const card = document.getElementById(`card-${idx}`);
   centerCardInViewport(card);
   CHAPTERS.forEach((_, i) => {
-    document.getElementById(`card-${i}`).classList.toggle('inactive', i !== idx);
+    const c = document.getElementById(`card-${i}`);
+    c.classList.toggle('inactive', i !== idx);
+    c.classList.remove('card-left', 'card-right');
+    if (i !== idx) {
+      c.classList.add(i < idx ? 'card-left' : 'card-right');
+      // Flip arrow direction
+      const arrow = c.querySelector('.card-nav-arrow .nav-circle svg');
+      if (arrow) arrow.style.transform = i < idx ? 'rotate(180deg)' : '';
+      // Update tooltip
+      const tip = c.querySelector('.card-nav-tooltip');
+      if (tip) tip.textContent = unlockedChapters.has(i) ? `Go to Ch. ${CHAPTERS[i].roman}` : 'Locked';
+    }
   });
   setActiveSilo(idx);
 }
@@ -2073,23 +2795,179 @@ function contentIn(el) {
   el.addEventListener('animationend', () => el.classList.remove('content-in'), { once: true });
 }
 
-function setActive(feed, el) {
+function isContentBlockHugHeight(el) {
+  return el && el.classList.contains('content-block') && !el.classList.contains('video');
+}
+
+function setActive(feed, el, reserveBottom = 0) {
   Array.from(feed.children).forEach(c => {
+    const isBlock = c.classList.contains('msg') || c.classList.contains('q-group');
+    if (!isBlock && c !== el) return;
     c.classList.toggle('past', c !== el);
     if (c !== el) c.style.flex = '';
   });
-  // Set explicit pixel height so feed overflows and scrollTo actually works.
-  // min-height:100% doesn't force overflow in overflow-y:auto flex containers.
+
+  // Store for resize recalculation
+  feed._activeEl = el;
+  feed._reserveBottom = reserveBottom;
+
+  _layoutActive(feed, el, reserveBottom, 'smooth');
+}
+
+/* Shared layout logic — called by setActive and by the resize handler */
+function _layoutActive(feed, el, reserveBottom, scrollBehavior) {
   const style = getComputedStyle(feed);
-  const innerH = feed.clientHeight
-    - parseFloat(style.paddingTop)
-    - parseFloat(style.paddingBottom);
-  el.style.flex = `0 0 ${innerH}px`;
-  // Scroll so in-focus block lands at 15% from feed top, with past content peeking above.
+  const padBot  = parseFloat(style.paddingBottom);
+
+  // Peek rule: total peek = 10% of chapter frame, split or solo
+  const blocks = Array.from(feed.children).filter(c =>
+    c.classList.contains('msg') || c.classList.contains('q-group')
+  );
+  const idx = blocks.indexOf(el);
+  const hasPrev = idx > 0;
+  const hasNext = idx < blocks.length - 1;
+  const totalPeek = Math.round(feed.clientHeight * 0.10);
+  const peekTop = hasPrev ? (hasNext ? Math.round(totalPeek / 2) : totalPeek) : 0;
+  const peekBot = hasNext ? (hasPrev ? Math.round(totalPeek / 2) : totalPeek) : 0;
+
+  if (isContentBlockHugHeight(el)) {
+    el.style.flex = '';
+  } else {
+    let innerH = feed.clientHeight - peekTop - peekBot - padBot - reserveBottom;
+    if (innerH < 200) innerH = 200;
+    el.style.flex = `0 0 ${innerH}px`;
+  }
+
   requestAnimationFrame(() => {
-    feed.scrollTo({ top: el.offsetTop - feed.getBoundingClientRect().height * 0.15, behavior: 'smooth' });
+    const contentY = el.getBoundingClientRect().top
+      - feed.getBoundingClientRect().top + feed.scrollTop;
+    feed.scrollTo({ top: contentY - peekTop, behavior: scrollBehavior });
   });
 }
+
+/* Resize handler — recalculate active block height when browser resizes */
+window.addEventListener('resize', () => {
+  document.querySelectorAll('.feed').forEach(feed => {
+    const el = feed._activeEl || feed.querySelector('.in-focus');
+    if (!el) return;
+    _layoutActive(feed, el, feed._reserveBottom || 0, 'auto');
+  });
+});
+
+/* ── cubic-bezier(0.22, 1, 0.36, 1) easing — matches CSS .nav-transition ── */
+const _navEase = (() => {
+  const p1x=0.22,p1y=1,p2x=0.36,p2y=1;
+  const ax=3*p1x-3*p2x+1, bx=3*p2x-6*p1x, cx=3*p1x;
+  const ay=3*p1y-3*p2y+1, by=3*p2y-6*p1y, cy=3*p1y;
+  const sx=t=>((ax*t+bx)*t+cx)*t;
+  const sy=t=>((ay*t+by)*t+cy)*t;
+  const dx=t=>(3*ax*t+2*bx)*t+cx;
+  return x => {
+    if (x<=0) return 0; if (x>=1) return 1;
+    let t=x; for(let i=0;i<8;i++){const e=sx(t)-x;if(Math.abs(e)<1e-6)break;t-=e/dx(t);}
+    return sy(t);
+  };
+})();
+
+/* ── SMOOTH SCROLL — easing-matched interpolation toward tracked target ── */
+function smoothScrollToElement(container, element, offset, duration) {
+  const startTime = performance.now();
+  const startScroll = container.scrollTop;
+  function tick(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const elTop = element.getBoundingClientRect().top
+      - container.getBoundingClientRect().top + container.scrollTop;
+    const target = elTop - offset;
+    container.scrollTop = startScroll + (target - startScroll) * _navEase(progress);
+    if (progress < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ── CLICK-TO-FOCUS PAST BLOCKS ── */
+let _navLock = false;
+document.addEventListener('click', (e) => {
+  const block = e.target.closest('.feed > .past');
+  if (!block || _navLock) return;
+  const feed = block.parentElement;
+  if (!feed || !feed.classList.contains('feed')) return;
+  if (e.target.closest('button, a, input, textarea, .opt, .q-toggle')) return;
+  e.stopPropagation();
+  _navLock = true;
+
+  const DURATION = 550;
+
+  const nextEl = block.nextElementSibling;
+  const hasContinue = nextEl && nextEl.classList.contains('content-block-next');
+  const reserveForBtn = hasContinue ? 100 : 0;
+
+  const blocks = Array.from(feed.children).filter(c =>
+    c.classList.contains('msg') || c.classList.contains('q-group')
+  );
+  const idx = blocks.indexOf(block);
+  const hasPrev = idx > 0;
+  const hasNext = idx < blocks.length - 1;
+  const totalPeek = Math.round(feed.clientHeight * 0.10);
+  const peekPx = hasPrev ? (hasNext ? Math.round(totalPeek / 2) : totalPeek) : 0;
+  const peekBot = hasNext ? (hasPrev ? Math.round(totalPeek / 2) : totalPeek) : 0;
+
+  const padBot = parseFloat(getComputedStyle(feed).paddingBottom);
+  let innerH = feed.clientHeight - peekPx - peekBot - padBot - reserveForBtn;
+  if (innerH < 200) innerH = 200;
+  const prevActive = feed._activeEl;
+
+  // ── Phase 1: Measure natural height of the previously-active block ──
+  let prevNaturalH = 0;
+  if (prevActive && prevActive !== block) {
+    const savedFlex = prevActive.style.flex;
+    prevActive.style.flex = '';
+    prevNaturalH = prevActive.getBoundingClientRect().height;
+    prevActive.style.flex = savedFlex;
+  }
+
+  // ── Phase 2: Freeze ALL blocks at their current rendered pixel heights ──
+  blocks.forEach(c => {
+    c.style.flex = `0 0 ${c.getBoundingClientRect().height}px`;
+    c.style.overflow = 'hidden';
+  });
+  void feed.offsetHeight; // force sync layout
+
+  // ── Phase 3: Add nav-transition class (CSS transitions flex-basis + opacity etc) ──
+  blocks.forEach(c => c.classList.add('nav-transition'));
+
+  // Toggle past/in-focus classes — opacity/scale/blur animate via CSS
+  blocks.forEach(c => c.classList.toggle('past', c !== block));
+  setBlockFocus(feed, block);
+  feed._activeEl = block;
+  feed._reserveBottom = reserveForBtn;
+
+  // ── Phase 4: Set TARGET pixel heights → CSS animates flex-basis smoothly ──
+  requestAnimationFrame(() => {
+    if (isContentBlockHugHeight(block)) {
+      block.style.flex = '';
+    } else {
+      block.style.flex = `0 0 ${innerH}px`;
+    }
+    if (prevActive && prevActive !== block && prevNaturalH > 0) {
+      prevActive.style.flex = `0 0 ${prevNaturalH}px`;
+    }
+
+    // ── Phase 5: Scroll follows element with matched easing ──
+    smoothScrollToElement(feed, block, peekPx, DURATION);
+  });
+
+  // ── Phase 6: Gentle cleanup — just remove transition class, touch nothing else ──
+  // Blocks keep their animated pixel heights (no layout shift = no jump).
+  // Next setActive() or resize will re-layout naturally.
+  setTimeout(() => {
+    blocks.forEach(c => {
+      c.classList.remove('nav-transition');
+      c.style.overflow = '';
+    });
+    _navLock = false;
+  }, DURATION + 60);
+});
 
 function typeInto(el, text) {
   return new Promise(resolve => {
@@ -2121,10 +2999,252 @@ function typeInto(el, text) {
   });
 }
 
+/* ── INLINE SVG ILLUSTRATIONS ── */
+const ILLUSTRATIONS = {
+  'haggadah-intro': `<svg viewBox="0 0 520 200" xmlns="http://www.w3.org/2000/svg">
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M36,34 L118,22 L484,34 L472,176 L38,166 Z" stroke="var(--illus-base)" stroke-width="3.6" opacity="0.86"/>
+      <g stroke="var(--illus-gold)" stroke-width="2.1" opacity="0.38">
+        <line x1="84" y1="34" x2="150" y2="62"/>
+        <line x1="64" y1="60" x2="144" y2="82"/>
+        <line x1="54" y1="92" x2="140" y2="100"/>
+        <line x1="436" y1="38" x2="374" y2="62"/>
+        <line x1="456" y1="62" x2="376" y2="82"/>
+        <line x1="464" y1="94" x2="380" y2="102"/>
+      </g>
+
+      <g transform="translate(260,102)">
+        <path d="M-80,34 L-80,-18 Q-80,-40 -56,-44 L-8,-52 L-8,30 Q-36,20 -80,34 Z" fill="var(--illus-base)"/>
+        <path d="M80,34 L80,-18 Q80,-40 56,-44 L8,-52 L8,30 Q36,20 80,34 Z" fill="var(--illus-base)"/>
+        <line x1="0" y1="-48" x2="0" y2="32" stroke="var(--illus-gold)" stroke-width="3.2"/>
+        <rect x="-4" y="-46" width="8" height="24" rx="2" fill="var(--illus-red)" stroke="none"/>
+        <g stroke="var(--illus-gold)" stroke-width="2.5" opacity="0.46">
+          <line x1="-58" y1="-26" x2="-18" y2="-32"/>
+          <line x1="-58" y1="-10" x2="-20" y2="-16"/>
+          <line x1="-58" y1="8" x2="-20" y2="2"/>
+          <line x1="18" y1="-32" x2="58" y2="-26"/>
+          <line x1="20" y1="-16" x2="58" y2="-10"/>
+          <line x1="20" y1="2" x2="58" y2="8"/>
+        </g>
+      </g>
+
+      <g transform="translate(108,104)">
+        <ellipse cx="0" cy="-20" rx="18" ry="14" stroke="var(--illus-base)" stroke-width="3.2"/>
+        <path d="M-13,8 L13,8 L9,30 Q7,40 0,44 Q-7,40 -9,30 Z" fill="var(--illus-base)"/>
+        <circle cx="0" cy="-20" r="4" fill="var(--illus-red)" stroke="none"/>
+      </g>
+
+      <g transform="translate(414,108)">
+        <rect x="-24" y="8" width="48" height="10" rx="3" fill="var(--illus-gold)" opacity="0.82"/>
+        <rect x="-19" y="-6" width="38" height="10" rx="3" fill="var(--illus-gold)" opacity="0.58"/>
+        <rect x="-14" y="-20" width="28" height="10" rx="3" fill="var(--illus-gold)" opacity="0.34"/>
+      </g>
+    </g>
+  </svg>`,
+
+  'oppression': `<svg viewBox="0 0 520 200" xmlns="http://www.w3.org/2000/svg">
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M42,28 L478,28 L462,174 L54,174 Z" stroke="var(--illus-base)" stroke-width="3.6" opacity="0.86"/>
+      <g stroke="var(--illus-gold)" stroke-width="2" opacity="0.28">
+        <line x1="60" y1="46" x2="134" y2="64"/>
+        <line x1="58" y1="72" x2="140" y2="86"/>
+        <line x1="60" y1="98" x2="144" y2="104"/>
+      </g>
+
+      <polygon points="302,154 388,38 474,154" fill="var(--illus-gold)" opacity="0.14"/>
+      <polygon points="302,154 388,38 474,154" stroke="var(--illus-gold)" stroke-width="3.2" opacity="0.8"/>
+      <g stroke="var(--illus-line)" stroke-width="2.2" opacity="0.3">
+        <line x1="334" y1="122" x2="442" y2="122"/>
+        <line x1="320" y1="138" x2="456" y2="138"/>
+        <line x1="360" y1="86" x2="414" y2="86"/>
+      </g>
+
+      <g stroke="var(--illus-base)" opacity="0.96">
+        <path d="M90,150 L126,82 L160,66" stroke-width="10"/>
+        <path d="M172,150 L202,98 L232,82" stroke-width="8.4"/>
+        <path d="M248,150 L274,114 L300,100" stroke-width="6.8"/>
+      </g>
+      <g fill="var(--illus-line)" opacity="0.84">
+        <rect x="148" y="58" width="30" height="18" rx="3"/>
+        <rect x="220" y="74" width="26" height="16" rx="3"/>
+        <rect x="286" y="92" width="22" height="14" rx="3"/>
+      </g>
+      <path d="M344,104 Q386,122 432,88" stroke="var(--illus-red)" stroke-width="3.2" opacity="0.86"/>
+      <path d="M432,88 Q452,76 456,98" stroke="var(--illus-red)" stroke-width="2.6" opacity="0.7"/>
+      <g fill="var(--illus-gold)" opacity="0.44">
+        <rect x="76" y="152" width="30" height="9" rx="2"/>
+        <rect x="110" y="152" width="30" height="9" rx="2"/>
+        <rect x="94" y="164" width="30" height="9" rx="2"/>
+      </g>
+    </g>
+  </svg>`,
+
+  'crossing-sea': `<svg viewBox="0 0 520 200" xmlns="http://www.w3.org/2000/svg">
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M38,28 L482,36 L468,174 L52,168 Z" stroke="var(--illus-base)" stroke-width="3.6" opacity="0.86"/>
+      <g stroke="var(--illus-gold)" stroke-width="2" opacity="0.24">
+        <line x1="184" y1="34" x2="148" y2="62"/>
+        <line x1="336" y1="36" x2="372" y2="64"/>
+        <line x1="260" y1="30" x2="260" y2="58"/>
+      </g>
+
+      <path d="M80,58 Q120,42 132,84 Q142,118 126,144 Q108,168 84,170 L58,170 Q84,148 98,124 Q110,102 106,80 Q102,60 80,58 Z" fill="var(--illus-base)" opacity="0.94"/>
+      <path d="M440,58 Q400,42 388,84 Q378,118 394,144 Q412,168 436,170 L462,170 Q436,148 422,124 Q410,102 414,80 Q418,60 440,58 Z" fill="var(--illus-base)" opacity="0.94"/>
+      <g stroke="var(--illus-gold)" stroke-width="2.3" opacity="0.36">
+        <path d="M82,66 Q108,54 124,68"/>
+        <path d="M90,98 Q118,86 128,100"/>
+        <path d="M98,128 Q118,120 126,132"/>
+        <path d="M438,66 Q412,54 396,68"/>
+        <path d="M430,98 Q402,86 392,100"/>
+        <path d="M422,128 Q402,120 394,132"/>
+      </g>
+
+      <path d="M188,158 L214,58 L306,58 L332,158 Z" fill="var(--illus-gold)" opacity="0.11"/>
+      <g transform="translate(260,0)">
+        <path d="M-12,84 Q-16,54 -8,26 Q0,8 8,26 Q16,54 12,84 Z" fill="var(--illus-gold)" opacity="0.5"/>
+        <path d="M-5,78 Q-8,52 -1,36 Q5,52 5,78 Z" fill="var(--illus-red)" opacity="0.88"/>
+      </g>
+
+      <g stroke="var(--illus-base)" stroke-width="3.4" opacity="0.96">
+        <path d="M228,132 L236,108"/>
+        <path d="M258,136 L260,112"/>
+        <path d="M288,140 L282,116"/>
+      </g>
+      <g fill="var(--illus-base)">
+        <circle cx="236" cy="104" r="5.2"/>
+        <circle cx="260" cy="108" r="4.4"/>
+        <circle cx="282" cy="112" r="3.8"/>
+      </g>
+    </g>
+  </svg>`,
+
+  'three-symbols': `<svg viewBox="0 0 520 200" xmlns="http://www.w3.org/2000/svg">
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M42,28 L478,28 L462,174 L58,168 Z" stroke="var(--illus-base)" stroke-width="3.6" opacity="0.86"/>
+      <line x1="178" y1="50" x2="178" y2="152" stroke="var(--illus-gold)" stroke-width="2.3" opacity="0.3"/>
+      <line x1="342" y1="50" x2="342" y2="152" stroke="var(--illus-gold)" stroke-width="2.3" opacity="0.3"/>
+
+      <g transform="translate(95,92)">
+        <path d="M-4,38 Q-12,12 -8,-16 Q-4,-32 0,-38 Q4,-32 8,-16 Q12,12 4,38 Z" fill="var(--illus-base)"/>
+        <circle cx="0" cy="-42" r="11" fill="var(--illus-base)"/>
+        <circle cx="0" cy="-42" r="5.5" stroke="var(--illus-gold)" stroke-width="1.8"/>
+        <circle cx="14" cy="-18" r="3" fill="var(--illus-red)" stroke="none"/>
+      </g>
+      <text x="95" y="148" text-anchor="middle" font-size="10" font-weight="700" fill="var(--illus-base)" font-family="serif" letter-spacing="0.18em" opacity="0.76">PESACH</text>
+
+      <g transform="translate(260,88)">
+        <rect x="-54" y="-24" width="108" height="48" rx="4" fill="var(--illus-gold)" opacity="0.16"/>
+        <rect x="-54" y="-24" width="108" height="48" rx="4" stroke="var(--illus-base)" stroke-width="2.8"/>
+        <line x1="-40" y1="-9" x2="40" y2="-9" stroke="var(--illus-base)" stroke-width="2.1" opacity="0.46"/>
+        <line x1="-40" y1="0" x2="40" y2="0" stroke="var(--illus-base)" stroke-width="2.1" opacity="0.46"/>
+        <line x1="-40" y1="9" x2="40" y2="9" stroke="var(--illus-base)" stroke-width="2.1" opacity="0.46"/>
+        <g fill="var(--illus-line)" opacity="0.28">
+          <circle cx="-22" cy="-4" r="3.2"/>
+          <circle cx="0" cy="6" r="2.8"/>
+          <circle cx="24" cy="-12" r="2.5"/>
+        </g>
+      </g>
+      <text x="260" y="148" text-anchor="middle" font-size="10" font-weight="700" fill="var(--illus-base)" font-family="serif" letter-spacing="0.18em" opacity="0.76">MATZAH</text>
+
+      <g transform="translate(425,82)">
+        <path d="M0,-36 Q26,-22 22,10 Q17,33 0,40 Q-17,33 -22,10 Q-26,-22 0,-36 Z" fill="var(--illus-line)" opacity="0.22"/>
+        <path d="M0,-36 Q26,-22 22,10 Q17,33 0,40 Q-17,33 -22,10 Q-26,-22 0,-36 Z" stroke="var(--illus-base)" stroke-width="2.5"/>
+        <line x1="0" y1="-30" x2="0" y2="32" stroke="var(--illus-base)" stroke-width="2.1"/>
+        <path d="M0,-18 Q-11,-8 -16,2" stroke="var(--illus-base)" stroke-width="1.4" opacity="0.34"/>
+        <path d="M0,-18 Q11,-8 16,2" stroke="var(--illus-base)" stroke-width="1.4" opacity="0.34"/>
+        <circle cx="-10" cy="-10" r="3" fill="var(--illus-red)" stroke="none"/>
+      </g>
+      <text x="425" y="148" text-anchor="middle" font-size="10" font-weight="700" fill="var(--illus-base)" font-family="serif" letter-spacing="0.18em" opacity="0.76">MAROR</text>
+    </g>
+  </svg>`
+};
+
+function appendIllustration(container, key) {
+  const svgStr = ILLUSTRATIONS[key];
+  if (!svgStr) return;
+  const wrapper = document.createElement('div');
+  wrapper.className = 'illustration-block';
+  wrapper.innerHTML = svgStr;
+  container.appendChild(wrapper);
+}
+
+function appendAudioBlock(feedId, step, skipPause = false) {
+  const feed = document.getElementById(feedId);
+
+  // Inject audio player into the last material block (not a separate block)
+  const blocks = feed.querySelectorAll('.content-block.material');
+  const msg = blocks[blocks.length - 1];
+
+  // Generate waveform bars
+  const barCount = 40;
+  let barsHTML = '';
+  for (let i = 0; i < barCount; i++) {
+    const h = 4 + Math.floor(Math.random() * 18);
+    barsHTML += `<div class="bar" style="height:${h}px"></div>`;
+  }
+
+  const player = document.createElement('div');
+  player.className = 'audio-player';
+  player.innerHTML = `
+    <div class="audio-scanlines"></div>
+    <div class="audio-play-btn">&#9654;</div>
+    <div class="audio-meta">
+      <span class="audio-title">${step.audio.title}</span>
+      <span class="audio-duration">${step.audio.duration}</span>
+    </div>
+    <div class="audio-waveform">${barsHTML}</div>
+  `;
+
+  // Insert into scroll-content, before the chat box if present
+  const scrollContent = msg.querySelector('.scroll-content');
+  if (scrollContent) {
+    const chatEl = scrollContent.querySelector('.material-chat');
+    if (chatEl) {
+      scrollContent.insertBefore(player, chatEl);
+    } else {
+      scrollContent.appendChild(player);
+    }
+  } else {
+    msg.appendChild(player);
+  }
+  setActive(feed, msg, skipPause ? 0 : 72);
+
+  player.querySelector('.audio-play-btn').addEventListener('click', () => {
+    player.classList.add('played');
+  });
+
+  if (skipPause) {
+    return Promise.resolve();
+  }
+
+  const footer = document.createElement('div');
+  footer.className = 'audio-footer';
+  const btn = document.createElement('button');
+  btn.className = 'material-next-btn';
+  btn.innerHTML = '↓';
+  footer.appendChild(btn);
+
+  feed.appendChild(footer);
+
+  return new Promise(resolve => {
+    btn.addEventListener('click', () => {
+      footer.remove();
+      msg.classList.remove('in-focus');
+      msg.style.flex = '';
+      // Also clean up any preceding material block's input bar & focus
+      hideGlobalInput(feedId);
+      const prevFocused = feed.querySelector('.in-focus');
+      if (prevFocused) { prevFocused.classList.remove('in-focus'); prevFocused.style.flex = ''; }
+      activeMaterialBlock = null;
+      resolve();
+    }, { once: true });
+  });
+}
+
 /* ───────────────────────────────────────────
    APPEND MESSAGES
 ─────────────────────────────────────────── */
-function appendMoMessage(feedId, type, text, label = null, kind = 'material', willPause = false) {
+function appendMoMessage(feedId, type, text, label = null, kind = 'material', willPause = false, illustrationKey = null, textAfterImage = null) {
   const feed = document.getElementById(feedId);
   const msg = document.createElement('div');
 
@@ -2142,16 +3262,42 @@ function appendMoMessage(feedId, type, text, label = null, kind = 'material', wi
     const scrollContent = document.createElement('div');
     scrollContent.className = 'scroll-content';
     scrollContent.appendChild(body);
+    // Inline illustration (if any) goes after the initial text
+    if (illustrationKey) {
+      const illusContainer = document.createElement('div');
+      scrollContent.appendChild(illusContainer);
+      // We'll insert the SVG after typing completes
+      scrollContent._illusContainer = illusContainer;
+      scrollContent._illusKey = illustrationKey;
+    }
+    if (textAfterImage) {
+      const afterBody = document.createElement('div');
+      afterBody.className = 'msg-body text-after-image';
+      scrollContent.appendChild(afterBody);
+      scrollContent._afterBody = afterBody;
+      scrollContent._afterText = textAfterImage;
+    }
     scrollZone.appendChild(scrollContent);
 
     msg.appendChild(labelEl);
     msg.appendChild(scrollZone);
     feed.appendChild(msg);
     contentIn(msg);
-    setActive(feed, msg);
+    const btnReserve = willPause ? 100 : 0; // reserve space for gap + continue-btn + gap to next block
+    setActive(feed, msg, btnReserve);
     if (willPause) setBlockFocus(feed, msg);
-    return typeInto(body, text).then(() => {
-      setActive(feed, msg);
+    return typeInto(body, text).then(async () => {
+      // Render illustration if present
+      if (scrollContent._illusKey) {
+        appendIllustration(scrollContent._illusContainer, scrollContent._illusKey);
+        setActive(feed, msg, btnReserve);
+        await delay(300);
+      }
+      // Type textAfterImage if present
+      if (scrollContent._afterBody && scrollContent._afterText) {
+        await typeInto(scrollContent._afterBody, scrollContent._afterText);
+      }
+      setActive(feed, msg, btnReserve);
       if (!willPause) return;
 
       // Chat container lives inside scroll-zone so it scrolls with the content
@@ -2223,16 +3369,24 @@ function appendVideoBlock(feedId, step) {
     <div class="video-progress"></div>
   `;
 
+  // ↓ button lives inside the video block footer (disabled until play)
+  const footer = document.createElement('div');
+  footer.className = 'video-footer';
+  const btn = document.createElement('button');
+  btn.className = 'material-next-btn';
+  btn.innerHTML = '↓';
+  btn.disabled = true;
+  footer.appendChild(btn);
+
   msg.appendChild(labelEl);
   msg.appendChild(player);
   feed.appendChild(msg);
   contentIn(msg);
-  setActive(feed, msg);
+  setActive(feed, msg, 72);
   setBlockFocus(feed, msg);
-
-  // ↓ button lives in global input bar (disabled until play)
-  const btn = showVideoNextButton(feedId);
-  setActive(feed, msg);
+  setActive(feed, msg, 72);
+  // Footer (continue btn) is a FEED SIBLING below the block, not inside it
+  feed.appendChild(footer);
 
   // Play button click → enable Continue
   player.querySelector('.video-play-btn').addEventListener('click', () => {
@@ -2242,9 +3396,9 @@ function appendVideoBlock(feedId, step) {
 
   return new Promise(resolve => {
     btn.addEventListener('click', () => {
+      footer.remove();
       msg.classList.remove('in-focus');
       msg.style.flex = '';
-      hideGlobalInput(feedId);
       resolve();
     }, { once: true });
   });
@@ -2340,10 +3494,13 @@ async function handleFreeTextAnswer(chapterIdx, stepIdx, userText) {
 
   if (isCorrect) {
     await appendFeedbackToGroup(group, 'correct', 'Correct', step.correctResponse);
-    await delay(600);
     completedQuestions[chapterIdx]++;
     markSegment(chapterIdx);
     advanceProgress(chapterIdx);
+
+    // Show continue button with 3-second countdown timer
+    await awaitContinueTimer(group, 3000);
+
     const answerEl = document.getElementById(`qanswer-${chapterIdx}-${stepIdx}`);
     if (answerEl) answerEl.textContent = step.text.replace(/\?$/, '') + ': ' + userText.toLowerCase();
     // Clear global input bar and collapse group
@@ -2442,6 +3599,69 @@ function renderOptions(chapterIdx, stepIdx, usedWrong) {
 }
 
 // Append a feedback bubble inside .q-full (same flow as user bubbles)
+/* ── CONTINUE TIMER BUTTON ─────────────────────────────────────
+   Shows a "Continue" button inside groupEl's q-full area.
+   A ring counts down DURATION_MS, then auto-resolves.
+   Clicking early resolves immediately.
+──────────────────────────────────────────────────────────────── */
+function awaitContinueTimer(groupEl, durationMs = 3000) {
+  const qFull = groupEl.querySelector('.q-full');
+  const qb    = groupEl.querySelector('.question-block');
+
+  const RADIUS = 10;
+  const CIRC   = 2 * Math.PI * RADIUS; // ≈ 62.83
+
+  const wrap = document.createElement('div');
+  wrap.className = 'q-continue-wrap';
+
+  wrap.innerHTML = `
+    <button class="q-continue-btn">
+      <span class="q-timer-ring">
+        <svg width="26" height="26" viewBox="0 0 26 26">
+          <circle class="q-timer-track" cx="13" cy="13" r="${RADIUS}"/>
+          <circle class="q-timer-progress" cx="13" cy="13" r="${RADIUS}"
+            stroke-dasharray="${CIRC}" stroke-dashoffset="0"/>
+        </svg>
+        <span class="q-timer-count">3</span>
+      </span>
+      Continue
+    </button>`;
+
+  qFull.appendChild(wrap);
+  if (qb) qb.scrollTop = qb.scrollHeight;
+
+  const btn      = wrap.querySelector('.q-continue-btn');
+  const progress = wrap.querySelector('.q-timer-progress');
+  const countEl  = wrap.querySelector('.q-timer-count');
+
+  return new Promise(resolve => {
+    const start   = performance.now();
+    let   rafId   = null;
+    let   settled = false;
+
+    function finish() {
+      if (settled) return;
+      settled = true;
+      cancelAnimationFrame(rafId);
+      wrap.remove();
+      resolve();
+    }
+
+    function tick(now) {
+      const elapsed  = now - start;
+      const fraction = Math.min(elapsed / durationMs, 1);
+      progress.style.strokeDashoffset = (CIRC * fraction).toFixed(2);
+      const secsLeft = Math.ceil((durationMs - elapsed) / 1000);
+      countEl.textContent = Math.max(secsLeft, 0);
+      if (fraction >= 1) { finish(); return; }
+      rafId = requestAnimationFrame(tick);
+    }
+
+    btn.addEventListener('click', finish, { once: true });
+    rafId = requestAnimationFrame(tick);
+  });
+}
+
 function appendFeedbackToGroup(groupEl, type, label, text) {
   const qFull = groupEl.querySelector('.q-full');
   const qb = groupEl.querySelector('.question-block');
@@ -2527,8 +3747,8 @@ function appendTrainingDone(feedId) {
   wrapper.innerHTML = `
     <div class="done-circle">✓</div>
     <div>
-      <div class="done-title">Training<br>Complete</div>
-      <div class="done-subtitle" style="margin-top: 10px;">Workplace Fundamentals — All chapters passed</div>
+      <div class="done-title">Seder<br>Complete</div>
+      <div class="done-subtitle" style="margin-top: 10px;">The Passover Haggadah — All chapters completed</div>
     </div>
   `;
   feed.appendChild(wrapper);
@@ -2540,12 +3760,20 @@ function awaitMaterialNext(feedId) {
   const feed = document.getElementById(feedId);
   const focusedBlock = feed.querySelector('.in-focus');
 
-  // Show ↓ button in global input bar (alongside the Ask Mo input)
-  const btn = showNextButton(feedId, false);
+  // ↓ button lives in the FEED, BELOW the active block (not inside it)
+  const wrap = document.createElement('div');
+  wrap.className = 'content-block-next';
+  const btn = document.createElement('button');
+  btn.className = 'material-next-btn';
+  btn.innerHTML = '↓';
+  wrap.appendChild(btn);
+  feed.appendChild(wrap);
   bounceIn(btn);
+  // No extra scroll needed — setActive already reserved space for this button.
 
   return new Promise(resolve => {
     btn.addEventListener('click', () => {
+      wrap.remove();
       if (focusedBlock) {
         focusedBlock.classList.remove('in-focus');
         focusedBlock.style.flex = '';
@@ -2560,7 +3788,7 @@ function awaitMaterialNext(feedId) {
 /* ───────────────────────────────────────────
    STEP RUNNER
 ─────────────────────────────────────────── */
-async function runStep(chapterIdx, stepIdx) {
+async function runStep(chapterIdx, stepIdx, skipPause) {
   const chapter = CHAPTERS[chapterIdx];
   if (stepIdx >= chapter.steps.length) {
     await completeChapter(chapterIdx);
@@ -2570,14 +3798,20 @@ async function runStep(chapterIdx, stepIdx) {
   const step = chapter.steps[stepIdx];
   const feedId = `feed-${chapterIdx}`;
 
+  /* Always highlight the pill this step belongs to */
+  setCurrentSeg(chapterIdx, stepToPill(chapterIdx, stepIdx));
+
   if (step.type === 'content') {
     if (step.kind === 'video') {
       await appendVideoBlock(feedId, step);
     } else {
       const nextStep = chapter.steps[stepIdx + 1];
-      const willPause = step.pause || (nextStep && (nextStep.type === 'question' || nextStep.type === 'freetext'));
-      await appendMoMessage(feedId, 'content', step.text, step.label || null, step.kind || 'material', willPause);
-      if (willPause) {
+      const willPause = !skipPause && (step.pause || (nextStep && (nextStep.type === 'question' || nextStep.type === 'freetext')));
+      await appendMoMessage(feedId, 'content', step.text, step.label || null, step.kind || 'material', willPause, step.illustration || null, step.textAfterImage || null);
+      // Audio block (rendered after text block; its own ↓ replaces the material continue)
+      if (step.audio) {
+        await appendAudioBlock(feedId, step, skipPause);
+      } else if (willPause) {
         await awaitMaterialNext(feedId);
       }
     }
@@ -2587,7 +3821,7 @@ async function runStep(chapterIdx, stepIdx) {
 
   } else if (step.type === 'freetext') {
     await showFreeTextQuestion(chapterIdx, stepIdx);
-    await runStep(chapterIdx, stepIdx + 1);
+    await runStep(chapterIdx, stepIdx + 1, true);
   } else if (step.type === 'question') {
     await showQuestion(chapterIdx, stepIdx);
   }
@@ -2633,7 +3867,9 @@ async function handleAnswer(chapterIdx, stepIdx, optionIdx, prevWrong, userText 
     await delay(500);
     // Feedback goes INTO the group — it will collapse with the question
     await appendFeedbackToGroup(group, 'correct', 'Correct', responses[Math.floor(Math.random() * responses.length)]);
-    await delay(900);
+
+    // Show continue button with 3-second countdown timer
+    await awaitContinueTimer(group, 3000);
 
     // Human-language collapsed title: strip the question's trailing "?" and append answer
     const qShort = step.text.replace(/\?$/, '');
@@ -2651,7 +3887,7 @@ async function handleAnswer(chapterIdx, stepIdx, optionIdx, prevWrong, userText 
     group.addEventListener('click', () => group.classList.toggle('open'));
 
     await delay(400);
-    await runStep(chapterIdx, stepIdx + 1);
+    await runStep(chapterIdx, stepIdx + 1, true);
 
   } else {
     clicked.classList.add('wrong');
@@ -2895,8 +4131,26 @@ function goToCard(card) {
 })();
 
 buildDOM();
-goToChapter(0);
-runStep(0, 0);
+
+/* ── WELCOME → START flow ── */
+document.getElementById('startCourseBtn').addEventListener('click', () => {
+  const overlay = document.getElementById('welcomeOverlay');
+  overlay.classList.add('exit');
+
+  // After popup scrolls out, reveal the UI
+  setTimeout(() => {
+    overlay.classList.add('hidden');
+    document.body.classList.remove('pre-start');
+    document.body.classList.add('revealing');
+    goToChapter(0);
+    runStep(0, 0);
+
+    // Clean up animation classes after they finish
+    setTimeout(() => {
+      document.body.classList.remove('revealing');
+    }, 1200);
+  }, 600);
+});
 
 /* ── TOC ── */
 function buildToc() {
