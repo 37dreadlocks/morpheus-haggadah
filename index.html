@@ -3503,13 +3503,37 @@ async function handleFreeTextAnswer(chapterIdx, stepIdx, userText) {
 
     const answerEl = document.getElementById(`qanswer-${chapterIdx}-${stepIdx}`);
     if (answerEl) answerEl.textContent = step.text.replace(/\?$/, '') + ': ' + userText.toLowerCase();
-    // Clear global input bar and collapse group
+    // Clear global input bar
     hideGlobalInput(`feed-${chapterIdx}`);
+
+    // Animated collapse: fade content → shrink height → settle
+    const fullH = group.getBoundingClientRect().height;
+    qFull.style.transition = 'opacity 0.15s ease';
+    qFull.style.opacity = '0';
+    await delay(160);
+
+    // Lock height for animation, then switch to collapsed state
+    group.style.overflow = 'hidden';
+    group.style.height = fullH + 'px';
     group.classList.remove('in-focus');
     group.style.flex = '';
     group.classList.add('collapsed');
+    qFull.style.transition = '';
+    qFull.style.opacity = '';
+
+    // Animate height down to summary row
+    group.getBoundingClientRect(); // force reflow
+    group.style.transition = 'height 0.32s cubic-bezier(0.4, 0, 0.2, 1)';
+    group.style.height = '76px';
+    await delay(340);
+
+    // Clean up inline styles — let CSS take over
+    group.style.transition = '';
+    group.style.height = '';
+    group.style.overflow = '';
+
     group.addEventListener('click', () => group.classList.toggle('open'));
-    await delay(300);
+    await delay(100);
     group._resolve && group._resolve();
   } else {
     await appendFeedbackToGroup(group, 'wrong', 'Not quite', step.incorrectResponse);
@@ -3821,7 +3845,7 @@ async function runStep(chapterIdx, stepIdx, skipPause) {
 
   } else if (step.type === 'freetext') {
     await showFreeTextQuestion(chapterIdx, stepIdx);
-    await runStep(chapterIdx, stepIdx + 1, true);
+    await runStep(chapterIdx, stepIdx + 1);
   } else if (step.type === 'question') {
     await showQuestion(chapterIdx, stepIdx);
   }
@@ -3877,17 +3901,39 @@ async function handleAnswer(chapterIdx, stepIdx, optionIdx, prevWrong, userText 
     const answerEl = document.getElementById(`qanswer-${chapterIdx}-${stepIdx}`);
     if (answerEl) answerEl.textContent = humanTitle;
 
-    // Clear global input bar and collapse group
+    // Clear global input bar
     hideGlobalInput(`feed-${chapterIdx}`);
+
+    // Animated collapse: fade content → shrink height → settle
+    const fullH = group.getBoundingClientRect().height;
+    qFull.style.transition = 'opacity 0.15s ease';
+    qFull.style.opacity = '0';
+    await delay(160);
+
+    // Lock height for animation, then switch to collapsed state
+    group.style.overflow = 'hidden';
+    group.style.height = fullH + 'px';
     group.classList.remove('in-focus');
     group.style.flex = '';
-
-    // Collapse entire group — feedback rows hide
     group.classList.add('collapsed');
+    qFull.style.transition = '';
+    qFull.style.opacity = '';
+
+    // Animate height down to summary row
+    group.getBoundingClientRect(); // force reflow
+    group.style.transition = 'height 0.32s cubic-bezier(0.4, 0, 0.2, 1)';
+    group.style.height = '76px';
+    await delay(340);
+
+    // Clean up inline styles — let CSS take over
+    group.style.transition = '';
+    group.style.height = '';
+    group.style.overflow = '';
+
     group.addEventListener('click', () => group.classList.toggle('open'));
 
-    await delay(400);
-    await runStep(chapterIdx, stepIdx + 1, true);
+    await delay(100);
+    await runStep(chapterIdx, stepIdx + 1);
 
   } else {
     clicked.classList.add('wrong');
