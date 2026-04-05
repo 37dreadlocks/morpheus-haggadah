@@ -766,17 +766,9 @@
       overflow: clip;
       box-shadow: var(--glass-shadow);
     }
-    .q-group.collapsing {
+    .q-group.animating {
       overflow: hidden;
-      transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .q-group.collapsing .question-block {
-      opacity: 0;
-      transition: opacity 0.15s ease-out;
-    }
-    .q-group.collapsing.collapsed .question-block {
-      opacity: 1;
-      transition: opacity 0.25s 0.2s ease-in;
+      transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     /* Active: sticky header so question stays visible while answering */
@@ -899,7 +891,7 @@
       width: 100%;
     }
 
-    .q-group.collapsed .q-toggle { order: 9; }
+    .q-group.collapsed .q-toggle { order: 9; transition: transform 0.3s ease, border-color 0.3s ease; }
     .q-group.collapsed .q-toggle { border-color: var(--correct-border); }
     .q-group.collapsed:hover .q-toggle { border-color: var(--correct); }
     .q-group.collapsed.open .q-toggle { transform: rotate(180deg); }
@@ -980,6 +972,16 @@
       background: rgba(156, 163, 175, 0.1);
     }
     .q-group.collapsed .sticky-bottom { display: none; }
+
+    /* Collapsed groups must NEVER get in-focus layout — override everything */
+    .q-group.collapsed.in-focus {
+      flex: none !important;
+      overflow: clip !important;
+    }
+    .q-group.collapsed.in-focus > .question-block {
+      flex: none !important;
+      overflow-y: visible !important;
+    }
 
     .q-group.in-focus {
       background: var(--q-block-bg);
@@ -3521,7 +3523,7 @@ async function handleFreeTextAnswer(chapterIdx, stepIdx, userText) {
     group.classList.remove('in-focus');
     group.style.flex = '';
     await collapseQuestionGroup(group);
-    group.addEventListener('click', () => group.classList.toggle('open'));
+    group.addEventListener('click', () => toggleCollapsedGroup(group));
 
     group._resolve && group._resolve();
   } else {
@@ -3618,50 +3620,57 @@ function renderOptions(chapterIdx, stepIdx, usedWrong) {
    Clicking early resolves immediately.
 ──────────────────────────────────────────────────────────────── */
 
-/* ── Animated collapse: shrinks from full height → collapsed summary ── */
-function collapseQuestionGroup(group, extraClasses = []) {
+/* ── animateHeight: smoothly transition between two layout states ── */
+function animateHeight(el, applyState) {
   return new Promise(resolve => {
-    let resolved = false;
+    let done = false;
     function finish() {
-      if (resolved) return;
-      resolved = true;
-      group.removeEventListener('transitionend', onEnd);
-      group.classList.remove('collapsing');
-      group.style.height = '';
+      if (done) return;
+      done = true;
+      el.removeEventListener('transitionend', onEnd);
+      el.classList.remove('animating');
+      el.style.height = '';
       resolve();
     }
+    function onEnd(e) { if (e.propertyName === 'height') finish(); }
 
-    // 1. Measure current (expanded) height
-    const startH = group.getBoundingClientRect().height;
-    group.style.height = startH + 'px';
+    // 1. Lock current height
+    const startH = el.getBoundingClientRect().height;
+    el.style.height = startH + 'px';
+    el.classList.add('animating');
+    el.offsetHeight; // reflow
 
-    // 2. Add collapsing class (enables transitions)
-    group.classList.add('collapsing');
-    // Force reflow so the browser registers the fixed height
-    group.offsetHeight;
+    // 2. Apply the layout change (add/remove classes)
+    applyState();
 
-    // 3. Now add collapsed (+ any extras like 'skipped') to switch layout
+    // 3. Measure target height
+    el.style.height = 'auto';
+    const endH = el.getBoundingClientRect().height;
+    el.style.height = startH + 'px';
+    el.offsetHeight; // reflow
+
+    // 4. Animate to target
+    el.style.height = endH + 'px';
+    el.addEventListener('transitionend', onEnd);
+    setTimeout(finish, 500); // safety
+  });
+}
+
+/* ── Collapse question group with smooth animation ── */
+function collapseQuestionGroup(group, extraClasses = []) {
+  return animateHeight(group, () => {
     group.classList.add('collapsed', ...extraClasses);
+  });
+}
 
-    // 4. Measure the target (collapsed) height
-    const savedH = group.style.height;
-    group.style.height = 'auto';
-    const endH = group.getBoundingClientRect().height;
-    group.style.height = savedH;
-
-    // 5. Force reflow, then animate to target
-    group.offsetHeight;
-    group.style.height = endH + 'px';
-
-    // 6. Clean up after transition ends
-    function onEnd(e) {
-      if (e.propertyName !== 'height') return;
-      finish();
-    }
-    group.addEventListener('transitionend', onEnd);
-
-    // Safety timeout in case transitionend doesn't fire
-    setTimeout(finish, 600);
+/* ── Toggle open/closed on a collapsed group with smooth animation ── */
+function toggleCollapsedGroup(group) {
+  if (group.classList.contains('animating')) return; // prevent double-clicks
+  // Ensure in-focus and inline flex don't interfere with collapsed layout
+  group.classList.remove('in-focus');
+  group.style.flex = '';
+  animateHeight(group, () => {
+    group.classList.toggle('open');
   });
 }
 
@@ -3943,7 +3952,7 @@ async function handleAnswer(chapterIdx, stepIdx, optionIdx, prevWrong, userText 
     group.classList.remove('in-focus');
     group.style.flex = '';
     await collapseQuestionGroup(group);
-    group.addEventListener('click', () => group.classList.toggle('open'));
+    group.addEventListener('click', () => toggleCollapsedGroup(group));
 
     await runStep(chapterIdx, stepIdx + 1);
 
@@ -3981,7 +3990,7 @@ async function handleSkip(chapterIdx, stepIdx) {
   group.style.flex = '';
 
   await collapseQuestionGroup(group, ['skipped']);
-  group.addEventListener('click', () => group.classList.toggle('open'));
+  group.addEventListener('click', () => toggleCollapsedGroup(group));
   advanceProgress(chapterIdx);
   if (group._resolve) {
     group._resolve();
@@ -4148,7 +4157,7 @@ async function handleReviewAnswer(feedId, chapterIdx, step, group, block, option
     const summaryTitle = group.querySelector('.q-summary-title');
     if (summaryTitle) summaryTitle.textContent = step.text.replace(/\?$/, '') + ': ' + step.options[optionIdx].toLowerCase();
     await collapseQuestionGroup(group);
-    group.addEventListener('click', () => group.classList.toggle('open'));
+    group.addEventListener('click', () => toggleCollapsedGroup(group));
     resolve();
   } else {
     clicked.classList.add('wrong');
