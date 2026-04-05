@@ -766,11 +766,6 @@
       overflow: clip;
       box-shadow: var(--glass-shadow);
     }
-    .q-group.animating {
-      overflow: hidden;
-      transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
     /* Active: sticky header so question stays visible while answering */
     .question-block {
       position: sticky;
@@ -891,7 +886,7 @@
       width: 100%;
     }
 
-    .q-group.collapsed .q-toggle { order: 9; transition: transform 0.3s ease, border-color 0.3s ease; }
+    .q-group.collapsed .q-toggle { order: 9; }
     .q-group.collapsed .q-toggle { border-color: var(--correct-border); }
     .q-group.collapsed:hover .q-toggle { border-color: var(--correct); }
     .q-group.collapsed.open .q-toggle { transform: rotate(180deg); }
@@ -972,16 +967,6 @@
       background: rgba(156, 163, 175, 0.1);
     }
     .q-group.collapsed .sticky-bottom { display: none; }
-
-    /* Collapsed groups must NEVER get in-focus layout — override everything */
-    .q-group.collapsed.in-focus {
-      flex: none !important;
-      overflow: clip !important;
-    }
-    .q-group.collapsed.in-focus > .question-block {
-      flex: none !important;
-      overflow-y: visible !important;
-    }
 
     .q-group.in-focus {
       background: var(--q-block-bg);
@@ -3518,13 +3503,14 @@ async function handleFreeTextAnswer(chapterIdx, stepIdx, userText) {
 
     const answerEl = document.getElementById(`qanswer-${chapterIdx}-${stepIdx}`);
     if (answerEl) answerEl.textContent = step.text.replace(/\?$/, '') + ': ' + userText.toLowerCase();
-    // Collapse question card with animation
+    // Collapse question card
     hideGlobalInput(`feed-${chapterIdx}`);
     group.classList.remove('in-focus');
     group.style.flex = '';
-    await collapseQuestionGroup(group);
-    group.addEventListener('click', () => toggleCollapsedGroup(group));
+    group.classList.add('collapsed');
+    group.addEventListener('click', () => group.classList.toggle('open'));
 
+    await delay(300);
     group._resolve && group._resolve();
   } else {
     await appendFeedbackToGroup(group, 'wrong', 'Not quite', step.incorrectResponse);
@@ -3619,60 +3605,6 @@ function renderOptions(chapterIdx, stepIdx, usedWrong) {
    A ring counts down DURATION_MS, then auto-resolves.
    Clicking early resolves immediately.
 ──────────────────────────────────────────────────────────────── */
-
-/* ── animateHeight: smoothly transition between two layout states ── */
-function animateHeight(el, applyState) {
-  return new Promise(resolve => {
-    let done = false;
-    function finish() {
-      if (done) return;
-      done = true;
-      el.removeEventListener('transitionend', onEnd);
-      el.classList.remove('animating');
-      el.style.height = '';
-      resolve();
-    }
-    function onEnd(e) { if (e.propertyName === 'height') finish(); }
-
-    // 1. Lock current height
-    const startH = el.getBoundingClientRect().height;
-    el.style.height = startH + 'px';
-    el.classList.add('animating');
-    el.offsetHeight; // reflow
-
-    // 2. Apply the layout change (add/remove classes)
-    applyState();
-
-    // 3. Measure target height
-    el.style.height = 'auto';
-    const endH = el.getBoundingClientRect().height;
-    el.style.height = startH + 'px';
-    el.offsetHeight; // reflow
-
-    // 4. Animate to target
-    el.style.height = endH + 'px';
-    el.addEventListener('transitionend', onEnd);
-    setTimeout(finish, 500); // safety
-  });
-}
-
-/* ── Collapse question group with smooth animation ── */
-function collapseQuestionGroup(group, extraClasses = []) {
-  return animateHeight(group, () => {
-    group.classList.add('collapsed', ...extraClasses);
-  });
-}
-
-/* ── Toggle open/closed on a collapsed group with smooth animation ── */
-function toggleCollapsedGroup(group) {
-  if (group.classList.contains('animating')) return; // prevent double-clicks
-  // Ensure in-focus and inline flex don't interfere with collapsed layout
-  group.classList.remove('in-focus');
-  group.style.flex = '';
-  animateHeight(group, () => {
-    group.classList.toggle('open');
-  });
-}
 
 function awaitContinueTimer(groupEl, durationMs = 3000) {
   const qFull = groupEl.querySelector('.q-full');
@@ -3947,13 +3879,14 @@ async function handleAnswer(chapterIdx, stepIdx, optionIdx, prevWrong, userText 
     const answerEl = document.getElementById(`qanswer-${chapterIdx}-${stepIdx}`);
     if (answerEl) answerEl.textContent = humanTitle;
 
-    // Collapse question card with animation
+    // Collapse question card
     hideGlobalInput(`feed-${chapterIdx}`);
     group.classList.remove('in-focus');
     group.style.flex = '';
-    await collapseQuestionGroup(group);
-    group.addEventListener('click', () => toggleCollapsedGroup(group));
+    group.classList.add('collapsed');
+    group.addEventListener('click', () => group.classList.toggle('open'));
 
+    await delay(300);
     await runStep(chapterIdx, stepIdx + 1);
 
   } else {
@@ -3989,8 +3922,8 @@ async function handleSkip(chapterIdx, stepIdx) {
   group.classList.remove('in-focus');
   group.style.flex = '';
 
-  await collapseQuestionGroup(group, ['skipped']);
-  group.addEventListener('click', () => toggleCollapsedGroup(group));
+  group.classList.add('collapsed', 'skipped');
+  group.addEventListener('click', () => group.classList.toggle('open'));
   advanceProgress(chapterIdx);
   if (group._resolve) {
     group._resolve();
@@ -4156,8 +4089,8 @@ async function handleReviewAnswer(feedId, chapterIdx, step, group, block, option
 
     const summaryTitle = group.querySelector('.q-summary-title');
     if (summaryTitle) summaryTitle.textContent = step.text.replace(/\?$/, '') + ': ' + step.options[optionIdx].toLowerCase();
-    await collapseQuestionGroup(group);
-    group.addEventListener('click', () => toggleCollapsedGroup(group));
+    group.classList.add('collapsed');
+    group.addEventListener('click', () => group.classList.toggle('open'));
     resolve();
   } else {
     clicked.classList.add('wrong');
