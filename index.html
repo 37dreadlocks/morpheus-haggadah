@@ -876,6 +876,7 @@
     .q-group.collapsed:hover { filter: brightness(0.97); }
 
     .q-group.collapsed .question-block {
+      position: static;
       padding: 20px;
       display: flex;
       align-items: center;
@@ -3503,37 +3504,14 @@ async function handleFreeTextAnswer(chapterIdx, stepIdx, userText) {
 
     const answerEl = document.getElementById(`qanswer-${chapterIdx}-${stepIdx}`);
     if (answerEl) answerEl.textContent = step.text.replace(/\?$/, '') + ': ' + userText.toLowerCase();
-    // Clear global input bar
+    // Collapse question card
     hideGlobalInput(`feed-${chapterIdx}`);
-
-    // Animated collapse: fade content → shrink height → settle
-    const fullH = group.getBoundingClientRect().height;
-    qFull.style.transition = 'opacity 0.15s ease';
-    qFull.style.opacity = '0';
-    await delay(160);
-
-    // Lock height for animation, then switch to collapsed state
-    group.style.overflow = 'hidden';
-    group.style.height = fullH + 'px';
     group.classList.remove('in-focus');
     group.style.flex = '';
     group.classList.add('collapsed');
-    qFull.style.transition = '';
-    qFull.style.opacity = '';
-
-    // Animate height down to summary row
-    group.getBoundingClientRect(); // force reflow
-    group.style.transition = 'height 0.32s cubic-bezier(0.4, 0, 0.2, 1)';
-    group.style.height = '76px';
-    await delay(340);
-
-    // Clean up inline styles — let CSS take over
-    group.style.transition = '';
-    group.style.height = '';
-    group.style.overflow = '';
-
     group.addEventListener('click', () => group.classList.toggle('open'));
-    await delay(100);
+
+    await delay(300);
     group._resolve && group._resolve();
   } else {
     await appendFeedbackToGroup(group, 'wrong', 'Not quite', step.incorrectResponse);
@@ -3901,38 +3879,14 @@ async function handleAnswer(chapterIdx, stepIdx, optionIdx, prevWrong, userText 
     const answerEl = document.getElementById(`qanswer-${chapterIdx}-${stepIdx}`);
     if (answerEl) answerEl.textContent = humanTitle;
 
-    // Clear global input bar
+    // Collapse question card
     hideGlobalInput(`feed-${chapterIdx}`);
-
-    // Animated collapse: fade content → shrink height → settle
-    const fullH = group.getBoundingClientRect().height;
-    qFull.style.transition = 'opacity 0.15s ease';
-    qFull.style.opacity = '0';
-    await delay(160);
-
-    // Lock height for animation, then switch to collapsed state
-    group.style.overflow = 'hidden';
-    group.style.height = fullH + 'px';
     group.classList.remove('in-focus');
     group.style.flex = '';
     group.classList.add('collapsed');
-    qFull.style.transition = '';
-    qFull.style.opacity = '';
-
-    // Animate height down to summary row
-    group.getBoundingClientRect(); // force reflow
-    group.style.transition = 'height 0.32s cubic-bezier(0.4, 0, 0.2, 1)';
-    group.style.height = '76px';
-    await delay(340);
-
-    // Clean up inline styles — let CSS take over
-    group.style.transition = '';
-    group.style.height = '';
-    group.style.overflow = '';
-
     group.addEventListener('click', () => group.classList.toggle('open'));
 
-    await delay(100);
+    await delay(300);
     await runStep(chapterIdx, stepIdx + 1);
 
   } else {
