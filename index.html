@@ -1996,17 +1996,12 @@
     /* ── THEME TOGGLE ── */
     /* ── TOP RIGHT CLUSTER ── */
     #globalProgress {
-      position: fixed;
-      top: 14px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 200;
       display: flex;
       align-items: center;
-      gap: 5px;
       opacity: 0;
       transition: opacity 0.4s ease;
       pointer-events: none;
+      margin-left: auto;
     }
     #globalProgress.visible { opacity: 1; }
     #globalProgressPct {
@@ -2343,10 +2338,6 @@
   <div id="chapter-bg">
     <div class="chapter-bg-layer ch-egypt active"></div>
     <div class="chapter-bg-layer"></div>
-  </div>
-
-  <div id="globalProgress">
-    <span id="globalProgressPct">0%</span>
   </div>
 
   <div id="topRight">
@@ -2819,6 +2810,12 @@ function buildProgressBar() {
 
     bar.appendChild(silo);
   });
+
+  // Global progress % at the right end of the progress bar
+  const gp = document.createElement('div');
+  gp.id = 'globalProgress';
+  gp.innerHTML = '<span id="globalProgressPct">0%</span>';
+  bar.appendChild(gp);
 }
 
 function setCurrentSeg(chapterIdx, idx) {
