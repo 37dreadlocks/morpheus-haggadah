@@ -549,13 +549,47 @@
     }
 
     .card.inactive {
-      opacity: 0.45;
-      filter: saturate(0.3);
+      opacity: 0.9;
+      filter: saturate(0.15);
     }
     .card.inactive .feed,
     .card.inactive .card-head,
     .card.inactive .card-input-bar {
       pointer-events: none;
+    }
+
+    /* ── INACTIVE CARDS: pushed to edge, only 20 px visible ── */
+    /* Visible strip formula: 50vw − 50% (own half-width) − 3.5vw (gap) = natural peek */
+    /* Shift = natural peek − 20px so exactly 20 px remain visible          */
+    .card.inactive.card-right,
+    .card.inactive.card-left {
+      transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity  0.32s ease,
+                  filter   0.32s ease;
+    }
+    .card.inactive.card-right {
+      transform: translateX(calc(50vw - 50% - 3.5vw - 20px));
+    }
+    .card.inactive.card-left {
+      transform: translateX(calc(-50vw + 50% + 3.5vw + 20px));
+    }
+
+    /* On hover: slide in 84 px so the nav circle clears the edge */
+    .card.inactive.card-right:hover {
+      transform: translateX(calc(50vw - 50% - 3.5vw - 84px));
+      opacity: 0.92;
+      filter: saturate(0.35);
+    }
+    .card.inactive.card-left:hover {
+      transform: translateX(calc(-50vw + 50% + 3.5vw + 84px));
+      opacity: 0.92;
+      filter: saturate(0.35);
+    }
+
+    /* Card header hidden on inactive — never show the title until focused */
+    .card.inactive .card-head {
+      opacity: 0;
+      transition: opacity 0.2s ease;
     }
 
     /* ── CARD NAV ARROW ── */
@@ -569,38 +603,40 @@
       pointer-events: auto;
       cursor: pointer;
       z-index: 10;
-      transition: opacity 0.3s ease;
     }
-    /* Right cards: arrow at left edge */
+    /* Right cards: circle flush with left edge */
     .card.inactive.card-right .card-nav-arrow {
       justify-content: flex-start;
-      padding-left: 24px;
+      padding-left: 20px;
     }
-    /* Left cards: arrow at right edge */
+    /* Left cards: circle flush with right edge */
     .card.inactive.card-left .card-nav-arrow {
       justify-content: flex-end;
-      padding-right: 24px;
+      padding-right: 20px;
     }
-    /* Hide arrow on active card */
+    /* Hide nav arrow on active card */
     .card:not(.inactive) .card-nav-arrow { display: none; }
-    .card.inactive:hover { opacity: 0.65; filter: saturate(0.5); }
+
+    /* Nav button hidden by default; fades in on card hover */
+    .card.inactive .card-nav-arrow { opacity: 0; transition: opacity 0.22s ease; }
+    .card.inactive:hover .card-nav-arrow { opacity: 1; }
 
     .card-nav-arrow .nav-circle {
-      width: 52px;
-      height: 52px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
       background: var(--card-bg);
       backdrop-filter: blur(16px);
-      border: 1.5px solid var(--card-border);
+      border: 1px solid var(--card-border);
       display: flex;
       align-items: center;
       justify-content: center;
       box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-      transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+      transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
     }
     .card.inactive:hover .nav-circle {
-      transform: scale(1.08);
-      box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.13);
       background: #fff;
     }
     [data-theme="dark"] .card.inactive:hover .nav-circle {
@@ -608,17 +644,15 @@
     }
 
     .card-nav-arrow .nav-circle svg {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       color: var(--text);
-      opacity: 0.7;
-      transition: opacity 0.2s;
+      opacity: 0.8;
     }
-    .card.inactive:hover .nav-circle svg { opacity: 1; }
 
     .card-nav-tooltip {
       position: absolute;
-      top: calc(50% + 40px);
+      top: calc(50% + 36px);
       font-size: 9px;
       font-weight: 600;
       letter-spacing: 0.1em;
@@ -629,8 +663,8 @@
       transition: opacity 0.2s ease;
       pointer-events: none;
     }
-    .card.inactive.card-right .card-nav-tooltip { left: 24px; }
-    .card.inactive.card-left .card-nav-tooltip { right: 24px; }
+    .card.inactive.card-right .card-nav-tooltip { left: 20px; }
+    .card.inactive.card-left  .card-nav-tooltip { right: 20px; }
     .card.inactive:hover .card-nav-tooltip { opacity: 1; }
 
     /* ── PROGRESS BAR TOOLTIPS ── */
