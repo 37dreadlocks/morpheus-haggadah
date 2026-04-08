@@ -1761,26 +1761,43 @@
       50%       { opacity: 0;  box-shadow: none; }
     }
     /* ── TOC PANEL ── */
-    #tocToggle {
-      position: fixed;
-      top: 12px;
-      left: 12px;
-      z-index: 200;
+    /* ── TOP BUTTONS — shared base ── */
+    .top-btn {
       width: 32px;
       height: 32px;
       background: transparent;
       border: 1px solid var(--card-border);
-      border-radius: 6px;
+      border-radius: 8px;
       color: var(--text-dim);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: border-color 0.15s, color 0.15s, background 0.15s;
+      padding: 0;
+      flex-shrink: 0;
+      transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease, transform 0.2s ease;
     }
-    #tocToggle:hover { border-color: var(--text-muted); color: var(--text); background: var(--surface); }
+    .top-btn:hover {
+      border-color: var(--text-muted);
+      color: var(--text);
+      background: var(--surface);
+    }
+    .top-btn.active {
+      background: var(--accent-bg);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── TOC TOGGLE (left) ── */
+    #tocToggle {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 200;
+    }
     #tocToggle svg { transition: transform 0.3s ease; }
     #tocToggle.open svg { transform: scaleX(-1); }
+    #tocToggle.open { background: var(--surface); }
 
     #tocPanel {
       position: fixed;
@@ -1898,40 +1915,103 @@
     #tocOverlay.open { display: block; }
 
     /* ── THEME TOGGLE ── */
-    #themeToggle {
+    /* ── TOP RIGHT CLUSTER ── */
+    #topRight {
       position: fixed;
       top: 12px;
       right: 12px;
       z-index: 200;
-      width: 36px;
-      height: 36px;
-      background: var(--surface);
-      border: 1px solid var(--card-border);
-      border-radius: 50%;
-      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ── THEME TOGGLE ── */
+    #themeToggle::after {
+      content: '\2600';
+      font-size: 15px;
+      line-height: 1;
+    }
+    [data-theme="dark"] #themeToggle::after {
+      content: '\263D';
+    }
+    #themeToggle:hover { transform: rotate(22deg); }
+
+    /* ── USER AVATAR ── */
+    #userAvatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--accent-bg);
+      border: 1px solid rgba(99,91,255,0.28);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.2s, border-color 0.2s, transform 0.3s;
-      font-size: 16px;
-      line-height: 1;
-      padding: 0;
+      flex-shrink: 0;
+      cursor: default;
+      user-select: none;
     }
-    #themeToggle:hover {
-      background: var(--accent-bg);
-      border-color: var(--accent);
-      transform: rotate(30deg);
+
+    /* ── SETTINGS PANEL ── */
+    #settingsPanel {
+      position: fixed;
+      top: 52px;
+      right: 12px;
+      z-index: 199;
+      width: 204px;
+      background: var(--toc-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      box-shadow: var(--glass-shadow);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 6px 0;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-8px) scale(0.97);
+      transform-origin: top right;
+      transition: opacity 0.15s ease, transform 0.15s ease;
     }
-    #themeToggle::after {
-      content: '\2600'; /* sun */
+    #settingsPanel.open {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateY(0) scale(1);
     }
-    [data-theme="dark"] #themeToggle::after {
-      content: '\263D'; /* moon */
+    .settings-group-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 8px 14px 4px;
     }
+    .settings-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-dim);
+      cursor: pointer;
+      border-radius: 6px;
+      margin: 0 4px;
+      transition: background 0.12s ease, color 0.12s ease;
+    }
+    .settings-item:hover { background: var(--surface); color: var(--text); }
+    .settings-item svg { flex-shrink: 0; opacity: 0.65; }
+    .settings-sep { height: 1px; background: var(--card-border); margin: 4px 0; }
+
+    /* ── HIDE CHAPTER LABEL FROM PROGRESS BAR ── */
+    .silo-label { display: none !important; }
 
     /* ── SMOOTH THEME TRANSITIONS ── */
     .card, .card-input-bar, .q-group, .question-block, .msg.content-block, .opt,
-    .block-input-wrap, #tocPanel, #tocToggle, #themeToggle,
+    .block-input-wrap, #tocPanel, #tocToggle, #themeToggle, #settingsToggle,
     .q-feedback-row, .video-footer, .material-next-btn,
     .q-skip, .silo {
       transition: background 0.35s ease, border-color 0.35s ease, color 0.35s ease, box-shadow 0.35s ease;
@@ -2165,9 +2245,37 @@
     <div class="chapter-bg-layer"></div>
   </div>
 
-  <button id="themeToggle" aria-label="Toggle dark mode"></button>
+  <div id="topRight">
+    <button id="settingsToggle" class="top-btn" aria-label="Settings">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="7.5" cy="7.5" r="1.9"/>
+        <path d="M7.5 1.5v1M7.5 12.5v1M1.5 7.5h1M12.5 7.5h1M3.4 3.4l.7.7M10.9 10.9l.7.7M3.4 11.6l.7-.7M10.9 4.1l.7-.7"/>
+      </svg>
+    </button>
+    <button id="themeToggle" class="top-btn" aria-label="Toggle dark mode"></button>
+    <div id="userAvatar">OL</div>
+  </div>
 
-  <button id="tocToggle" aria-label="Table of contents">
+  <div id="settingsPanel">
+    <div class="settings-group-label">Preferences</div>
+    <div class="settings-item" id="settingsThemeItem">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round">
+        <circle cx="7" cy="7" r="2.2"/>
+        <path d="M7 1v1.2M7 11.8V13M1 7h1.2M11.8 7H13M2.76 2.76l.85.85M10.39 10.39l.85.85M2.76 11.24l.85-.85M10.39 3.61l.85-.85"/>
+      </svg>
+      Toggle theme
+    </div>
+    <div class="settings-sep"></div>
+    <div class="settings-item" id="settingsResetItem">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2.5 7a4.5 4.5 0 1 0 .88-2.65"/>
+        <path d="M2.5 2.5v2.5H5"/>
+      </svg>
+      Reset progress
+    </div>
+  </div>
+
+  <button id="tocToggle" class="top-btn" aria-label="Table of contents">
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
       <rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.4"/>
       <line x1="7" y1="2" x2="7" y2="16" stroke="currentColor" stroke-width="1.4"/>
@@ -4077,6 +4185,30 @@ function goToCard(card) {
     const next = current === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
     localStorage.setItem('morpheus-theme', next);
+  });
+
+  // Settings panel toggle
+  const settingsToggle = document.getElementById('settingsToggle');
+  const settingsPanel  = document.getElementById('settingsPanel');
+  settingsToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = settingsPanel.classList.toggle('open');
+    settingsToggle.classList.toggle('active', open);
+  });
+  document.addEventListener('click', () => {
+    settingsPanel.classList.remove('open');
+    settingsToggle.classList.remove('active');
+  });
+  settingsPanel.addEventListener('click', e => e.stopPropagation());
+
+  // Settings — theme item delegates to themeToggle
+  document.getElementById('settingsThemeItem').addEventListener('click', () => {
+    document.getElementById('themeToggle').click();
+  });
+
+  // Settings — reset progress
+  document.getElementById('settingsResetItem').addEventListener('click', () => {
+    if (confirm('Reset all progress and restart the course?')) location.reload();
   });
 })();
 
