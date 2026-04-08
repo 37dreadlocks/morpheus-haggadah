@@ -730,6 +730,20 @@
       z-index: 1;
     }
 
+    /* Hide card head during question focus to minimize distraction (Principle 5) */
+    .card.question-focus .card-head {
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      border-bottom-color: transparent;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.35s ease, border-color 0.25s ease;
+    }
+    .card .card-head {
+      max-height: 120px;
+      transition: max-height 0.35s ease, padding 0.35s ease, border-color 0.25s ease;
+    }
+
     .card-chapter {
       font-size: 10px;
       font-weight: 700;
@@ -840,6 +854,37 @@
     }
     [data-theme="dark"] .q-feedback-row.correct-fb {
       border-color: var(--correct-border);
+    }
+
+    /* ── REVIEW MATERIAL LINK (Principle 7) ── */
+    .review-material-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 10px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--accent);
+      background: var(--accent-bg);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
+    }
+    .review-material-link:hover {
+      background: rgba(99,91,255,0.15);
+      transform: translateY(-1px);
+    }
+    .review-icon { font-size: 13px; }
+    .review-highlight {
+      outline: 2px solid var(--accent) !important;
+      outline-offset: -2px;
+      animation: reviewPulse 0.6s ease 2;
+    }
+    @keyframes reviewPulse {
+      0%, 100% { outline-color: var(--accent); }
+      50% { outline-color: transparent; }
     }
 
     /* ── CONTINUE TIMER BUTTON ── */
@@ -1950,6 +1995,27 @@
 
     /* ── THEME TOGGLE ── */
     /* ── TOP RIGHT CLUSTER ── */
+    #globalProgress {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+    #globalProgress.visible { opacity: 1; }
+    #globalProgressPct {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+    }
+
     #topRight {
       position: fixed;
       top: 12px;
@@ -2279,6 +2345,10 @@
     <div class="chapter-bg-layer"></div>
   </div>
 
+  <div id="globalProgress">
+    <span id="globalProgressPct">0%</span>
+  </div>
+
   <div id="topRight">
     <button id="settingsToggle" class="top-btn" aria-label="Settings">
       <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">
@@ -2489,6 +2559,26 @@ function setBlockFocus(feed, el) {
   // Remove in-focus from all siblings
   Array.from(feed.children).forEach(c => c.classList.remove('in-focus'));
   if (el) el.classList.add('in-focus');
+}
+
+/* ── CHAT COMMAND PARSING (Principle 8) ── */
+function parseChatCommand(raw) {
+  const lower = raw.trim().toLowerCase();
+  if (lower === 'help' || lower === '/help') {
+    return { cmd: 'help', reply: "You can type your answer directly, or use these commands: \"skip\" to skip the current question, \"progress\" to see your overall progress. You can also ask questions about the material at any time." };
+  }
+  if (lower === 'skip' || lower === '/skip') {
+    return { cmd: 'skip' };
+  }
+  if (lower === 'progress' || lower === '/progress') {
+    const done = completedSteps.reduce((a, b) => a + b, 0);
+    const total = totalSteps.reduce((a, b) => a + b, 0);
+    const pct = Math.round((done / total) * 100);
+    const chDone = completedQuestions[currentChapter];
+    const chTotal = questionCount[currentChapter];
+    return { cmd: 'progress', reply: `Overall: ${pct}% complete. This chapter: ${chDone}/${chTotal} questions answered.` };
+  }
+  return null; // not a command
 }
 
 const MO_CHAT_REPLIES = [
@@ -2757,6 +2847,17 @@ function advanceProgress(chapterIdx) {
   completedSteps[chapterIdx]++;
   const bar = document.getElementById(`chprog-${chapterIdx}`);
   if (bar) bar.style.width = `${(completedSteps[chapterIdx] / totalSteps[chapterIdx]) * 100}%`;
+  updateGlobalProgress();
+}
+
+function updateGlobalProgress() {
+  const done = completedSteps.reduce((a, b) => a + b, 0);
+  const total = totalSteps.reduce((a, b) => a + b, 0);
+  const pct = Math.round((done / total) * 100);
+  const el = document.getElementById('globalProgressPct');
+  if (el) el.textContent = `${pct}%`;
+  const wrap = document.getElementById('globalProgress');
+  if (wrap) wrap.classList.toggle('visible', done > 0);
 }
 
 function setActiveSilo(idx) {
@@ -2978,89 +3079,10 @@ function smoothScrollToElement(container, element, offset, duration) {
   requestAnimationFrame(tick);
 }
 
-/* ── CLICK-TO-FOCUS PAST BLOCKS ── */
-let _navLock = false;
-document.addEventListener('click', (e) => {
-  const block = e.target.closest('.feed > .past');
-  if (!block || _navLock) return;
-  const feed = block.parentElement;
-  if (!feed || !feed.classList.contains('feed')) return;
-  if (e.target.closest('button, a, input, textarea, .opt, .q-toggle')) return;
-  e.stopPropagation();
-  _navLock = true;
-
-  const DURATION = 550;
-
-  const nextEl = block.nextElementSibling;
-  const hasContinue = nextEl && nextEl.classList.contains('content-block-next');
-  const reserveForBtn = hasContinue ? 100 : 0;
-
-  const blocks = Array.from(feed.children).filter(c =>
-    c.classList.contains('msg') || c.classList.contains('q-group')
-  );
-  const idx = blocks.indexOf(block);
-  const hasPrev = idx > 0;
-  const hasNext = idx < blocks.length - 1;
-  const totalPeek = Math.round(feed.clientHeight * 0.10);
-  const peekPx = hasPrev ? (hasNext ? Math.round(totalPeek / 2) : totalPeek) : 0;
-  const peekBot = hasNext ? (hasPrev ? Math.round(totalPeek / 2) : totalPeek) : 0;
-
-  const padBot = parseFloat(getComputedStyle(feed).paddingBottom);
-  let innerH = feed.clientHeight - peekPx - peekBot - padBot - reserveForBtn;
-  if (innerH < 200) innerH = 200;
-  const prevActive = feed._activeEl;
-
-  // ── Phase 1: Measure natural height of the previously-active block ──
-  let prevNaturalH = 0;
-  if (prevActive && prevActive !== block) {
-    const savedFlex = prevActive.style.flex;
-    prevActive.style.flex = '';
-    prevNaturalH = prevActive.getBoundingClientRect().height;
-    prevActive.style.flex = savedFlex;
-  }
-
-  // ── Phase 2: Freeze ALL blocks at their current rendered pixel heights ──
-  blocks.forEach(c => {
-    c.style.flex = `0 0 ${c.getBoundingClientRect().height}px`;
-    c.style.overflow = 'hidden';
-  });
-  void feed.offsetHeight; // force sync layout
-
-  // ── Phase 3: Add nav-transition class (CSS transitions flex-basis + opacity etc) ──
-  blocks.forEach(c => c.classList.add('nav-transition'));
-
-  // Toggle past/in-focus classes — opacity/scale/blur animate via CSS
-  blocks.forEach(c => c.classList.toggle('past', c !== block));
-  setBlockFocus(feed, block);
-  feed._activeEl = block;
-  feed._reserveBottom = reserveForBtn;
-
-  // ── Phase 4: Set TARGET pixel heights → CSS animates flex-basis smoothly ──
-  requestAnimationFrame(() => {
-    if (isContentBlockHugHeight(block)) {
-      block.style.flex = '';
-    } else {
-      block.style.flex = `0 0 ${innerH}px`;
-    }
-    if (prevActive && prevActive !== block && prevNaturalH > 0) {
-      prevActive.style.flex = `0 0 ${prevNaturalH}px`;
-    }
-
-    // ── Phase 5: Scroll follows element with matched easing ──
-    smoothScrollToElement(feed, block, peekPx, DURATION);
-  });
-
-  // ── Phase 6: Gentle cleanup — just remove transition class, touch nothing else ──
-  // Blocks keep their animated pixel heights (no layout shift = no jump).
-  // Next setActive() or resize will re-layout naturally.
-  setTimeout(() => {
-    blocks.forEach(c => {
-      c.classList.remove('nav-transition');
-      c.style.overflow = '';
-    });
-    _navLock = false;
-  }, DURATION + 60);
-});
+/* ── CLICK-TO-FOCUS PAST BLOCKS — DISABLED (strict linear flow) ──
+   Past blocks are read-only. The user cannot re-focus them during
+   the first pass. This enforces Principle 4: linear flow of blocks.
+*/
 
 function typeInto(el, text) {
   return new Promise(resolve => {
@@ -3402,6 +3424,15 @@ function appendMoMessage(feedId, type, text, label = null, kind = 'material', wi
 
       // Global input bar — shown at card bottom, persists during scroll
       showBlockInput(feedId, 'Ask anything…', async (raw) => {
+        // Principle 8: parse chat commands
+        const cmd = parseChatCommand(raw);
+        if (cmd && cmd.cmd === 'skip') {
+          // Trigger the ↓ continue button if present
+          const nextBtn = feed.querySelector('.material-next-btn');
+          if (nextBtn) nextBtn.click();
+          return;
+        }
+
         if (!activeMaterialBlock) return;
         const { chatEl: ce, scrollZone: sz } = activeMaterialBlock;
         if (ce.style.display === 'none') ce.style.display = 'flex';
@@ -3415,7 +3446,7 @@ function appendMoMessage(feedId, type, text, label = null, kind = 'material', wi
 
         await delay(350);
 
-        const reply = MO_CHAT_REPLIES[Math.floor(Math.random() * MO_CHAT_REPLIES.length)];
+        const reply = (cmd && cmd.reply) ? cmd.reply : MO_CHAT_REPLIES[Math.floor(Math.random() * MO_CHAT_REPLIES.length)];
         const replyEl = document.createElement('div');
         replyEl.className = 'material-chat-reply';
         ce.appendChild(replyEl);
@@ -3545,9 +3576,34 @@ function showFreeTextQuestion(chapterIdx, stepIdx) {
   setBlockFocus(feed, group);
   setCurrentSeg(chapterIdx, completedQuestions[chapterIdx] + skippedQCount[chapterIdx]);
 
-  // Configure global input bar for freetext answer
+  // Hide card head during question focus (Principle 5)
+  const card = document.getElementById(`card-${chapterIdx}`);
+  if (card) card.classList.add('question-focus');
+
+  // Configure global input bar for freetext answer (with Principle 8 command parsing)
   const feedId = `feed-${chapterIdx}`;
   const { focus: focusFreetextInput } = showBlockInput(feedId, 'Type your answer…', (raw) => {
+    // Principle 8: handle chat commands
+    const cmd = parseChatCommand(raw);
+    if (cmd && cmd.cmd === 'skip') {
+      handleSkip(chapterIdx, stepIdx);
+      return;
+    }
+    if (cmd && cmd.reply) {
+      const qFull = group.querySelector('.q-full');
+      if (qFull) {
+        const ub = document.createElement('div');
+        ub.className = 'q-user-bubble';
+        ub.textContent = raw;
+        qFull.appendChild(ub);
+        bounceIn(ub);
+        const rb = document.createElement('div');
+        rb.className = 'q-feedback-row correct-fb';
+        qFull.appendChild(rb);
+        typeInto(rb, cmd.reply);
+      }
+      return;
+    }
     if (activeQuestion && activeQuestion.freetext) {
       handleFreeTextAnswer(chapterIdx, stepIdx, raw);
     }
@@ -3603,10 +3659,15 @@ async function handleFreeTextAnswer(chapterIdx, stepIdx, userText) {
     group.classList.add('collapsed');
     group.addEventListener('click', () => group.classList.toggle('open'));
 
+    // Restore card head (Principle 5)
+    const card = document.getElementById(`card-${chapterIdx}`);
+    if (card) card.classList.remove('question-focus');
+
     await delay(300);
     group._resolve && group._resolve();
   } else {
-    await appendFeedbackToGroup(group, 'wrong', 'Not quite', step.incorrectResponse);
+    const reviewHint = findReviewHint(chapterIdx, stepIdx);
+    await appendFeedbackToGroup(group, 'wrong', 'Not quite', step.incorrectResponse, reviewHint);
     await delay(400);
     // Re-enable for another try
     activeQuestion = { chapterIdx, stepIdx, freetext: true };
@@ -3646,9 +3707,36 @@ function showQuestion(chapterIdx, stepIdx) {
   setBlockFocus(feed, group);
   setCurrentSeg(chapterIdx, completedQuestions[chapterIdx] + skippedQCount[chapterIdx]);
 
-  // Configure global input bar for MC answer
+  // Hide card head during question focus (Principle 5)
+  const card = document.getElementById(`card-${chapterIdx}`);
+  if (card) card.classList.add('question-focus');
+
+  // Configure global input bar for MC answer (with Principle 8 command parsing)
   const feedId = `feed-${chapterIdx}`;
   const { focus: focusMcInput } = showBlockInput(feedId, 'Type A, B, C, or D…', (raw) => {
+    // Principle 8: handle chat commands
+    const cmd = parseChatCommand(raw);
+    if (cmd && cmd.cmd === 'skip') {
+      handleSkip(chapterIdx, stepIdx);
+      return;
+    }
+    if (cmd && cmd.reply) {
+      // Show reply inline in the question block
+      const qFull = block.querySelector('.q-full');
+      if (qFull) {
+        const ub = document.createElement('div');
+        ub.className = 'q-user-bubble';
+        ub.textContent = raw;
+        qFull.appendChild(ub);
+        bounceIn(ub);
+        const rb = document.createElement('div');
+        rb.className = 'q-feedback-row correct-fb';
+        qFull.appendChild(rb);
+        typeInto(rb, cmd.reply);
+      }
+      return;
+    }
+
     const letter = raw.toUpperCase();
     const optionIdx = ['A','B','C','D'].indexOf(letter);
     if (activeQuestion && optionIdx !== -1 && raw.length === 1) {
@@ -3757,7 +3845,7 @@ function awaitContinueTimer(groupEl, durationMs = 3000) {
   });
 }
 
-function appendFeedbackToGroup(groupEl, type, label, text) {
+function appendFeedbackToGroup(groupEl, type, label, text, reviewHint) {
   const qFull = groupEl.querySelector('.q-full');
   const qb = groupEl.querySelector('.question-block');
   const row = document.createElement('div');
@@ -3766,8 +3854,41 @@ function appendFeedbackToGroup(groupEl, type, label, text) {
   qFull.appendChild(row);
   if (qb) qb.scrollTop = qb.scrollHeight;
   return typeInto(row, text).then(() => {
+    // Principle 7: Surface reference material on wrong answers
+    if (type === 'wrong' && reviewHint) {
+      const link = document.createElement('button');
+      link.className = 'review-material-link';
+      link.innerHTML = '<span class="review-icon">↑</span> Review: ' + reviewHint.label;
+      link.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Find the content block in the feed and briefly highlight it
+        const feed = groupEl.closest('.feed');
+        if (!feed) return;
+        const blocks = Array.from(feed.querySelectorAll('.msg.content-block'));
+        const target = blocks[reviewHint.blockIndex];
+        if (target) {
+          target.classList.add('review-highlight');
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => target.classList.remove('review-highlight'), 2500);
+        }
+      });
+      row.appendChild(link);
+    }
     if (qb) qb.scrollTop = qb.scrollHeight;
   });
+}
+
+function findReviewHint(chapterIdx, stepIdx) {
+  const steps = CHAPTERS[chapterIdx].steps;
+  let contentBlockCount = 0;
+  let lastContent = null;
+  for (let i = 0; i < stepIdx; i++) {
+    if (steps[i].type === 'content') {
+      lastContent = { label: steps[i].label || 'Previous section', blockIndex: contentBlockCount };
+      contentBlockCount++;
+    }
+  }
+  return lastContent;
 }
 
 function appendFeedback(feedId, type, label, text) {
@@ -3953,6 +4074,24 @@ async function handleAnswer(chapterIdx, stepIdx, optionIdx, prevWrong, userText 
     markSegment(chapterIdx);
     advanceProgress(chapterIdx);
 
+    // Collapse options to reduce noise — only keep the correct one visible (Principle 5)
+    const opts = block.querySelector('.options');
+    if (opts) {
+      opts.querySelectorAll('.opt:not(.correct)').forEach(o => {
+        o.style.maxHeight = o.offsetHeight + 'px';
+        requestAnimationFrame(() => {
+          o.style.transition = 'max-height 0.3s ease, opacity 0.25s ease, margin 0.3s ease, padding 0.3s ease';
+          o.style.maxHeight = '0';
+          o.style.opacity = '0';
+          o.style.marginTop = '0';
+          o.style.marginBottom = '0';
+          o.style.paddingTop = '0';
+          o.style.paddingBottom = '0';
+          o.style.overflow = 'hidden';
+        });
+      });
+    }
+
     const responses = [
       "Correct. That's the right answer.",
       "Precisely. Well noted.",
@@ -3979,14 +4118,19 @@ async function handleAnswer(chapterIdx, stepIdx, optionIdx, prevWrong, userText 
     group.classList.add('collapsed');
     group.addEventListener('click', () => group.classList.toggle('open'));
 
+    // Restore card head (Principle 5)
+    const card = document.getElementById(`card-${chapterIdx}`);
+    if (card) card.classList.remove('question-focus');
+
     await delay(300);
     await runStep(chapterIdx, stepIdx + 1);
 
   } else {
     clicked.classList.add('wrong');
     await delay(300);
-    // Feedback goes INTO the group
-    await appendFeedbackToGroup(group, 'wrong', 'Incorrect', step.wrongFeedback);
+    // Feedback goes INTO the group — with review hint (Principle 7)
+    const reviewHint = findReviewHint(chapterIdx, stepIdx);
+    await appendFeedbackToGroup(group, 'wrong', 'Incorrect', step.wrongFeedback, reviewHint);
     await delay(400);
 
     // Refresh options in block (question text stays, wrong option disabled)
@@ -4017,6 +4161,11 @@ async function handleSkip(chapterIdx, stepIdx) {
 
   group.classList.add('collapsed', 'skipped');
   group.addEventListener('click', () => group.classList.toggle('open'));
+
+  // Restore card head (Principle 5)
+  const card = document.getElementById(`card-${chapterIdx}`);
+  if (card) card.classList.remove('question-focus');
+
   advanceProgress(chapterIdx);
   if (group._resolve) {
     group._resolve();
