@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cypher — AI Research & Planning Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ═══ CYPHER v3 — Redesign ═══ */
+
+    :root, [data-theme="dark"] {
+      --bg-0: #0A0A10;
+      --bg-1: #111118;
+      --bg-2: #1A1A24;
+      --bg-3: #24243A;
+      --text-1: #EEEEEE;
+      --text-2: #8888A0;
+      --text-3: #555570;
+      --accent: #7C5CFC;
+      --accent-2: #A78BFA;
+      --accent-3: #C4B5FD;
+      --accent-glow: rgba(124,92,252,0.2);
+      --accent-surface: rgba(124,92,252,0.08);
+      --positive: #34D399;
+      --positive-s: rgba(52,211,153,0.08);
+      --caution: #FBBF24;
+      --caution-s: rgba(251,191,36,0.08);
+      --negative: #F87171;
+      --border: rgba(255,255,255,0.06);
+      --border-h: rgba(255,255,255,0.12);
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --shadow-lg: 0 4px 16px rgba(0,0,0,0.3);
+      color-scheme: dark;
+    }
+    [data-theme="light"] {
+      --bg-0: #F7F7FA;
+      --bg-1: #FFFFFF;
+      --bg-2: #F0EFF5;
+      --bg-3: #E4E3ED;
+      --text-1: #1A1A2E;
+      --text-2: #65657A;
+      --text-3: #9E9EB4;
+      --accent: #7C5CFC;
+      --accent-2: #6B4AEB;
+      --accent-3: #9B82FF;
+      --accent-glow: rgba(124,92,252,0.15);
+      --accent-surface: rgba(124,92,252,0.05);
+      --positive: #059669;
+      --positive-s: rgba(5,150,105,0.06);
+      --caution: #D97706;
+      --caution-s: rgba(217,119,6,0.06);
+      --negative: #DC2626;
+      --border: rgba(0,0,0,0.07);
+      --border-h: rgba(0,0,0,0.12);
+      --shadow: 0 1px 3px rgba(0,0,0,0.04);
+      --shadow-lg: 0 4px 16px rgba(0,0,0,0.06);
+      color-scheme: light;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body {
+      height: 100%; overflow: hidden;
+      background: var(--bg-0); color: var(--text-1);
+      font-family: 'Plus Jakarta Sans', -apple-system, system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      transition: background 0.4s, color 0.4s;
+    }
+
+    #app { display: flex; height: 100vh; }
+
+    /* ─── CHAT COLUMN ─── */
+    #chat-col {
+      flex: 1; display: flex; flex-direction: column;
+      min-width: 0; position: relative;
+    }
+
+    /* ─── TOP BAR — two-row header ─── */
+    #top-bar {
+      padding: 12px 24px;
+      min-height: 89px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-1); flex-shrink: 0; z-index: 10;
+      position: relative;
+      display: flex; align-items: center; gap: 14px;
+    }
+    #top-bar .left {
+      display: flex; align-items: center; flex-shrink: 0;
+    }
+    .tb-rows {
+      flex: 1; min-width: 0;
+      display: flex; flex-direction: column; gap: 8px;
+      padding-right: 78px;
+    }
+    .tb-row1 {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .cypher-mark {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: linear-gradient(135deg, #7C5CFC, #A78BFA);
+      flex-shrink: 0; overflow: hidden;
+    }
+    .cypher-mark img, .av img {
+      width: 100%; height: 100%; object-fit: cover;
+      filter: grayscale(1) sepia(0.6) hue-rotate(210deg) saturate(3) brightness(0.95) contrast(1.1);
+    }
+    .project-info {
+      display: flex; align-items: center;
+    }
+    .project-title {
+      font-size: 14px; font-weight: 700; color: var(--text-1);
+      display: flex; align-items: center; gap: 8px;
+      letter-spacing: -0.02em;
+    }
+    .pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; font-weight: 600; padding: 2px 7px;
+      border-radius: 999px; letter-spacing: 0.04em;
+    }
+    .pill.draft { background: var(--caution-s); color: var(--caution); }
+    .pill.published { background: var(--positive-s); color: var(--positive); }
+    #top-bar .right {
+      display: flex; align-items: center; gap: 6px;
+      position: absolute;
+      top: 50%;
+      right: 24px;
+      transform: translateY(-50%);
+    }
+    .tbtn {
+      width: 30px; height: 30px; border: 1px solid var(--border);
+      background: transparent; border-radius: 8px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-3); font-size: 14px; transition: all 0.2s;
+      padding: 0;
+    }
+    .tbtn:hover { border-color: var(--border-h); color: var(--text-1); background: var(--bg-2); }
+    .tbtn svg { display: block; }
+    /* Show sun in dark mode, moon in light mode */
+    [data-theme="dark"] .icon-moon { display: none; }
+    [data-theme="light"] .icon-sun { display: none; }
+
+    /* ─── PHASE STEPPER — second row of top bar, fixed width ─── */
+    .stepper {
+      display: flex; align-items: center;
+      width: fit-content;
+    }
+    .step {
+      display: flex; align-items: center; gap: 6px;
+      cursor: default; flex-shrink: 0;
+    }
+    .step.active {
+      gap: 10px; /* extra space for the arrow shape */
+    }
+    .step-dot {
+      width: 4px; height: 4px; border-radius: 0;
+      background: var(--text-3);
+      opacity: 0.4;
+      transition: all 0.4s cubic-bezier(0.22,1,0.36,1);
+      flex-shrink: 0;
+    }
+    /* Active step: arrow made of three 4x4 squares */
+    .step.active .step-dot {
+      width: 4px; height: 4px;
+      background: var(--accent);
+      opacity: 1;
+      border-radius: 0;
+      box-shadow: 4px -4px 0 0 var(--accent), 4px 4px 0 0 var(--accent);
+    }
+    .step.done .step-dot {
+      background: var(--accent);
+      opacity: 1;
+    }
+    .step-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 500;
+      color: var(--text-3); letter-spacing: 0.01em;
+      transition: color 0.3s;
+    }
+    .step.active .step-label { color: var(--accent); font-weight: 700; }
+    .step.done .step-label { color: var(--text-2); }
+    .step-line {
+      width: 48px; height: 0;
+      margin: 0 8px;
+      border-top: 1px solid var(--text-3);
+      opacity: 0.25;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .step-line-fill {
+      position: absolute; top: -1px; left: 0;
+      height: 0; width: 0%;
+      border-top: 1px solid var(--accent);
+      transition: width 0.6s cubic-bezier(0.22,1,0.36,1);
+    }
+
+    /* ─── CHAT ─── */
+    #chat-scroll {
+      flex: 1; overflow-y: auto; display: flex; flex-direction: column;
+      align-items: center; scroll-behavior: smooth;
+      position: relative;
+    }
+    #chat-scroll::-webkit-scrollbar { width: 4px; }
+    #chat-scroll::-webkit-scrollbar-thumb { background: var(--text-3); border-radius: 2px; }
+    #chat-scroll::-webkit-scrollbar-track { background: transparent; }
+    #chat-messages {
+      width: 100%; max-width: 640px;
+      padding: 0 20px 160px;
+      display: flex; flex-direction: column; gap: 6px;
+      flex: 1;
+    }
+    #msg-spacer { flex: 1; }
+    .msg {
+      animation: msgIn 0.35s cubic-bezier(0.22,1,0.36,1) forwards;
+      opacity: 0;
+    }
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .msg.cypher { display: flex; gap: 12px; align-items: flex-start; }
+    .av {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      flex-shrink: 0; overflow: hidden;
+      visibility: hidden; margin-top: 2px;
+    }
+    .av.vis { visibility: visible; }
+    .av.ph { background: none; visibility: hidden !important; }
+    .mbody { flex: 1; min-width: 0; }
+    .mtxt { font-size: 14px; line-height: 1.7; color: var(--text-2); }
+    .mtxt strong { color: var(--text-1); font-weight: 600; }
+
+    .msg.question .mbody {
+      border-left: 2px solid var(--accent);
+      padding-left: 14px;
+    }
+    .msg.question .mtxt { color: var(--text-1); font-weight: 500; }
+
+    /* ─── THINKING — inline in chat ─── */
+    .msg.thought {
+      align-self: flex-start;
+      max-width: 520px;
+      animation: thoughtIn 0.4s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+    @keyframes thoughtIn {
+      from { opacity: 0; transform: translateY(4px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .thought-body {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 12px; line-height: 1.5;
+      font-style: italic; color: var(--text-3);
+      background: var(--bg-2);
+      border-left: 2px solid var(--text-3);
+    }
+    .thought-icon {
+      font-size: 10px; flex-shrink: 0; margin-top: 2px;
+      color: var(--text-3);
+    }
+    .msg.thought.active .thought-body {
+      background: var(--caution-s);
+      border-left-color: var(--caution);
+      color: var(--text-2);
+    }
+    .msg.thought.active .thought-icon { color: var(--caution); }
+    .msg.thought.confirmed .thought-body {
+      background: var(--positive-s);
+      border-left-color: var(--positive);
+      color: var(--text-2);
+    }
+    .msg.thought.confirmed .thought-icon { color: var(--positive); }
+
+    /* System */
+    .msg.system { align-self: center; }
+    .sys-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; color: var(--text-3);
+      display: flex; align-items: center; gap: 6px; padding: 8px 0;
+    }
+    .sys-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--positive); }
+
+    /* User */
+    .msg.user { align-self: flex-end; max-width: 480px; }
+    .ubbl {
+      padding: 10px 16px; border-radius: 18px 18px 4px 18px;
+      background: var(--accent); color: #fff;
+      font-size: 14px; line-height: 1.5;
+    }
+
+    /* Options */
+    .opts { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
+    .opt {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 14px; background: var(--bg-1);
+      border: 1px solid var(--border); border-radius: 10px;
+      cursor: pointer; transition: all 0.2s;
+      text-align: left; font-family: inherit; width: 100%; color: var(--text-1);
+    }
+    .opt:hover:not(:disabled):not(.sel) {
+      border-color: var(--accent); background: var(--accent-surface);
+    }
+    .opt:disabled { cursor: default; opacity: 0.35; }
+    .opt.sel { background: var(--accent-surface); border-color: var(--accent); }
+    .okey {
+      width: 20px; height: 20px; border: 1.5px solid var(--border-h);
+      border-radius: 6px; display: flex; align-items: center; justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; font-weight: 600; color: var(--text-3); flex-shrink: 0;
+    }
+    .opt.sel .okey { border-color: var(--accent); color: var(--accent); background: var(--accent-surface); }
+    .otxt { font-size: 13px; line-height: 1.4; font-weight: 500; }
+
+    /* Confirm */
+    .cblock {
+      margin-top: 10px; padding: 14px 16px;
+      background: var(--bg-2); border-radius: 12px; border: 1px solid var(--border);
+    }
+    .cblock .ctxt { font-size: 13px; color: var(--text-2); line-height: 1.6; margin-bottom: 12px; }
+    .cblock .ctxt strong { color: var(--text-1); }
+    .cacts { display: flex; gap: 8px; }
+    .cbtn {
+      padding: 8px 18px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--bg-3); font-size: 12px; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: all 0.2s; color: var(--text-1);
+    }
+    .cbtn.yes { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .cbtn.yes:hover { filter: brightness(1.1); }
+    .cbtn.no:hover { border-color: var(--negative); color: var(--negative); }
+    .cbtn:disabled { opacity: 0.35; cursor: default; }
+
+    .doc-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 6px;
+      background: var(--positive-s); border: 1px solid rgba(52,211,153,0.15);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; font-weight: 500; color: var(--positive);
+      margin-top: 4px; cursor: pointer; transition: background 0.2s;
+    }
+    .doc-chip:hover { background: rgba(52,211,153,0.12); }
+
+    /* Typing */
+    .typing { display: flex; gap: 12px; align-items: flex-start; }
+    .tdots { display: flex; gap: 4px; padding: 12px 14px; background: var(--bg-2); border-radius: 10px; }
+    .tdots span {
+      width: 5px; height: 5px; border-radius: 50%; background: var(--accent);
+      animation: tp 1.4s infinite;
+    }
+    .tdots span:nth-child(2){animation-delay:.2s;}
+    .tdots span:nth-child(3){animation-delay:.4s;}
+    @keyframes tp { 0%,60%,100%{opacity:.2;transform:scale(.7);} 30%{opacity:1;transform:scale(1);} }
+
+    /* Chapter card */
+    .rcard {
+      background: var(--bg-1); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px; margin-top: 8px;
+      transition: border-color 0.3s;
+    }
+    .rcard:hover { border-color: var(--border-h); }
+    .rcard-head {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+    }
+    .rcard-icon {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: var(--accent-surface); color: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; overflow: hidden;
+    }
+    .rcard-title { font-size: 14px; font-weight: 700; color: var(--text-1); }
+    .rcard-sub { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-3); margin-top:1px; }
+    .ch-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 11px 0; border-bottom: 1px solid var(--border);
+      opacity: 0; transform: translateY(8px);
+      animation: chIn 0.4s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+    .ch-item:last-child { border-bottom: none; }
+    .ch-num {
+      width: 26px; height: 26px; border-radius: 7px;
+      background: var(--accent); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; flex-shrink:0;
+    }
+    .ch-body { flex:1; }
+    .ch-body h4 { font-size:12px; font-weight:600; color:var(--text-1); margin-bottom:1px; }
+    .ch-body p { font-size:11px; color:var(--text-3); line-height:1.4; }
+    @keyframes chIn { to{opacity:1;transform:translateY(0);} }
+
+    /* ─── INPUT AREA ─── */
+    #input-area {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 0 20px 20px;
+      background: linear-gradient(to top, var(--bg-0) 60%, transparent);
+      z-index: 20;
+    }
+    #input-files {
+      display: flex; flex-wrap: wrap; gap: 4px;
+      flex: 1; min-width: 0; overflow: hidden;
+    }
+    #input-files:empty { display: none; }
+    .file-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px 4px 8px; border-radius: 8px;
+      background: var(--accent-surface); border: 1px solid rgba(124,92,252,0.12);
+      font-size: 11px; color: var(--text-2);
+      font-family: 'JetBrains Mono', monospace;
+      animation: chipIn 0.25s ease-out;
+    }
+    .file-chip .fc-icon { font-size: 12px; color: var(--accent); }
+    .file-chip .fc-remove {
+      width: 14px; height: 14px; border-radius: 50%; border: none;
+      background: rgba(255,255,255,0.06); color: var(--text-3);
+      font-size: 9px; cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      margin-left: 2px; transition: all 0.15s;
+    }
+    .file-chip .fc-remove:hover { background: var(--negative); color: #fff; }
+    @keyframes chipIn { from { opacity:0; transform:scale(0.85); } to { opacity:1; transform:scale(1); } }
+
+    #input-box.drag-over::after {
+      content: 'Drop files here';
+      position: absolute; inset: 0; z-index: 10;
+      border-radius: 16px;
+      background: rgba(124,92,252,0.08);
+      border: 2px dashed var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 600; color: var(--accent);
+      pointer-events: none;
+    }
+
+    @property --angle {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
+    }
+    @keyframes rainbowSpin { to { --angle: 360deg; } }
+
+    #input-box {
+      width: 100%; max-width: 640px;
+      border-radius: 16px; position: relative;
+    }
+    #input-box::before {
+      content: '';
+      position: absolute; inset: -1.5px;
+      border-radius: 17.5px; padding: 1.5px;
+      background: conic-gradient(from var(--angle), #7C5CFC, #A78BFA, #C4B5FD, #818CF8, #6366F1, #7C5CFC);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      animation: rainbowSpin 6s linear infinite;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    #input-box:focus-within::before { opacity: 0.7; }
+    #input-inner {
+      display: flex; flex-direction: column;
+      background: var(--bg-1); border-radius: 16px;
+      border: 1px solid var(--border);
+      position: relative; z-index: 1;
+      box-shadow: var(--shadow-lg);
+      transition: border-color 0.3s;
+    }
+    #input-box:focus-within #input-inner { border-color: transparent; }
+    #chat-input {
+      width: 100%; padding: 12px 16px 4px; background: transparent;
+      color: var(--text-1); font-size: 14px; font-family: inherit;
+      resize: none; border: none; line-height: 1.5;
+      max-height: 120px; min-height: 42px; outline: none;
+      border-radius: 16px 16px 0 0;
+    }
+    #chat-input::placeholder { color: var(--text-3); }
+    #input-toolbar {
+      display: flex; align-items: center;
+      padding: 4px 6px 6px; gap: 4px;
+    }
+    .ia-btn {
+      width: 30px; height: 30px; border-radius: 8px; border: none;
+      background: transparent; color: var(--text-3); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; transition: all 0.15s; flex-shrink: 0;
+    }
+    .ia-btn:hover { color: var(--text-1); background: var(--bg-2); }
+    .ia-btn.attach:hover { color: var(--accent); background: var(--accent-surface); }
+    .ia-btn.send {
+      margin-left: auto;
+      background: var(--accent); color: #fff; font-size: 14px;
+    }
+    .ia-btn.send:hover { filter: brightness(1.1); }
+
+    /* ─── RIGHT PANEL ─── */
+    #right-panel {
+      width: 340px; flex-shrink: 0;
+      background: var(--bg-1);
+      border-left: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      transition: width 0.3s;
+    }
+    #right-panel.collapsed { width: 0; border: none; overflow: hidden; }
+
+    /* Panel header with ring */
+    .rp-header {
+      padding: 20px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 14px;
+      flex-shrink: 0;
+    }
+    .ring-progress {
+      width: 48px; height: 48px; flex-shrink: 0;
+      transform: rotate(-90deg);
+    }
+    .ring-bg { fill: none; stroke: var(--bg-3); stroke-width: 3; }
+    .ring-fill {
+      fill: none; stroke: var(--accent); stroke-width: 3;
+      stroke-linecap: round;
+      stroke-dasharray: 100; stroke-dashoffset: 100;
+      transition: stroke-dashoffset 0.8s cubic-bezier(0.22,1,0.36,1);
+    }
+    .rp-header-text { flex: 1; }
+    .rp-title {
+      font-size: 13px; font-weight: 600; color: var(--text-1);
+      letter-spacing: -0.01em;
+    }
+    .rp-subtitle {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; color: var(--text-3); margin-top: 2px;
+    }
+
+    #rp-scroll {
+      flex: 1; overflow-y: auto; padding: 12px 14px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    #rp-scroll::-webkit-scrollbar { width: 3px; }
+    #rp-scroll::-webkit-scrollbar-thumb { background: var(--text-3); border-radius: 2px; }
+
+    /* Section cards with mini rings */
+    .rp-sec {
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .rp-sec:hover { border-color: var(--border-h); }
+    .rp-sec.done {
+      background: var(--positive-s);
+      border-color: rgba(52,211,153,0.15);
+    }
+    [data-theme="light"] .rp-sec.done {
+      background: rgba(5,150,105,0.04);
+      border-color: rgba(5,150,105,0.18);
+    }
+.rp-sec.glow {
+      border-color: rgba(124,92,252,0.3);
+      box-shadow: 0 0 16px var(--accent-glow);
+      animation: secGlow 1.5s ease forwards;
+    }
+    @keyframes secGlow {
+      0% { border-color: rgba(124,92,252,0.5); box-shadow: 0 0 20px var(--accent-glow); }
+      100% { border-color: var(--border); box-shadow: none; }
+    }
+    .rp-sec-h {
+      display: flex; align-items: center;
+      padding: 10px 12px; cursor: pointer; user-select: none;
+      gap: 10px;
+    }
+    .sec-ring {
+      width: 24px; height: 24px; flex-shrink: 0;
+      transform: rotate(-90deg);
+    }
+    .sec-ring .ring-bg { stroke-width: 2.5; }
+    .sec-ring .ring-fill {
+      stroke-width: 2.5;
+      stroke-dasharray: 62.83; stroke-dashoffset: 62.83;
+      transition: stroke-dashoffset 0.6s cubic-bezier(0.22,1,0.36,1);
+    }
+    .rp-sec-name {
+      font-size: 12px; font-weight: 600; color: var(--text-1);
+      flex: 1; min-width: 0;
+    }
+    .rp-sec-pct {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; color: var(--accent); font-weight: 600;
+      min-width: 24px; text-align: right;
+    }
+    .rp-sec-arr {
+      font-size: 8px; color: var(--text-3);
+      transition: transform 0.25s;
+    }
+    .rp-sec.open .rp-sec-arr { transform: rotate(90deg); }
+    .rp-sec-body { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+    .rp-sec.open .rp-sec-body { max-height: 1200px; }
+    .rp-sec-inner { padding: 0 12px 10px; }
+
+    .rf {
+      margin-bottom: 4px;
+      display: flex; align-items: baseline; gap: 8px;
+    }
+    .rf-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--text-2);
+      flex: 0 0 33%; min-width: 0;
+      padding: 7px 0 7px 2px;
+    }
+    .rf-val {
+      flex: 1; min-width: 0;
+      font-size: 12px; line-height: 1.5; color: var(--text-2);
+      padding: 6px 10px; background: var(--bg-0); border-radius: 6px;
+      border: 1px solid transparent; min-height: 26px;
+      cursor: text; transition: all 0.25s; outline: none;
+    }
+    .rf-val:hover { border-color: var(--border-h); }
+    .rf-val:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-glow);
+      background: var(--bg-1);
+    }
+    .rf-val.empty { color: var(--text-3); font-style: italic; }
+    .rf-label.lbl-flash {
+      animation: lblFlash 1.8s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+    @keyframes lblFlash {
+      0% { color: var(--accent); }
+      40% { color: var(--accent); }
+      100% { color: var(--text-2); }
+    }
+    .rf-val.flash {
+      animation: fFlash 1.8s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+    @keyframes fFlash {
+      0% {
+        border-color: var(--accent);
+        background: var(--accent-surface);
+        box-shadow: 0 0 0 3px var(--accent-glow), 0 0 16px var(--accent-glow);
+      }
+      30% {
+        border-color: var(--accent);
+        background: var(--accent-surface);
+        box-shadow: 0 0 0 2px var(--accent-glow);
+      }
+      100% {
+        border-color: transparent;
+        background: var(--bg-0);
+        box-shadow: none;
+      }
+    }
+
+    .res-chip {
+      display: flex; align-items: center; gap: 7px;
+      padding: 5px 9px; background: var(--bg-0); border-radius: 6px;
+      margin-bottom: 3px; font-size: 11px;
+    }
+    .res-icon { font-size: 11px; }
+    .res-name { flex:1; color:var(--text-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .res-st {
+      font-family:'JetBrains Mono',monospace; font-size:8px; font-weight:600;
+      padding:1px 5px; border-radius:999px;
+    }
+    .res-st.ready { background:var(--positive-s); color:var(--positive); }
+    .res-st.processing { background:var(--caution-s); color:var(--caution); }
+
+    .rp-ch { padding:6px 9px; background:var(--bg-0); border-radius:5px; margin-bottom:3px; }
+    .rp-ch h4 { font-size:11px; font-weight:600; color:var(--text-1); }
+    .rp-ch p { font-size:10px; color:var(--text-3); line-height:1.3; }
+
+    /* ─── THINKING PANEL — glass floating overlay ─── */
+    #thinking-panel {
+      position: sticky;
+      top: 12px;
+      z-index: 20;
+      align-self: stretch;
+      width: calc(100% - 24px);
+      margin: 8px 12px 0;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.14);
+      border-top-color: rgba(255,255,255,0.24);
+      background:
+        linear-gradient(180deg,
+          color-mix(in srgb, var(--bg-1) 42%, transparent) 0%,
+          color-mix(in srgb, var(--bg-1) 26%, transparent) 100%);
+      backdrop-filter: blur(32px) saturate(1.95) brightness(1.08);
+      -webkit-backdrop-filter: blur(32px) saturate(1.95) brightness(1.08);
+      box-shadow:
+        0 10px 34px rgba(0,0,0,0.18),
+        0 1px 0 rgba(255,255,255,0.10) inset,
+        0 0 0 1px rgba(255,255,255,0.06) inset;
+    }
+    [data-theme="light"] #thinking-panel {
+      border-color: rgba(255,255,255,0.68);
+      border-top-color: rgba(255,255,255,0.94);
+      background:
+        linear-gradient(180deg,
+          rgba(255,255,255,0.68) 0%,
+          rgba(255,255,255,0.42) 100%);
+      box-shadow:
+        0 10px 30px rgba(0,0,0,0.10),
+        0 1px 0 rgba(255,255,255,0.96) inset,
+        0 0 0 1px rgba(255,255,255,0.48) inset;
+    }
+    .tp-header {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 10px;
+    }
+    /* Pixel squares thinking indicator */
+    .tp-pixels {
+      width: 12px; height: 12px;
+      position: relative; flex-shrink: 0;
+    }
+    .tp-px {
+      position: absolute;
+      width: 5px; height: 5px;
+      background: var(--accent);
+      opacity: 0.15;
+      border-radius: 1px;
+      transition: opacity 0.4s;
+    }
+    .tp-px:nth-child(1) { top: 0; left: 0; }
+    .tp-px:nth-child(2) { top: 0; right: 0; }
+    .tp-px:nth-child(3) { bottom: 0; left: 0; }
+    .tp-px:nth-child(4) { bottom: 0; right: 0; }
+    /* Active: whole cluster rotates + each square pulses in chase */
+    .tp-pixels.active {
+      animation: tpGroupSpin 1.8s linear infinite;
+    }
+    @keyframes tpGroupSpin {
+      to { transform: rotate(360deg); }
+    }
+    .tp-pixels.active .tp-px {
+      animation: tpPxChase 0.6s ease-in-out infinite;
+    }
+    .tp-pixels.active .tp-px:nth-child(1) { animation-delay: 0s; }
+    .tp-pixels.active .tp-px:nth-child(2) { animation-delay: 0.15s; }
+    .tp-pixels.active .tp-px:nth-child(3) { animation-delay: 0.45s; }
+    .tp-pixels.active .tp-px:nth-child(4) { animation-delay: 0.3s; }
+    @keyframes tpPxChase {
+      0%, 100% { opacity: 0.15; transform: scale(0.7); }
+      50% { opacity: 1; transform: scale(1.25); box-shadow: 0 0 5px var(--accent); }
+    }
+    .tp-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-3);
+    }
+    .tp-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; color: var(--accent); font-weight: 600;
+      background: var(--accent-surface);
+      padding: 1px 6px; border-radius: 999px;
+      margin-left: auto;
+    }
+    .tp-empty {
+      font-size: 11px; color: var(--text-3); font-style: italic;
+    }
+    #tp-entries {
+      display: flex; flex-direction: column; gap: 4px;
+      max-height: 140px; overflow-y: auto;
+    }
+    #tp-entries::-webkit-scrollbar { width: 3px; }
+    #tp-entries::-webkit-scrollbar-thumb { background: var(--text-3); border-radius: 2px; }
+    .tp-entry {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 11px; line-height: 1.4;
+      color: var(--text-2);
+      border-left: 2px solid var(--text-3);
+      background: color-mix(in srgb, var(--bg-2) 60%, transparent);
+      animation: tpEntryIn 0.4s cubic-bezier(0.22,1,0.36,1);
+    }
+    @keyframes tpEntryIn {
+      from { opacity: 0; transform: translateX(-8px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .tp-entry.active {
+      background: var(--caution-s);
+      border-left-color: var(--caution);
+    }
+    .tp-entry.confirmed {
+      background: var(--positive-s);
+      border-left-color: var(--positive);
+    }
+    .tp-entry-icon {
+      font-size: 10px; flex-shrink: 0; margin-top: 1px;
+    }
+    .tp-entry.active .tp-entry-icon { color: var(--caution); }
+    .tp-entry.confirmed .tp-entry-icon { color: var(--positive); }
+    .tp-entry-status {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.04em;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .tp-entry.active .tp-entry-status { color: var(--caution); }
+    .tp-entry.confirmed .tp-entry-status { color: var(--positive); }
+
+    /* Hidden legacy elements */
+    #thinking-bar, #prog { display: none; }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <div id="chat-col">
+    <div id="top-bar">
+      <div class="left">
+        <div class="cypher-mark"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Belvedere_Apollo_Pio-Clementino_Inv1015.jpg/150px-Belvedere_Apollo_Pio-Clementino_Inv1015.jpg" alt="Cypher"></div>
+      </div>
+
+      <div class="tb-rows">
+        <div class="tb-row1">
+          <div class="project-info">
+            <div class="project-title">
+              <span id="pname">Cypher</span>
+              <span id="pstatus" class="pill draft">Draft</span>
+            </div>
+          </div>
+          <div class="right">
+            <button class="tbtn" onclick="togglePanel()" title="Knowledge panel" id="kp-btn">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><line x1="2" y1="3.5" x2="12" y2="3.5"/><line x1="2" y1="7" x2="12" y2="7"/><line x1="2" y1="10.5" x2="12" y2="10.5"/></svg>
+            </button>
+            <button class="tbtn" onclick="toggleTheme()" title="Theme" id="theme-btn">
+              <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+              <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+          </div>
+        </div>
+        <!-- Phase Stepper — second row -->
+        <div class="stepper" id="phases">
+        <div class="step active" data-p="setup"><div class="step-dot"></div><span class="step-label">Setup</span></div>
+        <div class="step-line"><div class="step-line-fill" id="sl0"></div></div>
+        <div class="step" data-p="goal"><div class="step-dot"></div><span class="step-label">Goal</span></div>
+        <div class="step-line"><div class="step-line-fill" id="sl1"></div></div>
+        <div class="step" data-p="resources"><div class="step-dot"></div><span class="step-label">Resources</span></div>
+        <div class="step-line"><div class="step-line-fill" id="sl2"></div></div>
+        <div class="step" data-p="structure"><div class="step-dot"></div><span class="step-label">Structure</span></div>
+        <div class="step-line"><div class="step-line-fill" id="sl3"></div></div>
+        <div class="step" data-p="refine"><div class="step-dot"></div><span class="step-label">Refine</span></div>
+        <div class="step-line"><div class="step-line-fill" id="sl4"></div></div>
+        <div class="step" data-p="review"><div class="step-dot"></div><span class="step-label">Review</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden legacy elements -->
+    <div id="thinking-bar" style="display:none"><div id="thinking-entries"></div><span id="tb-count"></span><span id="tb-icon"></span><button id="tb-tog"></button></div>
+    <div id="prog" style="display:none"><div id="prog-fill"></div></div>
+
+    <div id="chat-scroll">
+      <!-- Thinking Panel — glass floating overlay -->
+      <div id="thinking-panel">
+        <div class="tp-header">
+          <div class="tp-pixels" id="tp-icon">
+            <div class="tp-px"></div>
+            <div class="tp-px"></div>
+            <div class="tp-px"></div>
+            <div class="tp-px"></div>
+          </div>
+          <span class="tp-title">Dynamic Hypotheses</span>
+          <span class="tp-count" id="tp-count">0</span>
+        </div>
+        <div id="tp-entries">
+          <div class="tp-empty" id="tp-empty">Waiting for input to form hypotheses...</div>
+        </div>
+      </div>
+      <div id="chat-messages"><div id="msg-spacer"></div></div>
+    </div>
+
+    <div id="input-area">
+      <div id="input-box">
+        <div id="input-inner">
+          <textarea id="chat-input" rows="1" placeholder="Type your response..." onkeydown="handleKey(event)" oninput="autoGrow(this)"></textarea>
+          <div id="input-toolbar">
+            <button class="ia-btn attach" onclick="simulateUpload()" title="Attach files"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg></button>
+            <div id="input-files"></div>
+            <button class="ia-btn send" onclick="sendMsg()">&#x2191;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div id="right-panel">
+    <div class="rp-header">
+      <svg class="ring-progress" viewBox="0 0 36 36">
+        <circle class="ring-bg" cx="18" cy="18" r="15.9155"/>
+        <circle class="ring-fill" cx="18" cy="18" r="15.9155" id="rp-ring"/>
+      </svg>
+      <div class="rp-header-text">
+        <div class="rp-title">Knowledge Base</div>
+        <div class="rp-subtitle" id="rp-pct">0% complete</div>
+      </div>
+    </div>
+    <div id="rp-scroll">
+
+      <div class="rp-sec" data-doc="1">
+        <div class="rp-sec-h" onclick="togSec(1)">
+          <svg class="sec-ring" viewBox="0 0 24 24"><circle class="ring-bg" cx="12" cy="12" r="10"/><circle class="ring-fill" cx="12" cy="12" r="10" id="sr1"/></svg>
+<span class="rp-sec-name">Editor Profile</span>
+          <span class="rp-sec-pct" id="sp1"></span>
+          <span class="rp-sec-arr">&#x25B6;</span>
+        </div>
+        <div class="rp-sec-body"><div class="rp-sec-inner">
+          <div class="rf"><div class="rf-label">Name</div><div class="rf-val empty" contenteditable id="doc1-name" data-d="1" data-f="name" onblur="onEdit(this)">Not filled</div></div>
+          <div class="rf"><div class="rf-label">Role</div><div class="rf-val empty" contenteditable id="doc1-role" data-d="1" data-f="role" onblur="onEdit(this)">Not filled</div></div>
+          <div class="rf"><div class="rf-label">Focus</div><div class="rf-val empty" contenteditable id="doc1-focus" data-d="1" data-f="focus" onblur="onEdit(this)">Not filled</div></div>
+          <div class="rf"><div class="rf-label">Style</div><div class="rf-val empty" contenteditable id="doc1-style" data-d="1" data-f="style" onblur="onEdit(this)">Not filled</div></div>
+          <div class="rf"><div class="rf-label">Preferences</div><div class="rf-val empty" contenteditable id="doc1-prefs" data-d="1" data-f="prefs" onblur="onEdit(this)">Not filled</div></div>
+        </div></div>
+      </div>
+
+      <div class="rp-sec" data-doc="2">
+        <div class="rp-sec-h" onclick="togSec(2)">
+          <svg class="sec-ring" viewBox="0 0 24 24"><circle class="ring-bg" cx="12" cy="12" r="10"/><circle class="ring-fill" cx="12" cy="12" r="10" id="sr2"/></svg>
+<span class="rp-sec-name">Learner Profile</span>
+          <span class="rp-sec-pct" id="sp2"></span>
+          <span class="rp-sec-arr">&#x25B6;</span>
+        </div>
+        <div class="rp-sec-body"><div class="rp-sec-inner">
+          <div class="rf"><div class="rf-label">Audience</div><div class="rf-val empty" contenteditable id="doc2-audience" data-d="2" data-f="audience" onblur="onEdit(this)">Not filled</div></div>
+          <div class="rf"><div class="rf-label">Knowledge</div><div class="rf-val empty" contenteditable id="doc2-knowledge" data-d="2" data-f="knowledge" onblur="onEdit(this)">Not filled</div></div>
+          <div class="rf"><div class="rf-label">Pain Points</div><div class="rf-val empty" contenteditable id="doc2-pain" data-d="2" data-f="pain" onblur="onEdit(this)">Not filled</div></div>
+          <div class="rf"><div class="rf-label">Context</div><div class="rf-val empty" contenteditable id="doc2-context" data-d="2" data-f="context" onblur="onEdit(this)">Not filled</div></div>
+          <div class="rf"><div class="rf-label">Success</div><div class="rf-val empty" contenteditable id="doc2-success" data-d="2" data-f="success" onblur="onEdit(this)">Not filled</div></div>
+        </div></div>
+      </div>
+
+      <div class="rp-sec" data-doc="3">
+        <div class="rp-sec-h" onclick="togSec(3)">
+          <svg class="sec-ring" viewBox="0 0 24 24"><circle class="ring-bg" cx="12" cy="12" r="10"/><circle class="ring-fill" cx="12" cy="12" r="10" id="sr3"/></svg>
+<span class="rp-sec-name">Company Profile</span>
+          <span class="rp-sec-pct" id="sp3"></span>
+          <span class="rp-sec-arr">&#x25B6;</span>
+        </div>
+        <div class="rp-sec-body"><div class="rp-sec-inner">
+          <div class="rf"><div class="rf-label">Company</div><div class="rf-val empty" contenteditable id="doc3-name" data-d="3" data-f="name" onblur="onEdit(this)">Not filled</div></div>
+          <div class="rf"><div class="rf-label">Industry</div><div class="rf-val empty" contenteditable id="doc3-industry" data-d="3" data-f="industry" onblur="onEdit(this)">Not filled</div></div>
+          <div class="rf"><div class="rf-label">Team</div><div class="rf-val empty" contenteditable id="doc3-team" data-d="3" data-f="team" onblur="onEdit(this)">Not filled</div></div>
+          <div class="rf"><div class="rf-label">Tone</div><div class="rf-val empty" contenteditable id="doc3-tone" data-d="3" data-f="tone" onblur="onEdit(this)">Not filled</div></div>
+          <div class="rf"><div class="rf-label">Terms</div><div class="rf-val empty" contenteditable id="doc3-terms" data-d="3" data-f="terms" onblur="onEdit(this)">Not filled</div></div>
+          <div class="rf"><div class="rf-label">Challenges</div><div class="rf-val empty" contenteditable id="doc3-challenges" data-d="3" data-f="challenges" onblur="onEdit(this)">Not filled</div></div>
+        </div></div>
+      </div>
+
+      <div class="rp-sec" data-doc="4">
+        <div class="rp-sec-h" onclick="togSec(4)">
+          <svg class="sec-ring" viewBox="0 0 24 24"><circle class="ring-bg" cx="12" cy="12" r="10"/><circle class="ring-fill" cx="12" cy="12" r="10" id="sr4"/></svg>
+<span class="rp-sec-name">Training Structure</span>
+          <span class="rp-sec-pct" id="sp4"></span>
+          <span class="rp-sec-arr">&#x25B6;</span>
+        </div>
+        <div class="rp-sec-body"><div class="rp-sec-inner">
+          <div class="rf"><div class="rf-label">Goal</div><div class="rf-val empty" contenteditable id="doc4-goal" data-d="4" data-f="goal" onblur="onEdit(this)">Not filled</div></div>
+          <div class="rf"><div class="rf-label">Objectives</div><div class="rf-val empty" contenteditable id="doc4-objectives" data-d="4" data-f="objectives" onblur="onEdit(this)">Not filled</div></div>
+          <div class="rf"><div class="rf-label">Chapters</div><div id="doc4-chapters"><div class="rf-val empty">No chapters yet</div></div></div>
+        </div></div>
+      </div>
+
+      <div class="rp-sec" data-doc="5">
+        <div class="rp-sec-h" onclick="togSec(5)">
+          <svg class="sec-ring" viewBox="0 0 24 24"><circle class="ring-bg" cx="12" cy="12" r="10"/><circle class="ring-fill" cx="12" cy="12" r="10" id="sr5"/></svg>
+<span class="rp-sec-name">Instructor Profile</span>
+          <span class="rp-sec-pct" id="sp5"></span>
+          <span class="rp-sec-arr">&#x25B6;</span>
+        </div>
+        <div class="rp-sec-body"><div class="rp-sec-inner">
+          <div class="rf"><div class="rf-label">Language</div><div class="rf-val empty" contenteditable id="doc5-language" data-d="5" data-f="language" onblur="onEdit(this)">Not filled</div></div>
+          <div class="rf"><div class="rf-label">Personality</div><div class="rf-val empty" contenteditable id="doc5-personality" data-d="5" data-f="personality" onblur="onEdit(this)">Not filled</div></div>
+          <div class="rf"><div class="rf-label">Tone</div><div class="rf-val empty" contenteditable id="doc5-tone" data-d="5" data-f="tone" onblur="onEdit(this)">Not filled</div></div>
+          <div class="rf"><div class="rf-label">Coaching</div><div class="rf-val empty" contenteditable id="doc5-coaching" data-d="5" data-f="coaching" onblur="onEdit(this)">Not filled</div></div>
+          <div class="rf"><div class="rf-label">Terms</div><div class="rf-val empty" contenteditable id="doc5-terms" data-d="5" data-f="terms" onblur="onEdit(this)">Not filled</div></div>
+        </div></div>
+      </div>
+
+      <div class="rp-sec" data-doc="res">
+        <div class="rp-sec-h" onclick="togSec('res')">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:0.7">
+            <path d="M3 8h8l2 2.5H21v9.5a1 1 0 01-1 1H4a1 1 0 01-1-1V8z"/>
+            <line x1="7" y1="15" x2="15" y2="15"/>
+            <line x1="7" y1="18" x2="12" y2="18"/>
+          </svg>
+          <span class="rp-sec-name">Resources</span>
+          <span class="rp-sec-pct" id="sp-res"></span>
+          <span class="rp-sec-arr">&#x25B6;</span>
+        </div>
+        <div class="rp-sec-body"><div class="rp-sec-inner" id="res-list">
+          <div style="font-size:11px;color:var(--text-3);font-style:italic;padding:4px 0;">No resources yet</div>
+        </div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══ CYPHER v3 ═══ */
+const CYPHER_AV='https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Belvedere_Apollo_Pio-Clementino_Inv1015.jpg/150px-Belvedere_Apollo_Pio-Clementino_Inv1015.jpg';
+const D={1:{n:'Editor Profile',f:{name:'',role:'',focus:'',style:'',prefs:''}},2:{n:'Learner Profile',f:{audience:'',knowledge:'',pain:'',context:'',success:''}},3:{n:'Company Profile',f:{name:'',industry:'',team:'',tone:'',terms:'',challenges:''}},4:{n:'Training Structure',f:{goal:'',objectives:'',chapters:[]}},5:{n:'Instructor Profile',f:{language:'',personality:'',tone:'',coaching:'',terms:''}},6:{n:'Hypotheses',h:[]}};
+let awaiting=false,mcH=null,lc=0,resN=0;
+const chatEl=document.getElementById('chat-messages'),inEl=document.getElementById('chat-input');
+const PH=['setup','goal','resources','structure','refine','review'];
+let curPh='setup';
+
+function setPhase(p){
+  curPh=p;
+  const i=PH.indexOf(p);
+  const steps=document.querySelectorAll('.step');
+  const lines=document.querySelectorAll('.step-line-fill');
+  steps.forEach((s,j)=>{
+    s.classList.remove('active','done');
+    if(j<i) s.classList.add('done');
+    else if(j===i) s.classList.add('active');
+  });
+  lines.forEach((l,j)=>{ l.style.width = j < i ? '100%' : '0%'; });
+}
+
+// ═══ MAIN ═══
+window.addEventListener('DOMContentLoaded',()=>setTimeout(runFlow,500));
+
+async function runFlow(){
+  setPhase('setup');
+  await cy("I'm <strong>Cypher</strong> — your AI research &amp; planning partner. Let's build a training that actually works.");
+  await cy("I'll guide you step by step. You can edit the Knowledge Base on the right anytime.",700);
+  const pn=await ask("What's the name of this training project?");
+  setPName(pn); addSys('Project created');
+
+  const ft=await mc("Have you used Cypher before?",['First time here','I\u2019ve been here before']);
+  if(ft.includes('First')){
+    await cy("Let's set up your profiles — they persist across projects.");
+    const nr=await ask("Your <strong>name and role</strong>?");
+    const pts=nr.split(/,|\band\b|\bas\b|\b-\b/);
+    uDoc(1,'name',pts[0].trim());
+    if(pts.length>=2)uDoc(1,'role',pts.slice(1).join(',').trim());
+    const fo=await ask("What <strong>domain</strong> do you create training for?");
+    uDoc(1,'focus',fo);
+    const st=await mc("Communication style?",['Direct & concise','Detailed & thorough','Conversational','Something else']);
+    uDoc(1,'style',st); addSys('Editor Profile saved');
+    await cy("Now your <strong>Company Profile</strong>.");
+    const cn=await ask("Company name?"); uDoc(3,'name',cn);
+    const ind=await mc("Industry?",['Healthcare','Technology','Education','Financial Services']);
+    uDoc(3,'industry',ind);
+    const tm=await ask("Brief <strong>team structure</strong>?"); uDoc(3,'team',tm);
+    const tn=await mc("Organization tone?",['Formal','Casual','Technical','Something else']);
+    uDoc(3,'tone',tn); addSys('Company Profile saved');
+  } else {
+    fillRet();
+    await cy("Welcome back. Profiles loaded.");
+    const ch=await mc("Any updates?",['No, all good','Yes, let me update']);
+    if(ch.includes('Yes')){await cy("Edit in the Knowledge Base. Send a message when ready.");await waitInput();}
+  }
+
+  setPhase('goal');
+  await cy("Let's define the <strong>business goal</strong> — the north star for everything we build.");
+  const goal=await ask("<strong>What should learners be able to DO after this training?</strong>");
+  uDoc(4,'goal',goal);
+  addThink('active','Forming assumptions about scope based on stated goal.');
+  const gOk=await confirm(`Training goal: <strong>\u201c${goal}\u201d</strong> — is that right?`);
+  if(!gOk){const r=await ask("Let's refine — restate the outcome:");uDoc(4,'goal',r);}
+  addThink('confirmed','Business goal locked.'); addSys('Goal confirmed');
+
+  setPhase('resources');
+  await cy("Do you have <strong>existing materials</strong>? You can attach files using the &#x1F4CE; button below, or tell me about links.");
+  const hr=await mc("Resources?",['I have files','I have links','No resources']);
+  if(!hr.includes('No')){
+    if(hr.includes('files')){await cy("Attach your files using the &#x1F4CE; button in the input bar, then send a message when ready.");await waitInput();}
+    if(hr.includes('links')){const lk=await ask("Paste links:");addRes(lk.substring(0,35),'Link','ready');}
+    addThink('active','Reviewing materials for key themes.'); await cy("Materials reviewed.",1000);
+  } else {
+    addThink('active','No resources — extracting through interview.');
+    await cy("We'll extract everything through conversation.");
+  }
+  const wr=await mc("Run <strong>deep research</strong> on your topic?",['Yes, research','Skip']);
+  if(wr.includes('Yes')){await cy("Researching...",2000);addThink('active','Found industry standards.');addRes('Research Results','Link','ready');await cy("Research complete.");}
+  addSys('Resources phase done');
+
+  setPhase('structure');
+  await cy("Drafting the <strong>course structure</strong>...",1200);
+  const cc=await mc("Chapter count?",['3\u20134 (focused)','5\u20136 (comprehensive)','7+ (deep dive)','Let Cypher decide']);
+  let n=cc.includes('3')?4:cc.includes('5')?5:cc.includes('7')?7:5;
+  const nm=['Foundations','Core Concepts','Key Procedures','Applied Practice','Advanced Topics','Compliance','Mastery'];
+  const chs=[];for(let i=0;i<n;i++)chs.push({title:nm[i]||'Chapter '+(i+1),obj:'Objective for '+(nm[i]||'chapter '+(i+1)).toLowerCase()});
+  D[4].f.chapters=chs;uDoc(4,'objectives',chs.map(c=>c.obj).join('; '));renderChs();
+  showChCard(chs);addThink('confirmed',n+' chapters: foundational \u2192 advanced.');addSys('Draft structure created');
+
+  setPhase('refine');
+  await cy("Now filling in <strong>learners</strong>, <strong>gaps</strong>, and <strong>delivery</strong>.");
+  let go=true;lc=0;
+  while(go){
+    lc++;
+    if(lc===1){
+      await cy("<strong>About your learners:</strong>");
+      const au=await ask("Who are the learners?");uDoc(2,'audience',au);
+      const kn=await ask("What do they <strong>already know</strong>?");uDoc(2,'knowledge',kn);
+      addThink('active','Learner baseline: "'+kn.substring(0,45)+'..." — calibrating.');
+      const pa=await mc("Biggest struggle?",['Retaining procedures','Applying theory','Confidence','Time']);
+      uDoc(2,'pain',pa);
+      const cx=await mc("Training context?",['Onboarding','On the job','Self-paced','Classroom']);
+      uDoc(2,'context',cx);
+      const su=await ask("How will you know it <strong>worked</strong>?");uDoc(2,'success',su);
+      addSys('Learner Profile filled');
+    } else if(lc===2){
+      await cy("<strong>Probing for gaps:</strong>");
+      const as=await ask("What do you <strong>assume</strong> learners know?");
+      addThink('active','Blind spot: "'+as.substring(0,45)+'..."');
+      const pr=await ask("<strong>30 minutes</strong> — what's non-negotiable?");
+      addThink('confirmed','Priority: "'+pr.substring(0,45)+'..." — ch 1-2.');
+      addSys('Structure refined');
+    } else if(lc===3){
+      await cy("<strong>Defining Mo's delivery:</strong>");
+      const la=await mc("Language?",['English','Hebrew','Spanish','Other']);uDoc(5,'language',la);
+      const pe=await mc("Mo's personality?",['Warm coach','Strict instructor','Peer buddy','Other']);
+      uDoc(5,'personality',pe);uDoc(5,'tone',pe);
+      uDoc(5,'coaching',pe.includes('coach')?'Supportive':'Direct');
+      const te=await ask("Terminology rules for Mo?");uDoc(5,'terms',te);
+      addSys('Instructor Profile filled');
+    }
+    if(lc>=3){
+      const ct=await mc("What next?",['Keep refining','Satisfied — review']);
+      if(ct.includes('Satisfied')||ct.includes('review'))go=false;
+      else{await cy("What to refine?");const ff=await waitInput();addThink('active','Refinement: "'+ff.substring(0,50)+'..."');await cy("Noted.",500);}
+    }
+  }
+
+  setPhase('review');
+  await cy("Checking everything...",1500);
+  const pct=overallPct();
+  await cy(`Documents at <strong>${pct}%</strong>. ${pct>=80?'Structure is solid.':'Some gaps remain — edit in the Knowledge Base.'}`);
+  const ap=await mc("Ready to finalize?",['Approve & hand off to Trinity','Make changes first']);
+  if(ap.includes('changes')){await cy("Edit away — send a message when done.");await waitInput();await cy("Changes applied.",500);}
+  setPStatus('published');
+  await cy("<strong>Done.</strong> Handed off to Trinity.",800);
+  await cy("Trinity will generate videos, infographics, slides, and assessments from your structure.");
+  addSys('Handed off to Trinity');
+}
+
+// ═══ CHAT ═══
+function cy(h,ms){return showTyp(ms||500).then(()=>addCy(h));}
+async function ask(h){await showTyp(400);addCy(h,'question');return await waitInput();}
+async function mc(h,opts){await showTyp(400);return await showMC(h,opts);}
+async function confirm(h){await showTyp(300);return await showConf(h);}
+
+function updAv(){const avs=chatEl.querySelectorAll('.msg.cypher .av');avs.forEach(a=>a.classList.remove('vis'));for(let i=avs.length-1;i>=0;i--)if(!avs[i].classList.contains('ph')){avs[i].classList.add('vis');break;}}
+function addCy(h,t){const m=document.createElement('div');m.className='msg cypher'+(t?' '+t:'');m.innerHTML=`<div class="av"><img src="${CYPHER_AV}" alt="C"></div><div class="mbody"><div class="mtxt">${h}</div></div>`;chatEl.appendChild(m);updAv();scroll();}
+function addUser(t){const m=document.createElement('div');m.className='msg user';m.innerHTML=`<div class="ubbl">${esc(t)}</div>`;chatEl.appendChild(m);updAv();scroll();}
+function addSys(t){const m=document.createElement('div');m.className='msg system';m.innerHTML=`<div class="sys-text"><span class="sys-dot"></span>${t}</div>`;chatEl.appendChild(m);scroll();}
+
+function showChCard(chs){
+  const m=document.createElement('div');m.className='msg cypher';
+  const its=chs.map((c,i)=>`<div class="ch-item" style="animation-delay:${i*0.07}s"><div class="ch-num">${i+1}</div><div class="ch-body"><h4>${c.title}</h4><p>${c.obj}</p></div></div>`).join('');
+  m.innerHTML=`<div class="av ph"><img src="${CYPHER_AV}" alt="C"></div><div class="mbody"><div class="rcard"><div class="rcard-head"><div class="rcard-icon"><img src="${CYPHER_AV}" alt="C" style="width:100%;height:100%;border-radius:inherit;"></div><div><div class="rcard-title">Training Structure</div><div class="rcard-sub">${chs.length} chapters · Draft</div></div></div>${its}</div></div>`;
+  chatEl.appendChild(m);updAv();scroll();
+}
+
+async function showTyp(ms){const e=document.createElement('div');e.className='typing';e.innerHTML=`<div class="av ph"><img src="${CYPHER_AV}" alt="C"></div><div class="tdots"><span></span><span></span><span></span></div>`;chatEl.appendChild(e);scroll();await delay(ms);e.remove();updAv();}
+
+function showMC(qh,opts){return new Promise(res=>{addCy(qh,'question');const g=document.createElement('div');g.className='msg cypher';const ks=['A','B','C','D','E'];let h=`<div class="av ph"><img src="${CYPHER_AV}" alt="C"></div><div class="mbody"><div class="opts">`;opts.forEach((o,i)=>{h+=`<button class="opt" data-i="${i}"><span class="okey">${ks[i]}</span><span class="otxt">${o}</span></button>`;});h+='</div></div>';g.innerHTML=h;chatEl.appendChild(g);updAv();scroll();awaiting=true;mcH=t=>{const mi=opts.findIndex(o=>o.toLowerCase().startsWith(t.toLowerCase()));const c=mi>=0?opts[mi]:t;g.querySelectorAll('.opt').forEach(b=>b.disabled=true);if(mi>=0)g.querySelectorAll('.opt')[mi].classList.add('sel');awaiting=false;mcH=null;res(c);};g.querySelectorAll('.opt').forEach(b=>{b.addEventListener('click',()=>{const i=parseInt(b.dataset.i);addUser(opts[i]);g.querySelectorAll('.opt').forEach(x=>x.disabled=true);b.classList.add('sel');awaiting=false;mcH=null;res(opts[i]);});});});}
+
+function showConf(h){return new Promise(res=>{const m=document.createElement('div');m.className='msg cypher';m.innerHTML=`<div class="av"><img src="${CYPHER_AV}" alt="C"></div><div class="mbody"><div class="cblock"><div class="ctxt">${h}</div><div class="cacts"><button class="cbtn yes">&#10003; Correct</button><button class="cbtn no">&#10007; Clarify</button></div></div></div>`;chatEl.appendChild(m);updAv();scroll();m.querySelector('.cbtn.yes').onclick=()=>{addUser("Correct");m.querySelectorAll('.cbtn').forEach(b=>b.disabled=true);res(true);};m.querySelector('.cbtn.no').onclick=()=>{addUser("Let me clarify");m.querySelectorAll('.cbtn').forEach(b=>b.disabled=true);res(false);};});}
+
+function waitInput(){return new Promise(r=>{awaiting=true;mcH=t=>{awaiting=false;mcH=null;r(t);};});}
+
+function sendMsg(){const t=inEl.value.trim();if(!t)return;inEl.value='';inEl.style.height='42px';addUser(t);consumeFileChips();if(mcH)mcH(t);}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
+function autoGrow(e){e.style.height='42px';e.style.height=Math.min(e.scrollHeight,120)+'px';}
+
+// ═══ DOCS ═══
+function uDoc(n,k,v){if(n===4&&k==='chapters'){D[4].f.chapters=v;renderChs();}else D[n].f[k]=v;const e=document.getElementById(`doc${n}-${k}`);if(e){e.textContent=v;e.classList.remove('empty','flash');void e.offsetWidth;e.classList.add('flash');
+  // Also highlight the label
+  const lbl=e.closest('.rf')?.querySelector('.rf-label');
+  if(lbl){lbl.classList.remove('lbl-flash');void lbl.offsetWidth;lbl.classList.add('lbl-flash');}
+  }updSecPct(n);openSec(n);
+  const s=document.querySelector(`.rp-sec[data-doc="${n}"]`);if(s){s.classList.remove('glow');void s.offsetWidth;s.classList.add('glow');}
+  updRpProg();
+}
+function onEdit(e){const n=parseInt(e.dataset.d),f=e.dataset.f,v=e.textContent.trim();if(v&&v!=='Not filled'){D[n].f[f]=v;e.classList.remove('empty');}else{D[n].f[f]='';e.classList.add('empty');e.textContent='Not filled';}updSecPct(n);updRpProg();}
+
+function renderChs(){const c=document.getElementById('doc4-chapters'),chs=D[4].f.chapters;if(!chs.length){c.innerHTML='<div class="rf-val empty">No chapters yet</div>';return;}c.innerHTML=chs.map(ch=>`<div class="rp-ch"><h4>${ch.title}</h4><p>${ch.obj}</p></div>`).join('');}
+
+function updSecPct(n){
+  if(n===6)return;
+  const fs=Object.entries(D[n].f);let fl=0;
+  fs.forEach(([k,v])=>{if(Array.isArray(v)){if(v.length)fl++;}else if(v&&v.length)fl++;});
+  const p=Math.round(fl/fs.length*100);
+  const e=document.getElementById('sp'+n);
+  if(e) e.textContent=p>0&&p<100?p+'%':'';
+  const sec=document.querySelector(`.rp-sec[data-doc="${n}"]`);
+  if(!sec) return;
+  sec.classList.toggle('done', p===100);
+  const secH=sec.querySelector('.rp-sec-h');
+  const svgEl=secH.querySelector('svg');
+  if(p===100 && svgEl.classList.contains('sec-ring')){
+    svgEl.outerHTML=`<svg class="sec-check" viewBox="0 0 24 24" width="24" height="24"><circle cx="12" cy="12" r="10" fill="var(--positive)"/><polyline points="7,12.5 10.5,16 17,8.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  } else if(p<100 && secH.querySelector('.sec-check')){
+    secH.querySelector('.sec-check').outerHTML=`<svg class="sec-ring" viewBox="0 0 24 24"><circle class="ring-bg" cx="12" cy="12" r="10"/><circle class="ring-fill" cx="12" cy="12" r="10" id="sr${n}" style="stroke-dashoffset:${62.83*(1-p/100)}"/></svg>`;
+  } else {
+    const ring=document.getElementById('sr'+n);
+    if(ring) ring.style.strokeDashoffset=62.83*(1-p/100);
+  }
+}
+
+function overallPct(){let t=0,f=0;for(let i=1;i<=5;i++)Object.values(D[i].f).forEach(v=>{t++;if(Array.isArray(v)){if(v.length)f++;}else if(v&&v.length)f++;});return Math.round(f/t*100);}
+
+function updRpProg(){
+  const p=overallPct();
+  // Main ring: r=15.9155, circumference ≈ 100
+  const ring=document.getElementById('rp-ring');
+  if(ring) ring.style.strokeDashoffset = 100 - p;
+  document.getElementById('rp-pct').textContent=p+'% complete';
+}
+
+// ═══ PANEL ═══
+function togglePanel(){document.getElementById('right-panel').classList.toggle('collapsed');}
+function togSec(n){const s=document.querySelector(`.rp-sec[data-doc="${n}"]`);if(s)s.classList.toggle('open');}
+function openSec(n){document.querySelectorAll('.rp-sec').forEach(s=>s.classList.remove('open'));const s=document.querySelector(`.rp-sec[data-doc="${n}"]`);if(s)s.classList.add('open');}
+
+// ═══ RESOURCES ═══
+function addRes(name,type,st){resN++;const l=document.getElementById('res-list');if(resN===1)l.innerHTML='';const ic={PDF:'&#128196;',Link:'&#128279;',Video:'&#127909;'};const c=document.createElement('div');c.className='res-chip';c.innerHTML=`<span class="res-icon">${ic[type]||'&#128196;'}</span><span class="res-name">${name}</span><span class="res-st ${st}">${st==='ready'?'Ready':'...'}</span>`;l.appendChild(c);const ce=document.getElementById('sp-res');if(ce)ce.textContent=resN;openSec('res');}
+function uResStatus(i,st){const cs=document.querySelectorAll('.res-chip');if(cs[i]){const b=cs[i].querySelector('.res-st');b.className='res-st '+st;b.textContent=st==='ready'?'Ready':'...';}}
+function simulateUpload(){
+  const names=['Research_Notes.pdf','Learner_Survey.xlsx','Module_Draft.docx','Data_Analysis.csv'];
+  const nm=names[Math.floor(Math.random()*names.length)];
+  addFileChip(nm);
+}
+function addFileChip(name){
+  const c=document.getElementById('input-files');
+  const chip=document.createElement('span');
+  chip.className='file-chip';
+  chip.dataset.name=name;
+  chip.innerHTML=`<span class="fc-icon">&#128196;</span>${name}<button class="fc-remove" onclick="this.parentElement.remove()">&times;</button>`;
+  c.appendChild(chip);
+}
+function consumeFileChips(){
+  const chips=document.querySelectorAll('#input-files .file-chip');
+  if(!chips.length) return;
+  chips.forEach(ch=>{
+    const nm=ch.dataset.name||'Document';
+    const ext=nm.split('.').pop().toUpperCase();
+    addRes(nm,ext,'processing');
+    const idx=resN-1;
+    setTimeout(()=>uResStatus(idx,'ready'),1200+Math.random()*800);
+  });
+  document.getElementById('input-files').innerHTML='';
+}
+(function(){
+  const box=document.getElementById('input-box');
+  let dc=0;
+  box.addEventListener('dragenter',e=>{e.preventDefault();dc++;box.classList.add('drag-over');});
+  box.addEventListener('dragleave',e=>{e.preventDefault();dc--;if(dc<=0){dc=0;box.classList.remove('drag-over');}});
+  box.addEventListener('dragover',e=>e.preventDefault());
+  box.addEventListener('drop',e=>{e.preventDefault();dc=0;box.classList.remove('drag-over');simulateUpload();});
+})();
+
+// ═══ THINKING ═══
+function addThink(status,text){
+  const mx=90;
+  const tr=text.length>mx?text.substring(0,mx)+'...':text;
+  D[6].h.push({status,text:tr});
+
+  // Update the always-visible thinking panel
+  const entries=document.getElementById('tp-entries');
+  const empty=document.getElementById('tp-empty');
+  if(empty) empty.remove();
+
+  const icon = status==='confirmed' ? '✓' : '■';
+  const entry=document.createElement('div');
+  entry.className='tp-entry '+status;
+  entry.innerHTML=`<span class="tp-entry-icon">${icon}</span><span class="tp-entry-status">${status}</span><span>${tr}</span>`;
+  entries.appendChild(entry);
+
+  // Keep only last 5 visible, remove oldest
+  while(entries.children.length > 5) entries.children[0].remove();
+
+  // Update count
+  document.getElementById('tp-count').textContent=D[6].h.length;
+
+  // Animate icon + show process label, then restore title
+  const ic=document.getElementById('tp-icon');
+  const titleEl=document.querySelector('.tp-title');
+  const processLabel=status==='confirmed'?'Hypothesis locked':'Analyzing...';
+  titleEl.textContent=processLabel;
+  ic.classList.add('active');
+  setTimeout(()=>{ic.classList.remove('active');titleEl.textContent='Dynamic Hypotheses';},2500);
+
+  // Also show inline in chat
+  const m=document.createElement('div');
+  m.className='msg thought '+status;
+  const chatIcon = status==='confirmed' ? '&#10003;' : '&#x2726;';
+  m.innerHTML=`<div class="thought-body"><span class="thought-icon">${chatIcon}</span><span>${tr}</span></div>`;
+  chatEl.appendChild(m);
+  scroll();
+}
+function renderThink(){}
+function toggleThinkingBar(){}
+
+// ═══ RETURNING USER ═══
+function fillRet(){uDoc(1,'name','Returning Editor');uDoc(1,'role','Senior Instructional Designer');uDoc(1,'focus','Interactive e-learning');uDoc(1,'style','Visual & hands-on');uDoc(1,'prefs','Modular content');uDoc(3,'name','Acme Corp');uDoc(3,'industry','Technology / SaaS');uDoc(3,'team','120 employees');uDoc(3,'tone','Casual');uDoc(3,'terms','Standard terms');uDoc(3,'challenges','Onboarding speed');}
+
+// ═══ UTILS ═══
+function setPName(n){document.getElementById('pname').textContent=n||'Untitled';}
+function setPStatus(s){const e=document.getElementById('pstatus');e.textContent=s==='published'?'Published':'Draft';e.className='pill '+(s==='published'?'published':'draft');}
+function toggleTheme(){const h=document.documentElement;h.setAttribute('data-theme',h.getAttribute('data-theme')==='dark'?'light':'dark');}
+function delay(ms){return new Promise(r=>setTimeout(r,ms));}
+function scroll(){document.getElementById('chat-scroll').scrollTop=document.getElementById('chat-scroll').scrollHeight;}
+function esc(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+</script>
+</body>
+</html>
