@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Morpheus — The Passover Haggadah</title>
+  <title>Morpheus — Cataract Surgery Preparation Protocol</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -549,13 +549,47 @@
     }
 
     .card.inactive {
-      opacity: 0.45;
-      filter: saturate(0.3);
+      opacity: 0.9;
+      filter: saturate(0.15);
     }
     .card.inactive .feed,
     .card.inactive .card-head,
     .card.inactive .card-input-bar {
       pointer-events: none;
+    }
+
+    /* ── INACTIVE CARDS: pushed to edge, only 20 px visible ── */
+    /* Visible strip formula: 50vw − 50% (own half-width) − 3.5vw (gap) = natural peek */
+    /* Shift = natural peek − 20px so exactly 20 px remain visible          */
+    .card.inactive.card-right,
+    .card.inactive.card-left {
+      transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity  0.32s ease,
+                  filter   0.32s ease;
+    }
+    .card.inactive.card-right {
+      transform: translateX(calc(50vw - 50% - 3.5vw - 20px));
+    }
+    .card.inactive.card-left {
+      transform: translateX(calc(-50vw + 50% + 3.5vw + 20px));
+    }
+
+    /* On hover: slide in 84 px so the nav circle clears the edge */
+    .card.inactive.card-right:hover {
+      transform: translateX(calc(50vw - 50% - 3.5vw - 84px));
+      opacity: 0.92;
+      filter: saturate(0.35);
+    }
+    .card.inactive.card-left:hover {
+      transform: translateX(calc(-50vw + 50% + 3.5vw + 84px));
+      opacity: 0.92;
+      filter: saturate(0.35);
+    }
+
+    /* Card header hidden on inactive — never show the title until focused */
+    .card.inactive .card-head {
+      opacity: 0;
+      transition: opacity 0.2s ease;
     }
 
     /* ── CARD NAV ARROW ── */
@@ -569,38 +603,40 @@
       pointer-events: auto;
       cursor: pointer;
       z-index: 10;
-      transition: opacity 0.3s ease;
     }
-    /* Right cards: arrow at left edge */
+    /* Right cards: circle flush with left edge */
     .card.inactive.card-right .card-nav-arrow {
       justify-content: flex-start;
-      padding-left: 24px;
+      padding-left: 20px;
     }
-    /* Left cards: arrow at right edge */
+    /* Left cards: circle flush with right edge */
     .card.inactive.card-left .card-nav-arrow {
       justify-content: flex-end;
-      padding-right: 24px;
+      padding-right: 20px;
     }
-    /* Hide arrow on active card */
+    /* Hide nav arrow on active card */
     .card:not(.inactive) .card-nav-arrow { display: none; }
-    .card.inactive:hover { opacity: 0.65; filter: saturate(0.5); }
+
+    /* Nav button hidden by default; fades in on card hover */
+    .card.inactive .card-nav-arrow { opacity: 0; transition: opacity 0.22s ease; }
+    .card.inactive:hover .card-nav-arrow { opacity: 1; }
 
     .card-nav-arrow .nav-circle {
-      width: 52px;
-      height: 52px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
       background: var(--card-bg);
       backdrop-filter: blur(16px);
-      border: 1.5px solid var(--card-border);
+      border: 1px solid var(--card-border);
       display: flex;
       align-items: center;
       justify-content: center;
       box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-      transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+      transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
     }
     .card.inactive:hover .nav-circle {
-      transform: scale(1.08);
-      box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.13);
       background: #fff;
     }
     [data-theme="dark"] .card.inactive:hover .nav-circle {
@@ -608,17 +644,15 @@
     }
 
     .card-nav-arrow .nav-circle svg {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       color: var(--text);
-      opacity: 0.7;
-      transition: opacity 0.2s;
+      opacity: 0.8;
     }
-    .card.inactive:hover .nav-circle svg { opacity: 1; }
 
     .card-nav-tooltip {
       position: absolute;
-      top: calc(50% + 40px);
+      top: calc(50% + 36px);
       font-size: 9px;
       font-weight: 600;
       letter-spacing: 0.1em;
@@ -629,8 +663,8 @@
       transition: opacity 0.2s ease;
       pointer-events: none;
     }
-    .card.inactive.card-right .card-nav-tooltip { left: 24px; }
-    .card.inactive.card-left .card-nav-tooltip { right: 24px; }
+    .card.inactive.card-right .card-nav-tooltip { left: 20px; }
+    .card.inactive.card-left  .card-nav-tooltip { right: 20px; }
     .card.inactive:hover .card-nav-tooltip { opacity: 1; }
 
     /* ── PROGRESS BAR TOOLTIPS ── */
@@ -694,6 +728,20 @@
       background: linear-gradient(90deg, rgba(123, 97, 255, 0.4), rgba(123, 97, 255, 1));
       transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 1;
+    }
+
+    /* Hide card head during question focus to minimize distraction (Principle 5) */
+    .card.question-focus .card-head {
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      border-bottom-color: transparent;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.35s ease, border-color 0.25s ease;
+    }
+    .card .card-head {
+      max-height: 120px;
+      transition: max-height 0.35s ease, padding 0.35s ease, border-color 0.25s ease;
     }
 
     .card-chapter {
@@ -766,7 +814,6 @@
       overflow: clip;
       box-shadow: var(--glass-shadow);
     }
-
     /* Active: sticky header so question stays visible while answering */
     .question-block {
       position: sticky;
@@ -807,6 +854,37 @@
     }
     [data-theme="dark"] .q-feedback-row.correct-fb {
       border-color: var(--correct-border);
+    }
+
+    /* ── REVIEW MATERIAL LINK (Principle 7) ── */
+    .review-material-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 10px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--accent);
+      background: var(--accent-bg);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
+    }
+    .review-material-link:hover {
+      background: rgba(99,91,255,0.15);
+      transform: translateY(-1px);
+    }
+    .review-icon { font-size: 13px; }
+    .review-highlight {
+      outline: 2px solid var(--accent) !important;
+      outline-offset: -2px;
+      animation: reviewPulse 0.6s ease 2;
+    }
+    @keyframes reviewPulse {
+      0%, 100% { outline-color: var(--accent); }
+      50% { outline-color: transparent; }
     }
 
     /* ── CONTINUE TIMER BUTTON ── */
@@ -876,6 +954,7 @@
     .q-group.collapsed:hover { filter: brightness(0.97); }
 
     .q-group.collapsed .question-block {
+      position: static;
       padding: 20px;
       display: flex;
       align-items: center;
@@ -1761,26 +1840,43 @@
       50%       { opacity: 0;  box-shadow: none; }
     }
     /* ── TOC PANEL ── */
-    #tocToggle {
-      position: fixed;
-      top: 12px;
-      left: 12px;
-      z-index: 200;
+    /* ── TOP BUTTONS — shared base ── */
+    .top-btn {
       width: 32px;
       height: 32px;
       background: transparent;
       border: 1px solid var(--card-border);
-      border-radius: 6px;
+      border-radius: 8px;
       color: var(--text-dim);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: border-color 0.15s, color 0.15s, background 0.15s;
+      padding: 0;
+      flex-shrink: 0;
+      transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease, transform 0.2s ease;
     }
-    #tocToggle:hover { border-color: var(--text-muted); color: var(--text); background: var(--surface); }
+    .top-btn:hover {
+      border-color: var(--text-muted);
+      color: var(--text);
+      background: var(--surface);
+    }
+    .top-btn.active {
+      background: var(--accent-bg);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── TOC TOGGLE (left) ── */
+    #tocToggle {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 200;
+    }
     #tocToggle svg { transition: transform 0.3s ease; }
     #tocToggle.open svg { transform: scaleX(-1); }
+    #tocToggle.open { background: var(--surface); }
 
     #tocPanel {
       position: fixed;
@@ -1898,40 +1994,119 @@
     #tocOverlay.open { display: block; }
 
     /* ── THEME TOGGLE ── */
-    #themeToggle {
+    /* ── TOP RIGHT CLUSTER ── */
+    #globalProgress {
+      display: flex;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+      margin-left: auto;
+    }
+    #globalProgress.visible { opacity: 1; }
+    #globalProgressPct {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+    }
+
+    #topRight {
       position: fixed;
       top: 12px;
       right: 12px;
       z-index: 200;
-      width: 36px;
-      height: 36px;
-      background: var(--surface);
-      border: 1px solid var(--card-border);
-      border-radius: 50%;
-      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ── THEME TOGGLE ── */
+    #themeToggle::after {
+      content: '\2600';
+      font-size: 15px;
+      line-height: 1;
+    }
+    [data-theme="dark"] #themeToggle::after {
+      content: '\263D';
+    }
+    #themeToggle:hover { transform: rotate(22deg); }
+
+    /* ── USER AVATAR ── */
+    #userAvatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--accent-bg);
+      border: 1px solid rgba(99,91,255,0.28);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.2s, border-color 0.2s, transform 0.3s;
-      font-size: 16px;
-      line-height: 1;
-      padding: 0;
+      flex-shrink: 0;
+      cursor: default;
+      user-select: none;
     }
-    #themeToggle:hover {
-      background: var(--accent-bg);
-      border-color: var(--accent);
-      transform: rotate(30deg);
+
+    /* ── SETTINGS PANEL ── */
+    #settingsPanel {
+      position: fixed;
+      top: 52px;
+      right: 12px;
+      z-index: 199;
+      width: 204px;
+      background: var(--toc-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      box-shadow: var(--glass-shadow);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 6px 0;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-8px) scale(0.97);
+      transform-origin: top right;
+      transition: opacity 0.15s ease, transform 0.15s ease;
     }
-    #themeToggle::after {
-      content: '\2600'; /* sun */
+    #settingsPanel.open {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateY(0) scale(1);
     }
-    [data-theme="dark"] #themeToggle::after {
-      content: '\263D'; /* moon */
+    .settings-group-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 8px 14px 4px;
     }
+    .settings-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-dim);
+      cursor: pointer;
+      border-radius: 6px;
+      margin: 0 4px;
+      transition: background 0.12s ease, color 0.12s ease;
+    }
+    .settings-item:hover { background: var(--surface); color: var(--text); }
+    .settings-item svg { flex-shrink: 0; opacity: 0.65; }
+    .settings-sep { height: 1px; background: var(--card-border); margin: 4px 0; }
+
+    /* ── HIDE CHAPTER LABEL FROM PROGRESS BAR ── */
+    .silo-label { display: none !important; }
 
     /* ── SMOOTH THEME TRANSITIONS ── */
     .card, .card-input-bar, .q-group, .question-block, .msg.content-block, .opt,
-    .block-input-wrap, #tocPanel, #tocToggle, #themeToggle,
+    .block-input-wrap, #tocPanel, #tocToggle, #themeToggle, #settingsToggle,
     .q-feedback-row, .video-footer, .material-next-btn,
     .q-skip, .silo {
       transition: background 0.35s ease, border-color 0.35s ease, color 0.35s ease, box-shadow 0.35s ease;
@@ -2150,12 +2325,11 @@
         </g>
       </svg>
 
-      <div class="welcome-title">The Passover Haggadah</div>
-      <div class="welcome-desc">A guided journey through the ancient text of the Seder — from the story of the Exodus to the songs and symbols that bring it to life.</div>
+      <div class="welcome-title">Cataract Surgery Preparation Protocol</div>
+      <div class="welcome-desc">Master the Cataract Prep Protocol and establish the foundation of surgical safety — from sterile field setup to aseptic eye preparation.</div>
       <div class="welcome-meta">
-        <span class="welcome-meta-item"><span class="meta-dot"></span> Beginner</span>
-        <span class="welcome-meta-item"><span class="meta-dot"></span> 3 Chapters</span>
-        <span class="welcome-meta-item"><span class="meta-dot"></span> ~15 min</span>
+        <span class="welcome-meta-item"><span class="meta-dot"></span> 2 Chapters</span>
+        <span class="welcome-meta-item"><span class="meta-dot"></span> ~40 min</span>
       </div>
       <button class="welcome-start" id="startCourseBtn">Start Course</button>
     </div>
@@ -2166,9 +2340,37 @@
     <div class="chapter-bg-layer"></div>
   </div>
 
-  <button id="themeToggle" aria-label="Toggle dark mode"></button>
+  <div id="topRight">
+    <button id="settingsToggle" class="top-btn" aria-label="Settings">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="7.5" cy="7.5" r="1.9"/>
+        <path d="M7.5 1.5v1M7.5 12.5v1M1.5 7.5h1M12.5 7.5h1M3.4 3.4l.7.7M10.9 10.9l.7.7M3.4 11.6l.7-.7M10.9 4.1l.7-.7"/>
+      </svg>
+    </button>
+    <button id="themeToggle" class="top-btn" aria-label="Toggle dark mode"></button>
+    <div id="userAvatar">OL</div>
+  </div>
 
-  <button id="tocToggle" aria-label="Table of contents">
+  <div id="settingsPanel">
+    <div class="settings-group-label">Preferences</div>
+    <div class="settings-item" id="settingsThemeItem">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round">
+        <circle cx="7" cy="7" r="2.2"/>
+        <path d="M7 1v1.2M7 11.8V13M1 7h1.2M11.8 7H13M2.76 2.76l.85.85M10.39 10.39l.85.85M2.76 11.24l.85-.85M10.39 3.61l.85-.85"/>
+      </svg>
+      Toggle theme
+    </div>
+    <div class="settings-sep"></div>
+    <div class="settings-item" id="settingsResetItem">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2.5 7a4.5 4.5 0 1 0 .88-2.65"/>
+        <path d="M2.5 2.5v2.5H5"/>
+      </svg>
+      Reset progress
+    </div>
+  </div>
+
+  <button id="tocToggle" class="top-btn" aria-label="Table of contents">
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
       <rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.4"/>
       <line x1="7" y1="2" x2="7" y2="16" stroke="currentColor" stroke-width="1.4"/>
@@ -2197,163 +2399,115 @@
 const CHAPTERS = [
   {
     roman: "I",
-    title: "Why Is This Night Different?",
+    title: "Establishing the Sterile Field",
     steps: [
       {
         type: 'content',
         label: "Introduction", kind: "overview",
         pause: true,
-        text: "The Haggadah — from the Hebrew root meaning \"to tell\" — is the ancient text that guides the Passover Seder. It is not merely a book of prayers. It is a script for collective memory, a framework for retelling the story of the Exodus from Egypt as though each person at the table lived it themselves.",
-        illustration: 'haggadah-intro',
+        text: "Establishing a sterile field is the foundation of every safe cataract surgery. Before a single incision is made, the surgical team must create and maintain an uncompromised barrier between the patient and potential sources of infection.\n\nThis chapter covers the complete sterile field setup — from surface disinfection and draping to instrument sequencing and boundary control. Every step matters. Every detail protects the patient.",
+        illustration: 'sterile-field',
+      },
+      {
+        type: 'content', kind: 'video',
+        label: "Video",
+        videoTitle: "Cataract Surgery Preparation — Sterile Field Setup",
+        duration: "5:00",
       },
       {
         type: 'content',
-        label: "Ma Nishtana",
+        label: "Sterile Field Principles",
         pause: true,
-        text: "At the heart of the Seder are the Four Questions — Ma Nishtana — traditionally chanted by the youngest child at the table. \"Why is this night different from all other nights?\" The questions ask about four distinctive practices: dipping vegetables twice, eating only matzah, tasting bitter herbs, and reclining while eating.\n\nThese are not riddles awaiting answers. They are invitations — doorways into the telling. The entire Haggadah, in a sense, is the response to a child's curiosity. The questions create the obligation to explain, to remember, and to pass the story forward.",
-        audio: { title: "Ma Nishtana — The Four Questions", duration: "2:15" },
+        text: "You've reviewed the complete sterile field setup, from disinfection to instrument sequencing. Now let's make sure you can apply these control principles confidently.\n\nThe back table is your primary workspace. It must be set up with discipline: a sterile drape verified for integrity, instruments arranged in chronological order of use, and a six-inch safety boundary maintained from all unsterile edges. Any item that crosses that boundary — even momentarily — is considered contaminated.",
       },
       {
-        type: 'question',
-        text: "What is the meaning of the word 'Haggadah'?",
-        options: [
-          "The Prayer",
-          "The Telling",
-          "The Remembrance",
-          "The Passage",
-        ],
-        correct: 1,
-        wrongFeedback: "The word 'Haggadah' comes from the Hebrew root meaning 'to tell.' It is, at its core, a text of storytelling and retelling.",
+        type: 'freetext',
+        text: "What three preventive steps should be taken when setting up and organizing the back table to protect the sterility of the field?",
+        keywords: ['drape', 'sterile', 'integrity', 'inspect', 'six-inch', 'boundary', 'six inch', 'chronolog', 'arrange', 'order', 'dry', 'moisture', 'edge', 'border'],
+        correctResponse: "Sterility in the OR is not just a checklist — it is a silent contract between the team and the patient. In ophthalmic surgery, where the field is microscopic and the risks are high, every boundary you respect and every instrument you dry builds an invisible shield. Remember: A successful surgery doesn't start with the first incision. It begins with the discipline of the setup.",
+        incorrectResponse: "Think about the specific actions that keep the back table area sterile. Consider: What must you verify about the drape? How should instruments be arranged? What boundary must be maintained? Try again with these principles in mind.",
       },
       {
         type: 'content',
-        label: "Avadim Hayinu",
-        text: "\"We were slaves to Pharaoh in Egypt, and the Lord our God brought us out from there with a mighty hand and an outstretched arm.\" This single sentence — Avadim Hayinu — is the foundation of the entire Seder narrative. It is the answer to the Four Questions, the reason for every ritual on the table. If God had not brought our ancestors out of Egypt, the Haggadah says, then we and our children and our children's children would still be enslaved.",
+        label: "Sterile Field Control",
+        text: "Let's keep sharpening your sterile field control. Chronological instrument arrangement isn't just about efficiency — it's a contamination-prevention strategy. When instruments are laid out in the order they'll be used, the scrub nurse avoids reaching across sterile items, reducing the risk of inadvertent contact and field compromise.",
       },
       {
         type: 'question',
-        text: "What is the purpose of the Four Questions (Ma Nishtana)?",
+        text: "How does chronological instrument arrangement protect the sterile field?",
         options: [
-          "To test children's knowledge of Hebrew",
-          "To open the storytelling — they invite the retelling of the Exodus",
-          "To list the foods eaten during the Seder",
-          "To recite a blessing before the meal",
+          "It improves visual organization only",
+          "It minimizes the risk of reaching over sterile items",
+          "It prevents autoclave errors",
+          "It eliminates the need for the six-inch boundary",
         ],
         correct: 1,
-        wrongFeedback: "The Four Questions are not a test. They serve as an invitation — a doorway into the telling of the Exodus story. The entire Haggadah is, in a sense, the answer.",
+        wrongFeedback: "Chronological arrangement is primarily a contamination-prevention strategy. By laying instruments in order of use, the scrub nurse avoids reaching across sterile items — minimizing the risk of inadvertent contact and field compromise.",
+      },
+      {
+        type: 'content',
+        label: "Waist-Level Rule",
+        pause: true,
+        illustration: 'surgeon-or',
+        text: "One of the most critical rules in sterile technique is the waist-level boundary. Anything that drops below waist level — whether it's your hands, an instrument, or a drape edge — is immediately considered non-sterile, regardless of whether visible contact with a non-sterile surface occurred. This rule exists because the area below the waist is outside the line of sight and cannot be reliably monitored for contamination.",
+      },
+      {
+        type: 'freetext',
+        text: "While arranging the sterile tray, your hands briefly drop below waist level while holding a surgical clamp. The clamp did not visibly touch anything. What must you do with this instrument, and why is it now considered unsafe?",
+        keywords: ['replace', 'discard', 'remov', 'contaminat', 'non-sterile', 'below waist', 'not monitor', 'line of sight', 'cannot verif', 'new', 'fresh'],
+        correctResponse: "Correct. The instrument must be removed from the sterile field and replaced, even though no visible contact occurred. The area below waist level is outside the line of sight and cannot be reliably monitored — making it impossible to verify sterility. In ophthalmic surgery, this zero-tolerance approach prevents endophthalmitis and other devastating post-operative infections.",
+        incorrectResponse: "Consider the waist-level rule: why is anything below the waist considered non-sterile, even without visible contact? What must be done with the clamp, and what is the clinical reasoning? Try again.",
       },
     ]
   },
   {
     roman: "II",
-    title: "From Slavery to Freedom",
+    title: "Controlled Eye Prepping",
     steps: [
       {
         type: 'content',
-        label: "The Oppression",
+        label: "Aseptic Eye Prep Protocol",
         pause: true,
-        text: "The story begins long before the plagues. Jacob's family — seventy souls — descended into Egypt during a famine. Over generations they multiplied and became a great nation. A new Pharaoh arose \"who did not know Joseph,\" and he grew fearful of their numbers.",
-        illustration: 'oppression',
-        textAfterImage: "The Egyptians set taskmasters over the Israelites and crushed them with forced labor — building the store-cities of Pithom and Raamses. They made their lives bitter with hard service in mortar and brick. Pharaoh decreed that every newborn son be cast into the Nile. Yet the more the Israelites were oppressed, the more they multiplied.",
-      },
-      {
-        type: 'content', kind: 'video',
-        label: "Video",
-        videoTitle: "The Ten Plagues — Blood to Darkness to the Final Night",
-        duration: "4:30",
-      },
-      {
-        type: 'question',
-        text: "What was the final plague that led Pharaoh to release the Israelites?",
-        options: [
-          "Darkness over all of Egypt",
-          "The plague of locusts",
-          "Death of the firstborn",
-          "The splitting of the sea",
-        ],
-        correct: 2,
-        wrongFeedback: "The tenth and final plague — the death of the firstborn — was what finally broke Pharaoh's resistance. It is for this reason the holiday is called Passover: God 'passed over' the homes of the Israelites.",
-      },
-      {
-        type: 'content',
-        label: "Liberation & the Sea",
-        pause: true,
-        illustration: 'crossing-sea',
-        text: "\"And the Lord drove the sea back by a strong east wind all night, and made the sea dry land, and the waters were divided.\"\n— Exodus 14:21",
-      },
-      {
-        type: 'question',
-        text: "Why do we eat matzah on Passover?",
-        options: [
-          "It was the traditional bread of Egyptian slaves",
-          "The Israelites left in such haste that their dough had no time to rise",
-          "It symbolizes the bitter herbs of slavery",
-          "It was a Temple offering",
-        ],
-        correct: 1,
-        wrongFeedback: "Matzah is the bread of haste. When Pharaoh finally let the Israelites go, they fled so quickly that their bread dough had no time to rise — and so they baked it flat under the desert sun.",
-      },
-      {
-        type: 'question',
-        text: "What does 'Dayenu' express?",
-        options: [
-          "A plea for God to end the plagues",
-          "A lament for the years of slavery",
-          "Gratitude — each miracle alone would have been enough",
-          "A prayer for the coming year",
-        ],
-        correct: 2,
-        wrongFeedback: "Dayenu means 'it would have been enough.' It is a song of radical gratitude — listing fifteen gifts from God and declaring that any single one would have sufficed.",
-      },
-    ]
-  },
-  {
-    roman: "III",
-    title: "Signs, Symbols & Songs",
-    steps: [
-      {
-        type: 'content',
-        label: "Rabban Gamliel's Teaching",
-        pause: true,
-        text: "Rabban Gamliel used to say: \"Whoever does not explain these three things on Passover has not fulfilled their obligation — Pesach, Matzah, and Maror.\" This teaching forms the interpretive heart of the Seder. The symbols on the table are not decorations. Each one carries a story, and that story must be spoken aloud.",
-      },
-      {
-        type: 'content',
-        label: "The Three Symbols",
-        pause: true,
-        illustration: 'three-symbols',
-        text: "Pesach — the Passover lamb — recalls that God passed over the houses of the Israelites during the final plague. Matzah — the unleavened bread — is the bread of affliction and of haste, eaten because there was no time to let the dough rise. Maror — the bitter herb — embodies the bitterness of slavery, the taste of tears and hard labor that our ancestors endured in Egypt.",
-      },
-      {
-        type: 'question',
-        text: "What does 'Maror' (bitter herb) symbolize?",
-        options: [
-          "The sweetness of freedom",
-          "The tears and bitterness of slavery in Egypt",
-          "The haste of leaving Egypt",
-          "God's judgment on the Egyptians",
-        ],
-        correct: 1,
-        wrongFeedback: "Maror — the bitter herb — symbolizes the bitterness of slavery. We taste it so that we remember, physically, the suffering of our ancestors.",
-      },
-      {
-        type: 'question',
-        text: "How does the Seder traditionally conclude?",
-        options: [
-          "With a moment of silence",
-          "By reading the Ten Commandments",
-          "With the words 'Next year in Jerusalem'",
-          "By extinguishing the candles",
-        ],
-        correct: 2,
-        wrongFeedback: "The Seder ends with the declaration 'L'shanah haba'ah b'Yerushalayim' — 'Next year in Jerusalem.' It is both a hope and a promise, closing the evening with longing for complete redemption.",
+        text: "The aseptic eye preparation protocol is a systematic process designed to reduce microbial load on the ocular surface and surrounding skin before cataract surgery begins. Every stroke, every sponge, and every directional decision matters.\n\nThe cardinal rule: always work from the center outward, and never return a used sponge to a previously cleaned area. This directional discipline prevents recontamination of the surgical site with bacteria from the peripheral skin.",
+        illustration: 'eye-prep',
       },
       {
         type: 'freetext',
-        text: "What does the idea of freedom in the Haggadah mean to you personally?",
-        keywords: ['free', 'freedom', 'liber', 'slave', 'hope', 'remember', 'grat', 'person', 'family', 'story', 'tell', 'pass', 'justice', 'equal', 'right', 'human', 'digni', 'oppress'],
-        correctResponse: "A thoughtful reflection. The Haggadah teaches that freedom is not merely a historical event — it is a living experience, renewed each year at the Seder table.",
-        incorrectResponse: "Consider what it means to retell a story of liberation each year — what does that act of remembering awaken in you? Try again with a fuller thought.",
+        text: "During the external eye prep: what is the clinical risk of returning to the center with a used sponge, and which directional rule must be followed to prevent it?",
+        keywords: ['center', 'outward', 'peripher', 'recontaminat', 'cross-contaminat', 'bacteria', 'direction', 'never return', 'discard', 'single', 'one direction'],
+        correctResponse: "Exactly right. Returning a used sponge to the center reintroduces bacteria from the peripheral skin back onto the cleaner surgical site — a direct recontamination risk. The rule is always center-to-periphery, using each sponge for a single outward pass before discarding. This directional discipline is the foundation of aseptic eye preparation.",
+        incorrectResponse: "Think about what happens when a sponge that touched the outer skin is brought back to the cleaner center area. What bacteria risk does this create? And what directional rule prevents it? Try again.",
+      },
+      {
+        type: 'content',
+        label: "Drying & Antiseptic Efficacy",
+        text: "Let's continue and sharpen your clinical precision. After applying the antiseptic solution (typically povidone-iodine), the area must be allowed to dry completely before proceeding. This isn't merely a procedural formality — the drying time is when the antiseptic achieves its full bactericidal effect. A wet surface dilutes the active agent and reduces its efficacy.",
+      },
+      {
+        type: 'question',
+        text: "What is the main risk if the area is not completely dry before moving forward?",
+        options: [
+          "The drape adhesive will not stick properly",
+          "The antiseptic is diluted and loses bactericidal efficacy",
+          "The patient may experience a burning sensation",
+          "The surgical lights will cause glare on the wet surface",
+        ],
+        correct: 1,
+        wrongFeedback: "The primary risk is that a wet surface dilutes the povidone-iodine, reducing its bactericidal efficacy. The drying period is not just waiting — it is the active phase when the antiseptic kills surface microorganisms. Skipping or shortening this step directly compromises infection control.",
+      },
+      {
+        type: 'content',
+        label: "Handling Prep Breaks",
+        pause: true,
+        illustration: 'medical-prep',
+        text: "Even with perfect technique, unexpected events can break the aseptic chain. A patient who moves suddenly, a sponge that contacts unprepped skin, or an interruption in the prep sequence — all of these require an immediate clinical decision. The principle is always the same: when in doubt, re-prep. The cost of repeating a step is trivial compared to the cost of a post-operative infection.",
+      },
+      {
+        type: 'freetext',
+        text: "While you are cleaning the upper eyelashes, the patient suddenly shifts their head, and contact occurs with the unprepped brow skin. How must you proceed, and what is the clinical reasoning behind your action?",
+        keywords: ['re-prep', 'restart', 'start over', 'new sponge', 'discard', 'contaminat', 'fresh', 'repeat', 'bacteria', 'unprepped', 'non-sterile', 'clean area'],
+        correctResponse: "Correct. You must discard the current sponge and re-prep the area from the beginning. Contact with unprepped brow skin introduces bacteria from a non-sterile zone into the surgical prep area. Even brief contact compromises the aseptic chain. The clinical reasoning: preventing endophthalmitis and other post-operative infections always outweighs the minor time cost of repeating the prep.",
+        incorrectResponse: "Consider: the sponge has now touched unprepped skin. What does that mean for the cleanliness of the surgical area? What must you do with the sponge, and what must you do with the prep sequence? Try again.",
       },
     ]
   },
@@ -2398,14 +2552,34 @@ function setBlockFocus(feed, el) {
   if (el) el.classList.add('in-focus');
 }
 
+/* ── CHAT COMMAND PARSING (Principle 8) ── */
+function parseChatCommand(raw) {
+  const lower = raw.trim().toLowerCase();
+  if (lower === 'help' || lower === '/help') {
+    return { cmd: 'help', reply: "You can type your answer directly, or use these commands: \"skip\" to skip the current question, \"progress\" to see your overall progress. You can also ask questions about the material at any time." };
+  }
+  if (lower === 'skip' || lower === '/skip') {
+    return { cmd: 'skip' };
+  }
+  if (lower === 'progress' || lower === '/progress') {
+    const done = completedSteps.reduce((a, b) => a + b, 0);
+    const total = totalSteps.reduce((a, b) => a + b, 0);
+    const pct = Math.round((done / total) * 100);
+    const chDone = completedQuestions[currentChapter];
+    const chTotal = questionCount[currentChapter];
+    return { cmd: 'progress', reply: `Overall: ${pct}% complete. This chapter: ${chDone}/${chTotal} questions answered.` };
+  }
+  return null; // not a command
+}
+
 const MO_CHAT_REPLIES = [
-  "A worthy question. The Haggadah says we should ask — that is how the story lives on.",
-  "Consider this as we continue. The answer often reveals itself through the telling.",
-  "The Sages would say: this is exactly the kind of question the Seder was designed to provoke.",
-  "Hold that thought. Like the afikoman, some answers are hidden until the right moment.",
-  "Good — curiosity is the engine of the Seder. The next section may illuminate this.",
-  "That connects to what comes next. As we say: the telling is never quite finished.",
-  "A question worth returning to. The Haggadah is meant to be read again and again.",
+  "Good question. Precision in understanding these protocols is just as important as precision in the OR.",
+  "Consider this as we continue. The next section may shed light on this.",
+  "That's the kind of clinical thinking that prevents complications. Let's keep going.",
+  "Hold that thought — the answer connects to what we'll cover next.",
+  "Good — critical thinking is essential in surgical preparation. The next section may clarify this.",
+  "That connects to what comes next. Sterile technique is a chain — every link matters.",
+  "A question worth revisiting. These protocols exist because someone asked 'what if?' before us.",
 ];
 
 /* ───────────────────────────────────────────
@@ -2636,6 +2810,12 @@ function buildProgressBar() {
 
     bar.appendChild(silo);
   });
+
+  // Global progress % at the right end of the progress bar
+  const gp = document.createElement('div');
+  gp.id = 'globalProgress';
+  gp.innerHTML = '<span id="globalProgressPct">0%</span>';
+  bar.appendChild(gp);
 }
 
 function setCurrentSeg(chapterIdx, idx) {
@@ -2664,6 +2844,17 @@ function advanceProgress(chapterIdx) {
   completedSteps[chapterIdx]++;
   const bar = document.getElementById(`chprog-${chapterIdx}`);
   if (bar) bar.style.width = `${(completedSteps[chapterIdx] / totalSteps[chapterIdx]) * 100}%`;
+  updateGlobalProgress();
+}
+
+function updateGlobalProgress() {
+  const done = completedSteps.reduce((a, b) => a + b, 0);
+  const total = totalSteps.reduce((a, b) => a + b, 0);
+  const pct = Math.round((done / total) * 100);
+  const el = document.getElementById('globalProgressPct');
+  if (el) el.textContent = `${pct}%`;
+  const wrap = document.getElementById('globalProgress');
+  if (wrap) wrap.classList.toggle('visible', done > 0);
 }
 
 function setActiveSilo(idx) {
@@ -2885,89 +3076,10 @@ function smoothScrollToElement(container, element, offset, duration) {
   requestAnimationFrame(tick);
 }
 
-/* ── CLICK-TO-FOCUS PAST BLOCKS ── */
-let _navLock = false;
-document.addEventListener('click', (e) => {
-  const block = e.target.closest('.feed > .past');
-  if (!block || _navLock) return;
-  const feed = block.parentElement;
-  if (!feed || !feed.classList.contains('feed')) return;
-  if (e.target.closest('button, a, input, textarea, .opt, .q-toggle')) return;
-  e.stopPropagation();
-  _navLock = true;
-
-  const DURATION = 550;
-
-  const nextEl = block.nextElementSibling;
-  const hasContinue = nextEl && nextEl.classList.contains('content-block-next');
-  const reserveForBtn = hasContinue ? 100 : 0;
-
-  const blocks = Array.from(feed.children).filter(c =>
-    c.classList.contains('msg') || c.classList.contains('q-group')
-  );
-  const idx = blocks.indexOf(block);
-  const hasPrev = idx > 0;
-  const hasNext = idx < blocks.length - 1;
-  const totalPeek = Math.round(feed.clientHeight * 0.10);
-  const peekPx = hasPrev ? (hasNext ? Math.round(totalPeek / 2) : totalPeek) : 0;
-  const peekBot = hasNext ? (hasPrev ? Math.round(totalPeek / 2) : totalPeek) : 0;
-
-  const padBot = parseFloat(getComputedStyle(feed).paddingBottom);
-  let innerH = feed.clientHeight - peekPx - peekBot - padBot - reserveForBtn;
-  if (innerH < 200) innerH = 200;
-  const prevActive = feed._activeEl;
-
-  // ── Phase 1: Measure natural height of the previously-active block ──
-  let prevNaturalH = 0;
-  if (prevActive && prevActive !== block) {
-    const savedFlex = prevActive.style.flex;
-    prevActive.style.flex = '';
-    prevNaturalH = prevActive.getBoundingClientRect().height;
-    prevActive.style.flex = savedFlex;
-  }
-
-  // ── Phase 2: Freeze ALL blocks at their current rendered pixel heights ──
-  blocks.forEach(c => {
-    c.style.flex = `0 0 ${c.getBoundingClientRect().height}px`;
-    c.style.overflow = 'hidden';
-  });
-  void feed.offsetHeight; // force sync layout
-
-  // ── Phase 3: Add nav-transition class (CSS transitions flex-basis + opacity etc) ──
-  blocks.forEach(c => c.classList.add('nav-transition'));
-
-  // Toggle past/in-focus classes — opacity/scale/blur animate via CSS
-  blocks.forEach(c => c.classList.toggle('past', c !== block));
-  setBlockFocus(feed, block);
-  feed._activeEl = block;
-  feed._reserveBottom = reserveForBtn;
-
-  // ── Phase 4: Set TARGET pixel heights → CSS animates flex-basis smoothly ──
-  requestAnimationFrame(() => {
-    if (isContentBlockHugHeight(block)) {
-      block.style.flex = '';
-    } else {
-      block.style.flex = `0 0 ${innerH}px`;
-    }
-    if (prevActive && prevActive !== block && prevNaturalH > 0) {
-      prevActive.style.flex = `0 0 ${prevNaturalH}px`;
-    }
-
-    // ── Phase 5: Scroll follows element with matched easing ──
-    smoothScrollToElement(feed, block, peekPx, DURATION);
-  });
-
-  // ── Phase 6: Gentle cleanup — just remove transition class, touch nothing else ──
-  // Blocks keep their animated pixel heights (no layout shift = no jump).
-  // Next setActive() or resize will re-layout naturally.
-  setTimeout(() => {
-    blocks.forEach(c => {
-      c.classList.remove('nav-transition');
-      c.style.overflow = '';
-    });
-    _navLock = false;
-  }, DURATION + 60);
-});
+/* ── CLICK-TO-FOCUS PAST BLOCKS — DISABLED (strict linear flow) ──
+   Past blocks are read-only. The user cannot re-focus them during
+   the first pass. This enforces Principle 4: linear flow of blocks.
+*/
 
 function typeInto(el, text) {
   return new Promise(resolve => {
@@ -3308,7 +3420,16 @@ function appendMoMessage(feedId, type, text, label = null, kind = 'material', wi
       activeMaterialBlock = { feedId, chatEl, scrollZone };
 
       // Global input bar — shown at card bottom, persists during scroll
-      showBlockInput(feedId, 'Ask Mo anything…', async (raw) => {
+      showBlockInput(feedId, 'Ask anything…', async (raw) => {
+        // Principle 8: parse chat commands
+        const cmd = parseChatCommand(raw);
+        if (cmd && cmd.cmd === 'skip') {
+          // Trigger the ↓ continue button if present
+          const nextBtn = feed.querySelector('.material-next-btn');
+          if (nextBtn) nextBtn.click();
+          return;
+        }
+
         if (!activeMaterialBlock) return;
         const { chatEl: ce, scrollZone: sz } = activeMaterialBlock;
         if (ce.style.display === 'none') ce.style.display = 'flex';
@@ -3322,7 +3443,7 @@ function appendMoMessage(feedId, type, text, label = null, kind = 'material', wi
 
         await delay(350);
 
-        const reply = MO_CHAT_REPLIES[Math.floor(Math.random() * MO_CHAT_REPLIES.length)];
+        const reply = (cmd && cmd.reply) ? cmd.reply : MO_CHAT_REPLIES[Math.floor(Math.random() * MO_CHAT_REPLIES.length)];
         const replyEl = document.createElement('div');
         replyEl.className = 'material-chat-reply';
         ce.appendChild(replyEl);
@@ -3452,9 +3573,34 @@ function showFreeTextQuestion(chapterIdx, stepIdx) {
   setBlockFocus(feed, group);
   setCurrentSeg(chapterIdx, completedQuestions[chapterIdx] + skippedQCount[chapterIdx]);
 
-  // Configure global input bar for freetext answer
+  // Hide card head during question focus (Principle 5)
+  const card = document.getElementById(`card-${chapterIdx}`);
+  if (card) card.classList.add('question-focus');
+
+  // Configure global input bar for freetext answer (with Principle 8 command parsing)
   const feedId = `feed-${chapterIdx}`;
   const { focus: focusFreetextInput } = showBlockInput(feedId, 'Type your answer…', (raw) => {
+    // Principle 8: handle chat commands
+    const cmd = parseChatCommand(raw);
+    if (cmd && cmd.cmd === 'skip') {
+      handleSkip(chapterIdx, stepIdx);
+      return;
+    }
+    if (cmd && cmd.reply) {
+      const qFull = group.querySelector('.q-full');
+      if (qFull) {
+        const ub = document.createElement('div');
+        ub.className = 'q-user-bubble';
+        ub.textContent = raw;
+        qFull.appendChild(ub);
+        bounceIn(ub);
+        const rb = document.createElement('div');
+        rb.className = 'q-feedback-row correct-fb';
+        qFull.appendChild(rb);
+        typeInto(rb, cmd.reply);
+      }
+      return;
+    }
     if (activeQuestion && activeQuestion.freetext) {
       handleFreeTextAnswer(chapterIdx, stepIdx, raw);
     }
@@ -3503,16 +3649,22 @@ async function handleFreeTextAnswer(chapterIdx, stepIdx, userText) {
 
     const answerEl = document.getElementById(`qanswer-${chapterIdx}-${stepIdx}`);
     if (answerEl) answerEl.textContent = step.text.replace(/\?$/, '') + ': ' + userText.toLowerCase();
-    // Clear global input bar and collapse group
+    // Collapse question card
     hideGlobalInput(`feed-${chapterIdx}`);
     group.classList.remove('in-focus');
     group.style.flex = '';
     group.classList.add('collapsed');
     group.addEventListener('click', () => group.classList.toggle('open'));
+
+    // Restore card head (Principle 5)
+    const card = document.getElementById(`card-${chapterIdx}`);
+    if (card) card.classList.remove('question-focus');
+
     await delay(300);
     group._resolve && group._resolve();
   } else {
-    await appendFeedbackToGroup(group, 'wrong', 'Not quite', step.incorrectResponse);
+    const reviewHint = findReviewHint(chapterIdx, stepIdx);
+    await appendFeedbackToGroup(group, 'wrong', 'Not quite', step.incorrectResponse, reviewHint);
     await delay(400);
     // Re-enable for another try
     activeQuestion = { chapterIdx, stepIdx, freetext: true };
@@ -3552,9 +3704,36 @@ function showQuestion(chapterIdx, stepIdx) {
   setBlockFocus(feed, group);
   setCurrentSeg(chapterIdx, completedQuestions[chapterIdx] + skippedQCount[chapterIdx]);
 
-  // Configure global input bar for MC answer
+  // Hide card head during question focus (Principle 5)
+  const card = document.getElementById(`card-${chapterIdx}`);
+  if (card) card.classList.add('question-focus');
+
+  // Configure global input bar for MC answer (with Principle 8 command parsing)
   const feedId = `feed-${chapterIdx}`;
   const { focus: focusMcInput } = showBlockInput(feedId, 'Type A, B, C, or D…', (raw) => {
+    // Principle 8: handle chat commands
+    const cmd = parseChatCommand(raw);
+    if (cmd && cmd.cmd === 'skip') {
+      handleSkip(chapterIdx, stepIdx);
+      return;
+    }
+    if (cmd && cmd.reply) {
+      // Show reply inline in the question block
+      const qFull = block.querySelector('.q-full');
+      if (qFull) {
+        const ub = document.createElement('div');
+        ub.className = 'q-user-bubble';
+        ub.textContent = raw;
+        qFull.appendChild(ub);
+        bounceIn(ub);
+        const rb = document.createElement('div');
+        rb.className = 'q-feedback-row correct-fb';
+        qFull.appendChild(rb);
+        typeInto(rb, cmd.reply);
+      }
+      return;
+    }
+
     const letter = raw.toUpperCase();
     const optionIdx = ['A','B','C','D'].indexOf(letter);
     if (activeQuestion && optionIdx !== -1 && raw.length === 1) {
@@ -3604,6 +3783,7 @@ function renderOptions(chapterIdx, stepIdx, usedWrong) {
    A ring counts down DURATION_MS, then auto-resolves.
    Clicking early resolves immediately.
 ──────────────────────────────────────────────────────────────── */
+
 function awaitContinueTimer(groupEl, durationMs = 3000) {
   const qFull = groupEl.querySelector('.q-full');
   const qb    = groupEl.querySelector('.question-block');
@@ -3662,7 +3842,7 @@ function awaitContinueTimer(groupEl, durationMs = 3000) {
   });
 }
 
-function appendFeedbackToGroup(groupEl, type, label, text) {
+function appendFeedbackToGroup(groupEl, type, label, text, reviewHint) {
   const qFull = groupEl.querySelector('.q-full');
   const qb = groupEl.querySelector('.question-block');
   const row = document.createElement('div');
@@ -3671,8 +3851,41 @@ function appendFeedbackToGroup(groupEl, type, label, text) {
   qFull.appendChild(row);
   if (qb) qb.scrollTop = qb.scrollHeight;
   return typeInto(row, text).then(() => {
+    // Principle 7: Surface reference material on wrong answers
+    if (type === 'wrong' && reviewHint) {
+      const link = document.createElement('button');
+      link.className = 'review-material-link';
+      link.innerHTML = '<span class="review-icon">↑</span> Review: ' + reviewHint.label;
+      link.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Find the content block in the feed and briefly highlight it
+        const feed = groupEl.closest('.feed');
+        if (!feed) return;
+        const blocks = Array.from(feed.querySelectorAll('.msg.content-block'));
+        const target = blocks[reviewHint.blockIndex];
+        if (target) {
+          target.classList.add('review-highlight');
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => target.classList.remove('review-highlight'), 2500);
+        }
+      });
+      row.appendChild(link);
+    }
     if (qb) qb.scrollTop = qb.scrollHeight;
   });
+}
+
+function findReviewHint(chapterIdx, stepIdx) {
+  const steps = CHAPTERS[chapterIdx].steps;
+  let contentBlockCount = 0;
+  let lastContent = null;
+  for (let i = 0; i < stepIdx; i++) {
+    if (steps[i].type === 'content') {
+      lastContent = { label: steps[i].label || 'Previous section', blockIndex: contentBlockCount };
+      contentBlockCount++;
+    }
+  }
+  return lastContent;
 }
 
 function appendFeedback(feedId, type, label, text) {
@@ -3748,7 +3961,7 @@ function appendTrainingDone(feedId) {
     <div class="done-circle">✓</div>
     <div>
       <div class="done-title">Seder<br>Complete</div>
-      <div class="done-subtitle" style="margin-top: 10px;">The Passover Haggadah — All chapters completed</div>
+      <div class="done-subtitle" style="margin-top: 10px;">Cataract Surgery Preparation Protocol — All chapters completed</div>
     </div>
   `;
   feed.appendChild(wrapper);
@@ -3821,7 +4034,7 @@ async function runStep(chapterIdx, stepIdx, skipPause) {
 
   } else if (step.type === 'freetext') {
     await showFreeTextQuestion(chapterIdx, stepIdx);
-    await runStep(chapterIdx, stepIdx + 1, true);
+    await runStep(chapterIdx, stepIdx + 1);
   } else if (step.type === 'question') {
     await showQuestion(chapterIdx, stepIdx);
   }
@@ -3858,6 +4071,24 @@ async function handleAnswer(chapterIdx, stepIdx, optionIdx, prevWrong, userText 
     markSegment(chapterIdx);
     advanceProgress(chapterIdx);
 
+    // Collapse options to reduce noise — only keep the correct one visible (Principle 5)
+    const opts = block.querySelector('.options');
+    if (opts) {
+      opts.querySelectorAll('.opt:not(.correct)').forEach(o => {
+        o.style.maxHeight = o.offsetHeight + 'px';
+        requestAnimationFrame(() => {
+          o.style.transition = 'max-height 0.3s ease, opacity 0.25s ease, margin 0.3s ease, padding 0.3s ease';
+          o.style.maxHeight = '0';
+          o.style.opacity = '0';
+          o.style.marginTop = '0';
+          o.style.marginBottom = '0';
+          o.style.paddingTop = '0';
+          o.style.paddingBottom = '0';
+          o.style.overflow = 'hidden';
+        });
+      });
+    }
+
     const responses = [
       "Correct. That's the right answer.",
       "Precisely. Well noted.",
@@ -3877,23 +4108,26 @@ async function handleAnswer(chapterIdx, stepIdx, optionIdx, prevWrong, userText 
     const answerEl = document.getElementById(`qanswer-${chapterIdx}-${stepIdx}`);
     if (answerEl) answerEl.textContent = humanTitle;
 
-    // Clear global input bar and collapse group
+    // Collapse question card
     hideGlobalInput(`feed-${chapterIdx}`);
     group.classList.remove('in-focus');
     group.style.flex = '';
-
-    // Collapse entire group — feedback rows hide
     group.classList.add('collapsed');
     group.addEventListener('click', () => group.classList.toggle('open'));
 
-    await delay(400);
-    await runStep(chapterIdx, stepIdx + 1, true);
+    // Restore card head (Principle 5)
+    const card = document.getElementById(`card-${chapterIdx}`);
+    if (card) card.classList.remove('question-focus');
+
+    await delay(300);
+    await runStep(chapterIdx, stepIdx + 1);
 
   } else {
     clicked.classList.add('wrong');
     await delay(300);
-    // Feedback goes INTO the group
-    await appendFeedbackToGroup(group, 'wrong', 'Incorrect', step.wrongFeedback);
+    // Feedback goes INTO the group — with review hint (Principle 7)
+    const reviewHint = findReviewHint(chapterIdx, stepIdx);
+    await appendFeedbackToGroup(group, 'wrong', 'Incorrect', step.wrongFeedback, reviewHint);
     await delay(400);
 
     // Refresh options in block (question text stays, wrong option disabled)
@@ -3924,8 +4158,12 @@ async function handleSkip(chapterIdx, stepIdx) {
 
   group.classList.add('collapsed', 'skipped');
   group.addEventListener('click', () => group.classList.toggle('open'));
+
+  // Restore card head (Principle 5)
+  const card = document.getElementById(`card-${chapterIdx}`);
+  if (card) card.classList.remove('question-focus');
+
   advanceProgress(chapterIdx);
-  await delay(300);
   if (group._resolve) {
     group._resolve();
   } else {
@@ -4127,6 +4365,30 @@ function goToCard(card) {
     const next = current === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
     localStorage.setItem('morpheus-theme', next);
+  });
+
+  // Settings panel toggle
+  const settingsToggle = document.getElementById('settingsToggle');
+  const settingsPanel  = document.getElementById('settingsPanel');
+  settingsToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = settingsPanel.classList.toggle('open');
+    settingsToggle.classList.toggle('active', open);
+  });
+  document.addEventListener('click', () => {
+    settingsPanel.classList.remove('open');
+    settingsToggle.classList.remove('active');
+  });
+  settingsPanel.addEventListener('click', e => e.stopPropagation());
+
+  // Settings — theme item delegates to themeToggle
+  document.getElementById('settingsThemeItem').addEventListener('click', () => {
+    document.getElementById('themeToggle').click();
+  });
+
+  // Settings — reset progress
+  document.getElementById('settingsResetItem').addEventListener('click', () => {
+    if (confirm('Reset all progress and restart the course?')) location.reload();
   });
 })();
 

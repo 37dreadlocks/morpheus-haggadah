@@ -1,0 +1,2064 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cypher — AI Research & Planning Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ══════════════════════════════════════════
+       DESIGN TOKENS  (Morpheus design language)
+       ══════════════════════════════════════════ */
+    :root, [data-theme="light"] {
+      --bg:           #F6F8FA;
+      --card-bg:      rgba(255,255,255,0.6);
+      --card-border:  rgba(0,0,0,0.06);
+      --surface:      #F4F5F7;
+      --text:         #0A2540;
+      --text-dim:     #425466;
+      --text-muted:   #8898AA;
+      --green:        #0ABF53;
+      --green-bg:     rgba(10,191,83,0.08);
+      --green-border: rgba(10,191,83,0.22);
+      --accent:       #635BFF;
+      --accent-bg:    rgba(99,91,255,0.08);
+      --accent-light: rgba(99,91,255,0.04);
+      --wrong:        #DF1B41;
+      --wrong-bg:     rgba(223,27,65,0.06);
+      --wrong-border: rgba(223,27,65,0.18);
+      --amber:        #F5A623;
+      --amber-bg:     rgba(245,166,35,0.08);
+      --amber-border: rgba(245,166,35,0.2);
+      --glass-shadow: 0 8px 32px rgba(0,0,0,0.06), 0 1px 0 rgba(255,255,255,0.9) inset;
+      --opt-bg:       #F7F8FA;
+      --opt-border:   #E3E8EE;
+      --chat-input-bg:rgba(255,255,255,0.85);
+      --chat-input-border:rgba(0,0,0,0.08);
+      --user-bubble-bg:#0A2540;
+      --user-bubble-color:#FFFFFF;
+      --panel-bg:     #FFFFFF;
+      --panel-border: #E3E8EE;
+      --divider:      #E3E8EE;
+      --cypher-avatar: #635BFF;
+      color-scheme: light;
+    }
+
+    [data-theme="dark"] {
+      --bg:           #1B1F36;
+      --card-bg:      rgba(30,35,60,0.6);
+      --card-border:  rgba(255,255,255,0.08);
+      --surface:      rgba(255,255,255,0.06);
+      --text:         #F6F9FC;
+      --text-dim:     #ADBDCC;
+      --text-muted:   #6A7B8B;
+      --green:        #3ECF8E;
+      --green-bg:     rgba(62,207,142,0.1);
+      --green-border: rgba(62,207,142,0.25);
+      --accent:       #7A73FF;
+      --accent-bg:    rgba(122,115,255,0.12);
+      --accent-light: rgba(122,115,255,0.06);
+      --wrong:        #FF6B6B;
+      --wrong-bg:     rgba(255,107,107,0.1);
+      --wrong-border: rgba(255,107,107,0.22);
+      --amber:        #FFBF47;
+      --amber-bg:     rgba(255,191,71,0.1);
+      --amber-border: rgba(255,191,71,0.22);
+      --glass-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.04) inset;
+      --opt-bg:       rgba(255,255,255,0.04);
+      --opt-border:   rgba(255,255,255,0.08);
+      --chat-input-bg:rgba(30,35,60,0.8);
+      --chat-input-border:rgba(255,255,255,0.08);
+      --user-bubble-bg:#7A73FF;
+      --user-bubble-color:#FFFFFF;
+      --panel-bg:     rgba(30,35,60,0.6);
+      --panel-border: rgba(255,255,255,0.08);
+      --divider:      rgba(255,255,255,0.06);
+      --cypher-avatar: #7A73FF;
+      color-scheme: dark;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%; overflow: hidden;
+      background: var(--bg); color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      transition: background 0.4s ease, color 0.4s ease;
+    }
+
+    /* ══════════════════════════════════════════
+       APP SHELL — 3 panels
+       ══════════════════════════════════════════ */
+    #app {
+      display: flex; height: 100vh; overflow: hidden;
+    }
+
+    /* ── LEFT: Resources ── */
+    #resources-panel {
+      width: 260px; min-width: 200px; flex-shrink: 0;
+      background: var(--panel-bg);
+      border-right: 1px solid var(--panel-border);
+      display: flex; flex-direction: column;
+      transition: width 0.3s ease;
+    }
+    /* Collapsed: tiny strip with expand button */
+    #resources-panel.collapsed {
+      width: 40px; min-width: 40px; overflow: hidden;
+    }
+    #resources-panel.collapsed .panel-header,
+    #resources-panel.collapsed .resources-list,
+    #resources-panel.collapsed #upload-zone { display: none; }
+    #resources-expand-btn { display: none; }
+    #resources-panel.collapsed #resources-expand-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; flex-shrink: 0;
+      background: none; border: none; cursor: pointer;
+      color: var(--text-muted); font-size: 16px;
+      transition: color 0.15s, background 0.15s;
+    }
+    #resources-panel.collapsed #resources-expand-btn:hover {
+      color: var(--accent); background: var(--accent-light);
+    }
+
+    .panel-header {
+      height: 57px; padding: 0 20px;
+      border-bottom: 1px solid var(--divider);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .panel-header h3 {
+      font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+    .panel-toggle {
+      width: 24px; height: 24px; border: none; background: none;
+      color: var(--text-muted); cursor: pointer; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+    .panel-toggle:hover { background: var(--surface); color: var(--text); }
+
+    .resources-list {
+      flex: 0 0 auto; overflow-y: auto; padding: 12px;
+      max-height: 60%;
+    }
+    .resources-list:empty { padding: 0; max-height: 0; }
+    .resource-card {
+      padding: 12px; border-radius: 10px;
+      background: var(--surface); margin-bottom: 8px;
+      display: flex; align-items: flex-start; gap: 10px;
+      transition: background 0.15s; position: relative;
+    }
+    .resource-card:hover { background: var(--accent-bg); }
+    .resource-delete {
+      position: absolute; top: 8px; right: 8px;
+      width: 22px; height: 22px; border: none; background: none;
+      color: var(--text-muted); cursor: pointer; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; opacity: 0; transition: opacity 0.15s, background 0.15s, color 0.15s;
+    }
+    .resource-card:hover .resource-delete { opacity: 1; }
+    .resource-delete:hover { background: var(--wrong-bg); color: var(--wrong); }
+
+    /* Delete confirmation overlay */
+    .resource-confirm-delete {
+      position: absolute; inset: 0; border-radius: 10px;
+      background: var(--panel-bg); border: 1px solid var(--wrong-border);
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 8px; z-index: 2;
+      animation: fadeIn 0.15s ease;
+    }
+    .resource-confirm-delete span {
+      font-size: 11px; font-weight: 600; color: var(--text-dim);
+    }
+    .confirm-del-btn {
+      padding: 4px 10px; border-radius: 6px; border: none;
+      font-size: 11px; font-weight: 600; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .confirm-del-btn.yes { background: var(--wrong); color: #fff; }
+    .confirm-del-btn.yes:hover { opacity: 0.85; }
+    .confirm-del-btn.no { background: var(--surface); color: var(--text-dim); }
+    .confirm-del-btn.no:hover { background: var(--panel-border); }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .resource-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--accent-bg); color: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
+    }
+    .resource-info { flex: 1; min-width: 0; }
+    .resource-name {
+      font-size: 12px; font-weight: 600; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .resource-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .resource-status {
+      font-size: 10px; font-weight: 600; padding: 2px 8px;
+      border-radius: 999px; margin-top: 4px; display: inline-block;
+    }
+    .resource-status.ready { background: var(--green-bg); color: var(--green); }
+    .resource-status.processing { background: var(--amber-bg); color: var(--amber); }
+
+    /* Upload zone — large/empty state (no resources yet) */
+    #upload-zone {
+      flex: 1; margin: 12px; padding: 24px;
+      border: 2px dashed var(--panel-border);
+      border-radius: 12px; text-align: center; cursor: pointer;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 10px;
+      background: var(--accent-light);
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    #upload-zone:hover {
+      border-color: var(--accent);
+      background: var(--accent-bg);
+      box-shadow: 0 0 0 4px rgba(99,91,255,0.06);
+    }
+    #upload-zone .upload-icon-wrap {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: var(--accent-bg); color: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 300;
+      transition: transform 0.2s, background 0.2s;
+    }
+    #upload-zone:hover .upload-icon-wrap { transform: translateY(-2px); background: rgba(99,91,255,0.15); }
+    #upload-zone .upload-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    #upload-zone .upload-hint { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+    #upload-zone .upload-hint strong { color: var(--accent); cursor: pointer; }
+
+    /* Upload zone — compact state (resources exist) */
+    #resources-list:not(:empty) + #upload-zone {
+      flex: 0 0 auto; margin: 0 12px 12px;
+      padding: 9px 14px; gap: 8px;
+      flex-direction: row; justify-content: flex-start;
+      border-radius: 10px; background: transparent;
+      border-style: dashed; border-width: 1px;
+    }
+    #resources-list:not(:empty) + #upload-zone:hover {
+      background: var(--accent-light);
+      border-color: var(--accent);
+      box-shadow: none;
+    }
+    #resources-list:not(:empty) + #upload-zone .upload-icon-wrap {
+      width: 28px; height: 28px; border-radius: 7px;
+      font-size: 14px; flex-shrink: 0;
+    }
+    #resources-list:not(:empty) + #upload-zone:hover .upload-icon-wrap { transform: none; }
+    #resources-list:not(:empty) + #upload-zone .upload-label {
+      font-size: 12px; font-weight: 500; color: var(--text-muted);
+    }
+    #resources-list:not(:empty) + #upload-zone .upload-hint { display: none; }
+
+    /* ── CENTER: Chat ── */
+    #chat-panel {
+      flex: 1; display: flex; flex-direction: column;
+      min-width: 0; position: relative;
+    }
+
+    /* Top bar */
+    #chat-top-bar {
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--divider);
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--panel-bg);
+      backdrop-filter: blur(12px);
+      z-index: 10;
+    }
+    #chat-top-bar .left { display: flex; align-items: center; gap: 12px; }
+    .cypher-logo {
+      width: 32px; height: 32px; border-radius: 10px;
+      background: var(--cypher-avatar);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-size: 14px;
+    }
+    .chat-title { font-size: 14px; font-weight: 600; }
+    .chat-subtitle { font-size: 11px; color: var(--text-muted); }
+
+    #chat-top-bar .right { display: flex; align-items: center; gap: 10px; }
+    .status-badge {
+      font-size: 10px; font-weight: 600; padding: 2px 8px;
+      border-radius: 999px; letter-spacing: 0.03em;
+      vertical-align: middle; margin-left: 6px;
+    }
+    .status-badge.draft { background: var(--amber-bg); color: var(--amber); }
+    .status-badge.published { background: var(--green-bg); color: var(--green); }
+    .top-btn {
+      width: 32px; height: 32px; border: 1px solid var(--panel-border);
+      background: var(--surface); border-radius: 8px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-dim); font-size: 14px; transition: all 0.15s;
+    }
+    .top-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+
+    /* Progress bar */
+    #progress-bar {
+      height: 3px; background: var(--surface); position: relative;
+    }
+    #progress-fill {
+      height: 100%; width: 0%; background: var(--accent);
+      transition: width 0.6s cubic-bezier(0.22,1,0.36,1);
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* Chat messages */
+    #chat-messages {
+      flex: 1; overflow-y: auto; padding: 24px;
+      display: flex; flex-direction: column; gap: 16px;
+      scroll-behavior: smooth;
+    }
+
+    .msg { max-width: 680px; animation: msgIn 0.35s ease forwards; opacity: 0; }
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cypher messages */
+    .msg.cypher { display: flex; gap: 12px; align-items: flex-start; }
+    .msg-avatar {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: var(--cypher-avatar); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 11px; font-weight: 700;
+      visibility: hidden; /* hidden by default, shown on last cypher msg */
+    }
+    .msg-avatar.visible { visibility: visible; }
+    .msg-avatar.placeholder { background: none; visibility: hidden !important; }
+    .msg-body { flex: 1; min-width: 0; }
+    .msg-text {
+      font-size: 14px; line-height: 1.65; color: var(--text-dim);
+    }
+    .msg-text strong { color: var(--text); }
+
+    /* User messages */
+    .msg.user { align-self: flex-end; }
+    .user-bubble {
+      padding: 10px 16px; border-radius: 16px 16px 4px 16px;
+      background: var(--user-bubble-bg); color: var(--user-bubble-color);
+      font-size: 14px; line-height: 1.5; max-width: 460px;
+    }
+
+    /* Option cards (MC questions) */
+    .options-group {
+      display: flex; flex-direction: column; gap: 6px;
+      margin-top: 12px;
+    }
+    .opt {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 14px; background: var(--opt-bg);
+      border: 1px solid var(--opt-border); border-radius: 12px;
+      cursor: pointer; transition: border-color 0.15s, background 0.15s;
+      text-align: left; font-family: inherit; width: 100%;
+    }
+    .opt:hover:not(:disabled):not(.selected) {
+      border-color: var(--accent); background: var(--accent-bg);
+    }
+    .opt:disabled { cursor: default; opacity: 0.6; }
+    .opt.selected {
+      background: var(--accent-bg); border-color: var(--accent);
+    }
+    .opt-key {
+      width: 22px; height: 22px; border: 1.5px solid var(--panel-border);
+      border-radius: 6px; display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+      color: var(--text-dim); flex-shrink: 0;
+    }
+    .opt.selected .opt-key { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+    .opt-text { font-size: 13.5px; line-height: 1.45; color: var(--text); }
+
+    /* Confirmation block */
+    .confirm-block {
+      margin-top: 12px; padding: 14px 16px;
+      background: var(--surface); border-radius: 12px;
+      border: 1px solid var(--panel-border);
+    }
+    .confirm-block .confirm-text {
+      font-size: 13px; color: var(--text-dim); line-height: 1.55;
+      font-style: italic; margin-bottom: 12px;
+    }
+    .confirm-actions { display: flex; gap: 8px; }
+    .confirm-btn {
+      padding: 8px 16px; border-radius: 8px; border: 1px solid var(--panel-border);
+      background: var(--panel-bg); font-size: 12px; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: all 0.15s;
+    }
+    .confirm-btn.yes { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .confirm-btn.yes:hover { opacity: 0.9; }
+    .confirm-btn.no:hover { border-color: var(--wrong); color: var(--wrong); }
+    .confirm-btn:disabled { opacity: 0.5; cursor: default; }
+
+    /* Doc-update notification */
+    .doc-update {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 8px;
+      background: var(--green-bg); border: 1px solid var(--green-border);
+      font-size: 11px; font-weight: 600; color: var(--green);
+      margin-top: 8px; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .doc-update:hover { background: var(--green-border); }
+
+    /* Typing indicator */
+    .typing-indicator {
+      display: flex; gap: 12px; align-items: flex-start;
+    }
+    .typing-dots {
+      display: flex; gap: 4px; padding: 12px 16px;
+      background: var(--surface); border-radius: 12px;
+    }
+    .typing-dots span {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--text-muted);
+      animation: typeBounce 1.2s infinite;
+    }
+    .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes typeBounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30% { transform: translateY(-4px); opacity: 1; }
+    }
+
+    /* Chat input */
+    #chat-input-bar {
+      padding: 16px 24px; border-top: 1px solid var(--divider);
+      background: var(--panel-bg); display: flex; gap: 10px;
+      align-items: flex-end;
+    }
+    #chat-input {
+      flex: 1; padding: 12px 16px; border-radius: 12px;
+      border: 1px solid var(--chat-input-border);
+      background: var(--chat-input-bg); color: var(--text);
+      font-size: 14px; font-family: inherit; resize: none;
+      line-height: 1.45; max-height: 120px; min-height: 44px;
+      outline: none; transition: border-color 0.15s;
+    }
+    #chat-input:focus { border-color: var(--accent); }
+    #chat-input::placeholder { color: var(--text-muted); }
+    #send-btn {
+      width: 44px; height: 44px; border-radius: 12px; border: none;
+      background: var(--accent); color: #fff; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; transition: opacity 0.15s; flex-shrink: 0;
+    }
+    #send-btn:hover { opacity: 0.85; }
+    #send-btn:disabled { opacity: 0.4; cursor: default; }
+    #voice-btn {
+      width: 44px; height: 44px; border-radius: 12px;
+      border: 1px solid var(--panel-border); background: var(--surface);
+      color: var(--text-dim); cursor: pointer; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s; flex-shrink: 0;
+    }
+    #voice-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── RIGHT: Documents ── */
+    #docs-panel {
+      width: 320px; min-width: 240px; flex-shrink: 0;
+      background: var(--panel-bg);
+      border-left: 1px solid var(--panel-border);
+      display: flex; flex-direction: column;
+      transition: width 0.3s ease;
+    }
+    /* docs panel is always visible — no collapse */
+
+    /* ── Accordion + hypotheses scroll together ── */
+    #docs-scroll {
+      flex: 1; overflow-y: auto; display: flex; flex-direction: column;
+    }
+    #doc-accordion {
+      flex: 0 0 auto; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px;
+    }
+
+    /* Card-style sections — no dividers */
+    .doc-section {
+      border-radius: 12px;
+      background: var(--panel-bg);
+      border: 1px solid transparent;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    .doc-section:hover {
+      border-color: rgba(99,91,255,0.15);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .doc-section.expanded {
+      border-color: rgba(99,91,255,0.3);
+      background: var(--bg);
+      box-shadow: 0 4px 16px rgba(99,91,255,0.08);
+    }
+
+    .doc-section-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 14px; cursor: pointer;
+      transition: background 0.15s;
+      user-select: none;
+    }
+    .doc-section.expanded .doc-section-header {
+      border-bottom: 1px solid var(--divider);
+    }
+
+    .doc-section-arrow {
+      width: 16px; height: 16px; flex-shrink: 0;
+      color: var(--text-muted); font-size: 10px;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.25s ease;
+    }
+    .doc-section.expanded .doc-section-arrow { transform: rotate(90deg); }
+
+    .doc-section-info { flex: 1; min-width: 0; }
+    .doc-section-name {
+      font-size: 13px; font-weight: 600; color: var(--text);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .doc-section-name .doc-badge {
+      font-size: 9px; font-weight: 600; padding: 1px 6px;
+      border-radius: 999px; letter-spacing: 0.04em;
+    }
+    .doc-badge.persistent { background: var(--green-bg); color: var(--green); }
+    .doc-badge.per-training { background: var(--accent-bg); color: var(--accent); }
+    .doc-badge.internal { background: var(--amber-bg); color: var(--amber); }
+
+    /* Progress bar in collapsed header */
+    .doc-section-progress {
+      display: flex; align-items: center; gap: 6px;
+      margin-top: 5px;
+    }
+    .doc-progress-bar {
+      flex: 1; height: 6px; background: var(--surface);
+      border-radius: 3px; overflow: hidden;
+    }
+    .doc-progress-fill {
+      height: 100%; border-radius: 3px; width: 0%;
+      background: var(--accent);
+      transition: width 0.8s cubic-bezier(0.22,1,0.36,1);
+    }
+    .doc-progress-fill.complete { background: var(--green); }
+    .doc-progress-pct {
+      font-size: 10px; font-weight: 600; color: var(--text-muted);
+      min-width: 28px; text-align: right;
+    }
+
+    /* Animated pulse on progress change */
+    .doc-progress-fill.pulse {
+      animation: progressPulse 0.8s ease;
+    }
+    @keyframes progressPulse {
+      0%   { box-shadow: 0 0 0 0 rgba(99,91,255,0.4); }
+      50%  { box-shadow: 0 0 0 4px rgba(99,91,255,0.15); }
+      100% { box-shadow: 0 0 0 0 rgba(99,91,255,0); }
+    }
+
+    /* Expandable content */
+    .doc-section-body {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.22,1,0.36,1);
+    }
+    .doc-section.expanded .doc-section-body {
+      max-height: 2000px;
+      transition: max-height 0.5s cubic-bezier(0.22,1,0.36,1);
+    }
+    .doc-section-inner {
+      padding: 14px 14px 16px;
+    }
+
+    .doc-field {
+      margin-bottom: 12px;
+    }
+    .doc-field-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 4px;
+    }
+    .doc-field-value {
+      font-size: 12.5px; line-height: 1.55; color: var(--text-dim);
+      padding: 8px 12px; background: #fff; border-radius: 8px;
+      border: 1px solid var(--divider); min-height: 32px;
+      transition: border-color 0.15s;
+    }
+    [data-theme="dark"] .doc-field-value { background: rgba(255,255,255,0.05); }
+    .doc-field-value:hover { border-color: rgba(99,91,255,0.3); }
+    .doc-field-value.empty { color: var(--text-muted); font-style: italic; }
+    .doc-field-value.highlight-update {
+      animation: fieldHighlight 1.5s ease forwards;
+    }
+    @keyframes fieldHighlight {
+      0%   { background: var(--accent-bg); border-color: var(--accent); }
+      100% { background: var(--surface); border-color: transparent; }
+    }
+
+    /* ── THEME TOGGLE ── */
+    #theme-toggle {
+      position: fixed; bottom: 16px; right: 16px; z-index: 100;
+      width: 36px; height: 36px; border-radius: 10px;
+      border: 1px solid var(--panel-border); background: var(--panel-bg);
+      color: var(--text-dim); cursor: pointer; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s; box-shadow: var(--glass-shadow);
+    }
+    #theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 3px; opacity: 0.3; }
+    ::-webkit-scrollbar-thumb:hover { opacity: 0.5; }
+
+    /* ── Resize handles ── */
+    .resize-handle {
+      width: 5px; cursor: col-resize; background: transparent;
+      position: relative; flex-shrink: 0; z-index: 20;
+    }
+    .resize-handle::after {
+      content: ''; position: absolute; top: 0; bottom: 0;
+      left: 2px; width: 1px; background: var(--divider);
+      transition: background 0.15s, width 0.15s;
+    }
+    .resize-handle:hover::after { width: 3px; background: var(--accent); left: 1px; border-radius: 2px; }
+
+    /* ── Welcome screen ── */
+    .welcome-screen {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 48px 32px;
+      flex: 1;
+    }
+    .welcome-icon {
+      width: 64px; height: 64px; border-radius: 20px;
+      background: var(--accent); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; font-weight: 700; margin-bottom: 20px;
+    }
+    .welcome-screen h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .welcome-screen p { font-size: 14px; color: var(--text-dim); max-width: 400px; margin-bottom: 24px; line-height: 1.6; }
+    .welcome-btn {
+      padding: 12px 28px; border-radius: 12px; border: none;
+      background: var(--accent); color: #fff; font-size: 14px;
+      font-weight: 600; cursor: pointer; font-family: inherit;
+      transition: opacity 0.15s;
+    }
+    .welcome-btn:hover { opacity: 0.85; }
+
+    /* Chapter list in doc 4 */
+    .chapter-card {
+      padding: 12px 14px; border-radius: 10px;
+      background: var(--surface); margin-bottom: 8px;
+      border: 1px solid var(--panel-border);
+    }
+    .chapter-card h4 {
+      font-size: 12px; font-weight: 600; margin-bottom: 4px;
+    }
+    .chapter-card p {
+      font-size: 11px; color: var(--text-muted); line-height: 1.45;
+    }
+
+    /* ── Chapters presentation in chat feed ── */
+    .chapters-showcase {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 4px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    }
+    .chapters-showcase-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 16px; padding-bottom: 12px;
+      border-bottom: 1px solid var(--divider);
+    }
+    .chapters-showcase-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: var(--accent-bg); color: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .chapters-showcase-title {
+      font-size: 14px; font-weight: 700; color: var(--text);
+    }
+    .chapters-showcase-sub {
+      font-size: 11px; color: var(--text-muted); margin-top: 1px;
+    }
+    .chapters-showcase-list {
+      display: flex; flex-direction: column; gap: 0;
+    }
+    .showcase-chapter {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--divider);
+      opacity: 0; transform: translateY(10px);
+      animation: chapterReveal 0.5s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+    .showcase-chapter:last-child { border-bottom: none; }
+    .chapter-num {
+      width: 32px; height: 32px; border-radius: 10px;
+      background: var(--accent); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; flex-shrink: 0;
+    }
+    .chapter-content { flex: 1; min-width: 0; }
+    .chapter-content h4 {
+      font-size: 13px; font-weight: 600; color: var(--text);
+      margin: 0 0 3px;
+    }
+    .chapter-content p {
+      font-size: 12px; color: var(--text-muted); line-height: 1.45;
+      margin: 0;
+    }
+    @keyframes chapterReveal {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Hypotheses panel — sits right below profiles ── */
+    #hypotheses-panel {
+      flex-shrink: 0;
+      margin: 0 12px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(99,91,255,0.18);
+      background: linear-gradient(160deg, var(--accent-light) 0%, transparent 100%);
+      padding: 0; overflow: hidden;
+      position: relative;
+      transition: border-color 0.4s, box-shadow 0.4s;
+    }
+
+    /* Flash overlay injected into panel by JS */
+    .thinking-flash {
+      position: absolute; inset: 0; z-index: 10;
+      border-radius: 12px; pointer-events: none;
+      background: linear-gradient(135deg, rgba(99,91,255,0.25), rgba(122,115,255,0.15));
+      animation: flashBoom 1.8s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+    @keyframes flashBoom {
+      0%   { opacity: 0; }
+      12%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* Panel itself — breathe up + soft glow */
+    #hypotheses-panel.thinking-update {
+      animation: panelBreathe 1.8s cubic-bezier(0.16,1,0.3,1);
+    }
+    @keyframes panelBreathe {
+      0%   { transform: scale(1);     box-shadow: 0 0 0 0 rgba(99,91,255,0);  border-color: rgba(99,91,255,0.18); }
+      15%  { transform: scale(1.035); box-shadow: 0 0 0 6px rgba(99,91,255,0.2), 0 8px 50px rgba(99,91,255,0.3);  border-color: rgba(99,91,255,0.6); }
+      40%  { transform: scale(1.02);  box-shadow: 0 0 0 4px rgba(99,91,255,0.12), 0 4px 30px rgba(99,91,255,0.18); border-color: rgba(99,91,255,0.4); }
+      100% { transform: scale(1);     box-shadow: 0 0 0 0 rgba(99,91,255,0);  border-color: rgba(99,91,255,0.18); }
+    }
+
+    .hypotheses-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 16px 8px;
+      position: sticky; top: 0;
+      background: linear-gradient(to bottom, var(--panel-bg) 60%, transparent);
+      z-index: 1;
+    }
+    .hypotheses-icon {
+      color: var(--accent); font-size: 14px;
+      animation: sparkle 2s ease-in-out infinite;
+    }
+    /* Icon burst on update */
+    .hypotheses-icon.burst {
+      animation: iconBurst 1.4s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+    @keyframes sparkle {
+      0%, 100% { opacity: 0.6; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.15); }
+    }
+    @keyframes iconBurst {
+      0%   { transform: scale(1)   rotate(0deg);   opacity: 0.6; color: var(--accent); filter: none; }
+      15%  { transform: scale(2.4) rotate(-12deg);  opacity: 1;   color: var(--accent); filter: drop-shadow(0 0 12px rgba(99,91,255,0.6)); }
+      35%  { transform: scale(1.5) rotate(6deg);    opacity: 1;   color: var(--accent); filter: drop-shadow(0 0 6px rgba(99,91,255,0.3)); }
+      60%  { transform: scale(1.1) rotate(-2deg);   opacity: 0.85; filter: none; }
+      100% { transform: scale(1)   rotate(0deg);    opacity: 0.6; filter: none; }
+    }
+    .hypotheses-header span {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--text-muted);
+      transition: color 0.3s;
+    }
+    #hypotheses-panel.thinking-update .hypotheses-header span {
+      animation: headerFlash 1.2s ease forwards;
+    }
+    @keyframes headerFlash {
+      0%   { color: var(--text-muted); }
+      15%  { color: var(--accent); }
+      40%  { color: var(--accent); }
+      100% { color: var(--text-muted); }
+    }
+    .hypotheses-empty {
+      padding: 12px 16px; font-size: 12px; color: var(--text-muted);
+      font-style: italic;
+    }
+    #hypotheses-list {
+      padding: 0 12px 12px;
+    }
+
+    /* Hypothesis entries */
+    .hypothesis-entry {
+      padding: 8px 12px; border-radius: 8px;
+      margin-bottom: 6px; font-size: 11px; line-height: 1.5;
+      color: var(--text-dim);
+      animation: hypoSlideIn 0.3s ease;
+    }
+    @keyframes hypoSlideIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .hypothesis-entry.active { background: var(--amber-bg); border-left: 3px solid var(--amber); }
+    .hypothesis-entry.confirmed { background: var(--green-bg); border-left: 3px solid var(--green); }
+    .hypothesis-entry.refuted { background: var(--wrong-bg); border-left: 3px solid var(--wrong); opacity: 0.6; }
+    .hypo-label {
+      font-size: 9px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; margin-bottom: 2px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .hypothesis-entry.active .hypo-label { color: var(--amber); }
+    .hypothesis-entry.confirmed .hypo-label { color: var(--green); }
+    .hypothesis-entry.refuted .hypo-label { color: var(--wrong); }
+
+    /* Thinking dots animation for active hypotheses */
+    .hypo-thinking {
+      display: inline-flex; gap: 2px; align-items: center;
+    }
+    .hypo-thinking span {
+      width: 3px; height: 3px; border-radius: 50%;
+      background: var(--amber); opacity: 0.4;
+      animation: hypoDot 1.2s ease-in-out infinite;
+    }
+    .hypo-thinking span:nth-child(2) { animation-delay: 0.15s; }
+    .hypo-thinking span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes hypoDot {
+      0%, 100% { opacity: 0.3; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ═══ LEFT: Resources ═══ -->
+  <div id="resources-panel">
+    <button id="resources-expand-btn" onclick="togglePanel('resources')" title="Expand resources">&#x2192;</button>
+    <div class="panel-header">
+      <h3>Resources</h3>
+      <button class="panel-toggle" onclick="togglePanel('resources')" title="Collapse resources">&#x2190;</button>
+    </div>
+    <div class="resources-list" id="resources-list"></div>
+    <div id="upload-zone" onclick="simulateUpload()">
+      <div class="upload-icon-wrap">&#8593;</div>
+      <div class="upload-label" id="upload-label">Drop files here</div>
+      <div class="upload-hint">or <strong>browse</strong> to upload</div>
+    </div>
+  </div>
+
+  <div class="resize-handle" data-target="resources-panel"></div>
+
+  <!-- ═══ CENTER: Chat ═══ -->
+  <div id="chat-panel">
+
+    <div id="chat-top-bar">
+      <div class="left">
+        <button class="top-btn" title="Menu" style="cursor:default;opacity:0.5;" tabindex="-1">&#x2630;</button>
+        <div>
+          <div class="chat-title"><span id="project-name">Untitled project</span> <span id="project-status" class="status-badge draft">Draft</span></div>
+          <div class="chat-subtitle" id="state-label">AI Research & Planning Agent</div>
+        </div>
+      </div>
+      <div class="right">
+        <div id="progress-pct" style="font-size:11px;font-weight:600;color:var(--text-muted);margin-right:4px;">0%</div>
+      </div>
+    </div>
+
+    <div id="progress-bar"><div id="progress-fill"></div></div>
+
+    <div id="chat-messages"></div>
+
+    <div id="chat-input-bar">
+      <button id="voice-btn" title="Voice input">&#x1F3A4;</button>
+      <textarea id="chat-input" rows="1" placeholder="Type your response..." onkeydown="handleInputKey(event)" oninput="autoGrow(this)"></textarea>
+      <button id="send-btn" onclick="sendUserMessage()">&#x2191;</button>
+    </div>
+
+  </div>
+
+  <div class="resize-handle" data-target="docs-panel"></div>
+
+  <!-- ═══ RIGHT: Profiles (accordion) ═══ -->
+  <div id="docs-panel">
+    <div class="panel-header">
+      <h3>Profiles</h3>
+    </div>
+    <div id="docs-scroll">
+    <div id="doc-accordion">
+
+      <!-- Doc 1: Editor Profile -->
+      <div class="doc-section" data-doc="1" onclick="toggleDoc(1, event)">
+        <div class="doc-section-header">
+          <div class="doc-section-arrow">&#x25B6;</div>
+          <div class="doc-section-info">
+            <div class="doc-section-name">Editor Profile</div>
+            <div class="doc-section-progress"><div class="doc-progress-bar"><div class="doc-progress-fill" id="doc1-fill"></div></div><span class="doc-progress-pct" id="doc1-pct">0%</span></div>
+          </div>
+        </div>
+        <div class="doc-section-body">
+          <div class="doc-section-inner">
+            <div class="doc-field"><div class="doc-field-label">Name</div><div class="doc-field-value empty" id="doc1-name">Not yet filled</div></div>
+            <div class="doc-field"><div class="doc-field-label">Title & Role</div><div class="doc-field-value empty" id="doc1-role">Not yet filled</div></div>
+            <div class="doc-field"><div class="doc-field-label">Primary Focus Area</div><div class="doc-field-value empty" id="doc1-focus">Not yet filled</div></div>
+            <div class="doc-field"><div class="doc-field-label">Communication Style</div><div class="doc-field-value empty" id="doc1-style">Not yet filled</div></div>
+            <div class="doc-field"><div class="doc-field-label">Known Preferences</div><div class="doc-field-value empty" id="doc1-prefs">Not yet filled</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Doc 2: Learner Profile -->
+      <div class="doc-section" data-doc="2" onclick="toggleDoc(2, event)">
+        <div class="doc-section-header">
+          <div class="doc-section-arrow">&#x25B6;</div>
+          <div class="doc-section-info">
+            <div class="doc-section-name">Learner Profile</div>
+            <div class="doc-section-progress"><div class="doc-progress-bar"><div class="doc-progress-fill" id="doc2-fill"></div></div><span class="doc-progress-pct" id="doc2-pct">0%</span></div>
+          </div>
+        </div>
+        <div class="doc-section-body">
+          <div class="doc-section-inner">
+            <div class="doc-field"><div class="doc-field-label">Target Audience</div><div class="doc-field-value empty" id="doc2-audience">Not yet filled</div></div>
+            <div class="doc-field"><div class="doc-field-label">Current Knowledge Level</div><div class="doc-field-value empty" id="doc2-knowledge">Not yet filled</div></div>
+            <div class="doc-field"><div class="doc-field-label">Key Pain Points</div><div class="doc-field-value empty" id="doc2-pain">Not yet filled</div></div>
+            <div class="doc-field"><div class="doc-field-label">Learning Context</div><div class="doc-field-value empty" id="doc2-context">Not yet filled</div></div>
+            <div class="doc-field"><div class="doc-field-label">Success Criteria</div><div class="doc-field-value empty" id="doc2-success">Not yet filled</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Doc 3: Company Profile -->
+      <div class="doc-section" data-doc="3" onclick="toggleDoc(3, event)">
+        <div class="doc-section-header">
+          <div class="doc-section-arrow">&#x25B6;</div>
+          <div class="doc-section-info">
+            <div class="doc-section-name">Company Profile</div>
+            <div class="doc-section-progress"><div class="doc-progress-bar"><div class="doc-progress-fill" id="doc3-fill"></div></div><span class="doc-progress-pct" id="doc3-pct">0%</span></div>
+          </div>
+        </div>
+        <div class="doc-section-body">
+          <div class="doc-section-inner">
+            <div class="doc-field"><div class="doc-field-label">Company Name</div><div class="doc-field-value empty" id="doc3-name">Not yet filled</div></div>
+            <div class="doc-field"><div class="doc-field-label">Industry & Context</div><div class="doc-field-value empty" id="doc3-industry">Not yet filled</div></div>
+            <div class="doc-field"><div class="doc-field-label">Team Structure</div><div class="doc-field-value empty" id="doc3-team">Not yet filled</div></div>
+            <div class="doc-field"><div class="doc-field-label">Key Terminology</div><div class="doc-field-value empty" id="doc3-terms">Not yet filled</div></div>
+            <div class="doc-field"><div class="doc-field-label">Tone & Culture</div><div class="doc-field-value empty" id="doc3-tone">Not yet filled</div></div>
+            <div class="doc-field"><div class="doc-field-label">Known Challenges</div><div class="doc-field-value empty" id="doc3-challenges">Not yet filled</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Doc 4: Training Structure -->
+      <div class="doc-section" data-doc="4" onclick="toggleDoc(4, event)">
+        <div class="doc-section-header">
+          <div class="doc-section-arrow">&#x25B6;</div>
+          <div class="doc-section-info">
+            <div class="doc-section-name">Training Structure</div>
+            <div class="doc-section-progress"><div class="doc-progress-bar"><div class="doc-progress-fill" id="doc4-fill"></div></div><span class="doc-progress-pct" id="doc4-pct">0%</span></div>
+          </div>
+        </div>
+        <div class="doc-section-body">
+          <div class="doc-section-inner">
+            <div class="doc-field"><div class="doc-field-label">Business Goal</div><div class="doc-field-value empty" id="doc4-goal">Not yet filled</div></div>
+            <div class="doc-field"><div class="doc-field-label">Learning Objectives</div><div class="doc-field-value empty" id="doc4-objectives">Not yet filled</div></div>
+            <div class="doc-field"><div class="doc-field-label">Chapters</div><div id="doc4-chapters"><div class="doc-field-value empty">No chapters yet</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Doc 5: Instructor Profile -->
+      <div class="doc-section" data-doc="5" onclick="toggleDoc(5, event)">
+        <div class="doc-section-header">
+          <div class="doc-section-arrow">&#x25B6;</div>
+          <div class="doc-section-info">
+            <div class="doc-section-name">Instructor Profile</div>
+            <div class="doc-section-progress"><div class="doc-progress-bar"><div class="doc-progress-fill" id="doc5-fill"></div></div><span class="doc-progress-pct" id="doc5-pct">0%</span></div>
+          </div>
+        </div>
+        <div class="doc-section-body">
+          <div class="doc-section-inner">
+            <div class="doc-field"><div class="doc-field-label">Training Language</div><div class="doc-field-value empty" id="doc5-language">Not yet filled</div></div>
+            <div class="doc-field"><div class="doc-field-label">Mo's Personality</div><div class="doc-field-value empty" id="doc5-personality">Not yet filled</div></div>
+            <div class="doc-field"><div class="doc-field-label">Tone & Style</div><div class="doc-field-value empty" id="doc5-tone">Not yet filled</div></div>
+            <div class="doc-field"><div class="doc-field-label">Coaching Approach</div><div class="doc-field-value empty" id="doc5-coaching">Not yet filled</div></div>
+            <div class="doc-field"><div class="doc-field-label">Terminology Rules</div><div class="doc-field-value empty" id="doc5-terms">Not yet filled</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Dynamic Hypotheses — always visible, sits right below last profile -->
+    <div id="hypotheses-panel">
+      <div class="hypotheses-header">
+        <div class="hypotheses-icon">&#x2726;</div>
+        <span>Cypher's Thinking</span>
+      </div>
+      <div id="hypotheses-list">
+        <div class="hypotheses-empty">Hypotheses will appear as the interview progresses</div>
+      </div>
+    </div>
+
+    </div><!-- /docs-scroll -->
+  </div>
+
+</div>
+
+<button id="theme-toggle" onclick="toggleTheme()">&#9789;</button>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   CYPHER — Interview Engine
+   ─────────────────────────────────────────────────────────────
+   Flow follows the Figma flowchart EXACTLY:
+
+   LOGIN → WELCOME → CREATE PROJECT DRAFT
+     ↓
+   "First time?" ─YES→ Fill Doc 1 (Editor) + Doc 3 (Company)
+                  ─NO─→ "Any changes to Doc 1 + Doc 3?"
+     ↓
+   BUSINESS GOAL CLARIFICATION
+     ↓
+   CYPHER ASKS FOR RESOURCES (documents, links, videos)
+     ↓
+   VALIDATE & ANALYSE THE FILES
+     ↓
+   CYPHER OFFERS DEEP RESEARCH (optional → syncs to Doc 6)
+     ↓
+   DRAFT STRUCTURE OF THE COURSE
+     ↓
+   ┌─────────────────────────────────┐
+   │  FOLLOW-UP QUESTIONS  (LOOP)   │
+   │  ask ↔ improve                 │
+   │  Types: Goal-clarification,    │
+   │  Learner-empathy, Gap-detect,  │
+   │  Prioritization, Edge-case,    │
+   │  Confirmation                  │
+   │  Fills: Doc 2, 4, 5           │
+   └─────────────────────────────────┘
+     ↓
+   WRAP UP THE CREATION?
+     → Test → Approve & Publish  OR  Make Changes (→ back to loop)
+     ↓
+   "ARE ALL DOCUMENTS FILLED AND READY?"
+     ─YES→ ✅ DONE → GO TO TRINITY
+     ─NO──→ "Missing data. Are you sure?" → proceed or go back
+     ↓
+   Doc 6 (Dynamic Hypotheses) syncs throughout entire flow
+
+   ══════════════════════════════════════════════════════════════ */
+
+// ── Document data model ──
+const docs = {
+  1: { name:'Editor Profile', type:'persistent',
+    fields: { name:'', role:'', focus:'', style:'', prefs:'' }},
+  2: { name:'Learner Profile', type:'per-training',
+    fields: { audience:'', knowledge:'', pain:'', context:'', success:'' }},
+  3: { name:'Company Profile', type:'persistent',
+    fields: { name:'', industry:'', team:'', terms:'', tone:'', challenges:'' }},
+  4: { name:'Training Structure', type:'per-training',
+    fields: { goal:'', objectives:'', chapters:[] }},
+  5: { name:'Instructor Profile', type:'per-training',
+    fields: { language:'', personality:'', tone:'', coaching:'', terms:'' }},
+  6: { name:'Dynamic Hypotheses', type:'internal', hypotheses:[] }
+};
+
+let awaitingResponse = false;
+let currentMCHandler = null;
+let isFirstTime = true; // will be set by the branch question
+let loopCount = 0;
+
+// ── DOM refs ──
+const chatEl = document.getElementById('chat-messages');
+const inputEl = document.getElementById('chat-input');
+
+// ═══════════════════════════════════════════
+//  MAIN FLOW — mirrors the Figma flowchart
+// ═══════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(runFlow, 600);
+});
+
+async function runFlow() {
+
+  // ──────────────────────────────
+  // 1. LOGIN → WELCOME
+  // ──────────────────────────────
+  setStateLabel('Welcome');
+  await cypher("Hi, I'm <strong>Cypher</strong> \u2014 your AI instructional design partner. Together, we're going to build a training that actually works.");
+  await cypher("I'll ask you smart questions, propose ideas, and help you think through things you might not have considered.", 1000);
+
+  // ──────────────────────────────
+  // 2. CREATE PROJECT DRAFT
+  // ──────────────────────────────
+  setStateLabel('Create Project');
+  await cypher("Let's start by creating your project.");
+  const projectName = await ask("What would you like to call this training?");
+  setProjectName(projectName);
+  updateDoc(4, 'goal', ''); // init — goal comes later
+  addDocNotification(4, 'Project created: ' + projectName);
+
+  // ──────────────────────────────
+  // 3. BRANCH: "Is it your first time here?"
+  // ──────────────────────────────
+  setStateLabel('Profiles');
+  const firstTimeAnswer = await mc("Is this your first time using Cypher?", [
+    'Yes, this is my first time',
+    'No, I\u2019ve been here before'
+  ]);
+  isFirstTime = firstTimeAnswer.includes('first');
+
+  if (isFirstTime) {
+    // ── YES: Fill Doc 1 (Editor Profile) + Doc 3 (Company Profile) from scratch ──
+    await cypher("Welcome! Let's start by filling up your <strong>Editor Profile</strong> and <strong>Company Profile</strong>. These will persist across all your future trainings.");
+
+    // Editor Profile (Doc 1)
+    const nameRole = await ask("What's your <strong>name and role</strong>?");
+    const parts = nameRole.split(/,|\band\b|\bas\b|\b-\b/);
+    updateDoc(1, 'name', parts[0].trim());
+    if (parts.length >= 2) updateDoc(1, 'role', parts.slice(1).join(',').trim());
+    addDocNotification(1, 'Editor Profile \u2014 Name updated');
+
+    const focus = await ask("What's your <strong>primary focus area</strong> \u2014 the knowledge domain you typically create trainings for?");
+    updateDoc(1, 'focus', focus);
+
+    const commStyle = await mc("How do you prefer to communicate?", [
+      'Direct and concise', 'Detailed and thorough', 'Conversational', 'Something else'
+    ]);
+    updateDoc(1, 'style', commStyle);
+    addDocNotification(1, 'Editor Profile saved');
+
+    // Company Profile (Doc 3)
+    await cypher("Now let's set up your <strong>Company Profile</strong>.");
+    const companyName = await ask("What's the name of your company or organization?");
+    updateDoc(3, 'name', companyName);
+
+    const industry = await mc("What industry are you in?", [
+      'Healthcare', 'Technology', 'Education', 'Financial Services', 'Something else'
+    ]);
+    updateDoc(3, 'industry', industry);
+
+    const team = await ask("Tell me briefly about your <strong>team structure</strong> \u2014 how many people, key departments?");
+    updateDoc(3, 'team', team);
+
+    const tone = await mc("What's the communication tone in your organization?", [
+      'Formal & professional', 'Casual & conversational', 'Technical & precise', 'Something else'
+    ]);
+    updateDoc(3, 'tone', tone);
+
+    const terms = await ask("Any <strong>key terminology</strong> specific to your organization? (e.g. words you use differently, internal names)");
+    updateDoc(3, 'terms', terms);
+
+    const challenges = await ask("What are the <strong>known challenges</strong> in your organization that keep coming up?");
+    updateDoc(3, 'challenges', challenges);
+    addDocNotification(3, 'Company Profile saved');
+
+  } else {
+    // ── NO: "Any changes in Doc 1, Doc 3?" ──
+    await cypher("Welcome back! I have your <strong>Editor Profile</strong> and <strong>Company Profile</strong> from last time.");
+
+    const changes = await mc("Any changes to your Editor Profile or Company Profile?", [
+      'No, everything is the same',
+      'Yes, I\u2019d like to update something'
+    ]);
+
+    if (changes.includes('Yes')) {
+      const whatToUpdate = await ask("What would you like to update?");
+      await cypher("Got it, I've noted your changes.");
+      // In a real system, Cypher would parse and update the relevant fields
+      // Still fill all fields so profiles show as complete
+      fillReturningProfiles();
+    } else {
+      await cypher("Great, we'll use your existing profiles.");
+      fillReturningProfiles();
+    }
+  }
+
+  // ──────────────────────────────
+  // 4. BUSINESS GOAL CLARIFICATION
+  // ──────────────────────────────
+  setStateLabel('Business Goal');
+  await cypher("Now let's define the <strong>business goal</strong> for this training. This is the north star \u2014 everything we build will serve this goal.");
+
+  const goal = await ask("<strong>What should learners be able to DO after this training that they can't do today?</strong> Try to connect it to a measurable business outcome.");
+  updateDoc(4, 'goal', goal);
+  addHypothesis('active', 'Based on the stated business goal, I\u2019m forming initial assumptions about training scope and depth.');
+
+  // Confirmation (from flowchart — confirmation is a question type)
+  const goalConfirmed = await confirm(
+    `So what I'm hearing is: the training must achieve <strong>\u201c${goal}\u201d</strong>. Is that right?`
+  );
+  if (!goalConfirmed) {
+    const refined = await ask("No problem \u2014 let's refine that. Can you restate the business outcome you're aiming for?");
+    updateDoc(4, 'goal', refined);
+  }
+  addDocNotification(4, 'Business Goal confirmed');
+
+  // ──────────────────────────────
+  // 5. CYPHER ASKS FOR RESOURCES (documents, links, videos)
+  // ──────────────────────────────
+  setStateLabel('Resource Collection');
+  await cypher("Before we go deeper, I'd like to review any <strong>existing materials</strong> you have. Documents, links, videos \u2014 anything that contains knowledge about the topic.");
+
+  const hasResources = await mc("Do you have resources to share?", [
+    'Yes, I have documents/files to upload',
+    'I have some links to share',
+    'I have videos',
+    'No resources \u2014 let\u2019s work from scratch'
+  ]);
+
+  if (!hasResources.includes('No resources')) {
+    if (hasResources.includes('documents')) {
+      addResource('Uploaded document', 'PDF', 'processing');
+      await cypher("Uploading and processing your files...", 600);
+      updateResourceStatus(0, 'ready');
+    }
+    if (hasResources.includes('links')) {
+      const link = await ask("Paste the links you'd like me to review:");
+      addResource(link.substring(0, 40), 'Link', 'ready');
+    }
+    if (hasResources.includes('videos')) {
+      addResource('Video resource', 'Video', 'processing');
+      await cypher("Processing your video...", 600);
+      updateResourceStatus(document.querySelectorAll('.resource-card').length - 1, 'ready');
+    }
+
+    const moreResources = await mc("Anything else to add?", [
+      'Yes, I have more', 'That\u2019s everything'
+    ]);
+    if (moreResources.includes('more')) {
+      addResource('Additional resource', 'PDF', 'processing');
+      await delay(1500);
+      updateResourceStatus(document.querySelectorAll('.resource-card').length - 1, 'ready');
+    }
+  }
+
+  // ──────────────────────────────
+  // 6. VALIDATE & ANALYSE THE FILES
+  // ──────────────────────────────
+  setStateLabel('Analyzing Resources');
+  await cypher("Let me <strong>validate and analyse</strong> what we have so far...", 1500);
+
+  if (!hasResources.includes('No resources')) {
+    addHypothesis('active', 'After reviewing the uploaded materials, I\u2019m identifying key themes, procedures, and potential chapter topics.');
+    await cypher("I've finished reviewing your materials. I've identified some key themes and formed initial hypotheses \u2014 you can see them in the <strong>Dynamic Hypotheses</strong> tab.");
+  } else {
+    addHypothesis('active', 'No external resources provided. Interview questions will need to extract all domain knowledge directly from the editor.');
+    await cypher("Since we're working from scratch, I'll rely on our conversation to extract everything we need. Let's make it count.");
+  }
+
+  // ──────────────────────────────
+  // 7. CYPHER OFFERS DEEP RESEARCH (optional)
+  // ──────────────────────────────
+  const wantResearch = await mc("I can run a <strong>deep research</strong> \u2014 searching the web for additional context about your topic, industry best practices, and similar trainings. Want me to?", [
+    'Yes, run deep research',
+    'No, let\u2019s continue without it'
+  ]);
+
+  if (wantResearch.includes('Yes')) {
+    await cypher("Running deep research...", 2500);
+    addHypothesis('active', 'Deep research findings: discovered relevant industry standards and comparable training structures. Incorporating into planning.');
+    addResource('Deep Research Results', 'Link', 'ready');
+    await cypher("Research complete. I've added my findings to the resources panel and updated my hypotheses.");
+  }
+
+  // ──────────────────────────────
+  // 8. DRAFT STRUCTURE OF THE COURSE
+  // ──────────────────────────────
+  setStateLabel('Drafting Structure');
+  await cypher("Based on everything so far \u2014 your business goal, resources, and my analysis \u2014 let me draft the <strong>structure of the course</strong>.", 1500);
+
+  const chapterCount = await mc("How many chapters feels right for this training?", [
+    '3\u20134 chapters (focused & lean)',
+    '5\u20136 chapters (comprehensive)',
+    '7+ chapters (deep dive)',
+    'Let Cypher decide based on the goal'
+  ]);
+
+  let count = chapterCount.includes('3') ? 4 : chapterCount.includes('5') ? 5 : chapterCount.includes('7') ? 7 : 5;
+  const chapterNames = ['Foundations & Context', 'Core Concepts', 'Key Procedures', 'Practical Application', 'Advanced Topics', 'Safety & Compliance', 'Verification & Mastery'];
+  const chapters = [];
+  for (let i = 0; i < count; i++) {
+    chapters.push({
+      title: `Chapter ${i+1}: ${chapterNames[i] || 'Chapter ' + (i+1)}`,
+      objective: `Learning objective for ${(chapterNames[i] || 'chapter ' + (i+1)).toLowerCase()}`,
+      subconcepts: []
+    });
+  }
+  docs[4].fields.chapters = chapters;
+  updateDoc(4, 'objectives', chapters.map(c => c.objective).join('\n'));
+  renderChapters();
+  addHypothesis('confirmed', `Draft structure: ${count} chapters, progressing from foundational to advanced.`);
+
+  await cypher(`Here's the draft structure I've put together \u2014 <strong>${count} chapters</strong>, progressing from foundational to advanced:`);
+  showChaptersInFeed(chapters);
+  await cypher("Take a look. We'll refine this together in the next steps.");
+
+  // ──────────────────────────────
+  // 9. FOLLOW-UP QUESTIONS LOOP (ask ↔ improve)
+  //    Question types from flowchart:
+  //    Goal-clarification, Learner-empathy, Gap-detection,
+  //    Prioritization, Edge-case surfacing, Confirmation
+  //    Fills: Doc 2 (Learner), Doc 4 (Structure), Doc 5 (Instructor)
+  // ──────────────────────────────
+  setStateLabel('Follow-up Questions');
+  await cypher("Now I'll ask follow-up questions to fill in the remaining details. We'll loop between <strong>asking</strong> and <strong>improving</strong> the structure until everything is solid.");
+
+  let keepLooping = true;
+  loopCount = 0;
+
+  while (keepLooping) {
+    loopCount++;
+
+    if (loopCount === 1) {
+      // ─── Round 1: Learner-empathy (fills Doc 2) ───
+      await cypher("<strong>Let's talk about your learners.</strong>");
+
+      const audience = await ask("Who are your learners? Describe the <strong>target audience</strong> \u2014 their role, experience level, department.");
+      updateDoc(2, 'audience', audience);
+
+      const knowledge = await ask("What do they <strong>already know</strong> coming in? What's their baseline?");
+      updateDoc(2, 'knowledge', knowledge);
+      addHypothesis('active', `Learner baseline: "${knowledge.substring(0,60)}...". Calibrating chapter depth accordingly.`);
+
+      const pain = await mc("What do your learners typically <strong>struggle with</strong> most?", [
+        'Retaining procedural sequences', 'Applying theory to practice',
+        'Confidence in new skills', 'Time constraints', 'Something else'
+      ]);
+      updateDoc(2, 'pain', pain);
+
+      const context = await mc("Where and when will learners <strong>take this training</strong>?", [
+        'During onboarding (dedicated time)', 'Between shifts / on the job',
+        'Self-paced from home', 'In a classroom setting', 'Something else'
+      ]);
+      updateDoc(2, 'context', context);
+
+      const success = await ask("What does <strong>success</strong> look like? How will you know the training worked?");
+      updateDoc(2, 'success', success);
+      addDocNotification(2, 'Learner Profile filled');
+
+    } else if (loopCount === 2) {
+      // ─── Round 2: Gap-detection + Prioritization (refines Doc 4) ───
+      await cypher("<strong>Let me probe for gaps and priorities.</strong>");
+
+      // Gap-detection
+      const assumptions = await ask("What do you <strong>assume</strong> learners already know? What if some of them don't know this?");
+      addHypothesis('active', `Expert blind spot check: "${assumptions.substring(0,60)}..." \u2014 may need a foundations chapter or pre-check.`);
+
+      // Prioritization
+      const priority = await ask("If a learner had only <strong>30 minutes</strong>, which concepts are absolutely non-negotiable?");
+      addHypothesis('confirmed', `Priority concepts: "${priority.substring(0,60)}..." \u2014 these belong in chapters 1-2.`);
+
+      // Edge-case surfacing
+      const edgeCase = await mc("What happens if a learner already knows chapters 1-3 but is weak on chapter 4?", [
+        'They should still go through everything',
+        'They should be able to skip ahead',
+        'Let Mo decide based on assessment',
+        'Something else'
+      ]);
+      addHypothesis('active', `Edge case handling: "${edgeCase}". This informs Mo's adaptive delivery.`);
+
+      // Update Doc 4 with refinements
+      addDocNotification(4, 'Structure refined with priority + gap analysis');
+
+    } else if (loopCount === 3) {
+      // ─── Round 3: Instructor Profile (fills Doc 5) ───
+      await cypher("<strong>Now let's define how Mo should deliver this training.</strong>");
+
+      const language = await mc("What <strong>language</strong> should Mo use?", [
+        'English', 'Hebrew', 'Spanish', 'Something else'
+      ]);
+      updateDoc(5, 'language', language);
+
+      const personality = await mc("What <strong>personality</strong> should Mo have?", [
+        'Warm & encouraging coach', 'Strict & precise instructor',
+        'Peer-like study buddy', 'Something else'
+      ]);
+      updateDoc(5, 'personality', personality);
+      updateDoc(5, 'tone', personality);
+      updateDoc(5, 'coaching', personality.includes('coach') ? 'Supportive with positive reinforcement' : personality.includes('Strict') ? 'Direct, standards-focused' : 'Conversational, collaborative');
+
+      const termRules = await ask("Any <strong>terminology rules</strong> for Mo? Words to always use, words to avoid?");
+      updateDoc(5, 'terms', termRules);
+      addDocNotification(5, 'Instructor Profile filled');
+    }
+
+    // ─── "Ask ↔ Improve" gate ───
+    if (loopCount >= 3) {
+      // After all rounds, ask if they want to continue improving
+      const continueLoop = await mc("We've covered the main areas. Do you want to:", [
+        'Continue refining \u2014 I have more to add',
+        'I\u2019m satisfied \u2014 let\u2019s wrap up'
+      ]);
+      if (continueLoop.includes('satisfied') || continueLoop.includes('wrap up')) {
+        keepLooping = false;
+      } else {
+        await cypher("Alright, let's keep going. What would you like to refine?");
+        const freeform = await waitForUserInput();
+        addHypothesis('active', `Editor refinement: "${freeform.substring(0,80)}..."`);
+        await cypher("Noted. I've updated my understanding.", 800);
+      }
+    }
+  }
+
+  // ──────────────────────────────
+  // 10. WRAP UP THE CREATION?
+  //     → Test → Approve & Publish  OR  Make Changes
+  // ──────────────────────────────
+  setStateLabel('Wrap Up');
+  await cypher("Alright, let's <strong>wrap up the creation</strong>.", 800);
+
+  const wrapUpChoice = await mc("Ready to wrap up?", [
+    'Yes \u2014 let\u2019s test and approve',
+    'Not yet \u2014 I want to make changes'
+  ]);
+
+  if (wrapUpChoice.includes('Not yet') || wrapUpChoice.includes('changes')) {
+    await cypher("No problem. What would you like to change?");
+    const changes = await waitForUserInput();
+    addHypothesis('active', `Late change request: "${changes.substring(0,80)}..."`);
+    await cypher("Got it. I've incorporated your changes.", 1000);
+  }
+
+  // ── TEST ──
+  await cypher("Let me run a quick <strong>test</strong> to check the training structure is solid...", 2000);
+  await cypher("Test complete. The structure looks coherent \u2014 business goal is connected to learning objectives, chapters cover the key topics, and the instructor profile is defined.");
+
+  const approveChoice = await mc("What would you like to do?", [
+    'Approve & Publish \u2014 hand off to Trinity',
+    'Make more changes before publishing'
+  ]);
+
+  if (approveChoice.includes('more changes')) {
+    await cypher("What would you like to adjust?");
+    const lastChanges = await waitForUserInput();
+    await cypher("Done. Changes applied.", 800);
+  }
+
+  // ──────────────────────────────
+  // 11. "ARE ALL DOCUMENTS FILLED AND READY?"
+  // ──────────────────────────────
+  setStateLabel('Completion Check');
+  const pct = getOverallProgress();
+
+  if (pct >= 80) {
+    // ── All filled → DONE → Go to Trinity ──
+    const allReady = await confirm(
+      `All documents are at <strong>${pct}%</strong> completion. <strong>Are all the documents filled and ready?</strong>`
+    );
+
+    if (allReady) {
+      // ── ✅ DONE → GO TO TRINITY ──
+      setStateLabel('Handoff to Trinity');
+      setProjectStatus('published');
+      await cypher("<strong>Done!</strong> Documents 1\u20135 are locked and ready for handoff.", 800);
+      await cypher("<strong>Handing off to Trinity...</strong> Trinity will now generate videos, infographics, slides, and questions from your Training Structure, Learner Profile, and Instructor Profile.", 1500);
+      await cypher("You can always come back to me if you need to update anything. Great work today \u2014 your training plan is solid.");
+    } else {
+      // Editor wants to go back
+      await cypher("No problem \u2014 take your time. You can continue refining and come back when you're ready.");
+    }
+
+  } else {
+    // ── Missing data ──
+    const proceedAnyway = await confirm(
+      `There is some <strong>missing data</strong> \u2014 documents are at <strong>${pct}%</strong>. <strong>Are you sure you want to proceed?</strong>`
+    );
+
+    if (proceedAnyway) {
+      setStateLabel('Handoff to Trinity');
+      setProjectStatus('published');
+      await cypher("Understood. Proceeding with what we have. Documents 1\u20135 are handed off to Trinity.", 800);
+      await cypher("<strong>Handing off to Trinity...</strong> Note: Trinity will work with the available information, but the training may have gaps. You can always come back to me to fill them.", 1500);
+    } else {
+      await cypher("Smart choice. Let's fill in the missing pieces before handing off. What would you like to work on?");
+      // In a full implementation, this would loop back
+    }
+  }
+}
+
+// ═══════════════════════════════════════════
+//  CHAT PRIMITIVES
+// ═══════════════════════════════════════════
+
+// Show a Cypher message (with typing indicator)
+function cypher(html, typingMs) {
+  return showTyping(typingMs || 800).then(() => addCypherMessage(html));
+}
+
+// Ask an open-ended question and wait for answer
+async function ask(questionHtml) {
+  await showTyping(700);
+  addCypherMessage(questionHtml);
+  return await waitForUserInput();
+}
+
+// Show MC question and wait for selection
+async function mc(questionHtml, options) {
+  await showTyping(700);
+  return await showMCQuestion(questionHtml, options);
+}
+
+// Show confirmation and return boolean
+async function confirm(html) {
+  await showTyping(600);
+  return await showConfirmation(html);
+}
+
+// ═══════════════════════════════════════════
+//  CHAT RENDERING
+// ═══════════════════════════════════════════
+
+function updateAvatars() {
+  const avatars = chatEl.querySelectorAll('.msg.cypher .msg-avatar');
+  avatars.forEach(a => a.classList.remove('visible'));
+  // Find last cypher msg avatar that isn't a placeholder
+  for (let i = avatars.length - 1; i >= 0; i--) {
+    if (!avatars[i].classList.contains('placeholder')) {
+      avatars[i].classList.add('visible');
+      break;
+    }
+  }
+}
+
+function addCypherMessage(html) {
+  const msg = document.createElement('div');
+  msg.className = 'msg cypher';
+  msg.innerHTML = `
+    <div class="msg-avatar">C</div>
+    <div class="msg-body"><div class="msg-text">${html}</div></div>
+  `;
+  chatEl.appendChild(msg);
+  updateAvatars();
+  scrollChat();
+}
+
+function addUserMessage(text) {
+  const msg = document.createElement('div');
+  msg.className = 'msg user';
+  msg.innerHTML = `<div class="user-bubble">${escapeHtml(text)}</div>`;
+  chatEl.appendChild(msg);
+  updateAvatars();
+  scrollChat();
+}
+
+function addDocNotification(docNum, text) {
+  const notif = document.createElement('div');
+  notif.className = 'msg cypher';
+  notif.innerHTML = `
+    <div class="msg-avatar placeholder">C</div>
+    <div class="msg-body">
+      <div class="doc-update" onclick="switchDoc(${docNum})">&#10003; ${text}</div>
+    </div>
+  `;
+  chatEl.appendChild(notif);
+  updateAvatars();
+  scrollChat();
+}
+
+function showChaptersInFeed(chapters) {
+  const msg = document.createElement('div');
+  msg.className = 'msg cypher';
+  const chaptersHtml = chapters.map((ch, i) => `
+    <div class="showcase-chapter" style="animation-delay: ${i * 0.12}s">
+      <div class="chapter-num">${i + 1}</div>
+      <div class="chapter-content">
+        <h4>${ch.title.replace(/^Chapter \d+:\s*/, '')}</h4>
+        <p>${ch.objective}</p>
+      </div>
+    </div>
+  `).join('');
+
+  msg.innerHTML = `
+    <div class="msg-avatar">C</div>
+    <div class="msg-body">
+      <div class="chapters-showcase">
+        <div class="chapters-showcase-header">
+          <div class="chapters-showcase-icon">&#x2726;</div>
+          <div>
+            <div class="chapters-showcase-title">Training Structure</div>
+            <div class="chapters-showcase-sub">${chapters.length} chapters &middot; Draft</div>
+          </div>
+        </div>
+        <div class="chapters-showcase-list">
+          ${chaptersHtml}
+        </div>
+      </div>
+    </div>
+  `;
+  chatEl.appendChild(msg);
+  updateAvatars();
+  scrollChat();
+}
+
+async function showTyping(ms) {
+  const typing = document.createElement('div');
+  typing.className = 'typing-indicator';
+  typing.innerHTML = `
+    <div class="msg-avatar placeholder">C</div>
+    <div class="typing-dots"><span></span><span></span><span></span></div>
+  `;
+  chatEl.appendChild(typing);
+  scrollChat();
+  await delay(ms);
+  typing.remove();
+  updateAvatars();
+}
+
+function showMCQuestion(questionHtml, options) {
+  return new Promise(resolve => {
+    addCypherMessage(questionHtml);
+
+    const group = document.createElement('div');
+    group.className = 'msg cypher';
+    const keys = ['A','B','C','D','E','F'];
+    let optionsHtml = '<div class="msg-avatar placeholder">C</div><div class="msg-body"><div class="options-group">';
+    options.forEach((opt, i) => {
+      optionsHtml += `<button class="opt" data-idx="${i}"><span class="opt-key">${keys[i]}</span><span class="opt-text">${opt}</span></button>`;
+    });
+    optionsHtml += '</div></div>';
+    group.innerHTML = optionsHtml;
+    chatEl.appendChild(group);
+    updateAvatars();
+    scrollChat();
+
+    awaitingResponse = true;
+    currentMCHandler = (text) => {
+      const match = options.findIndex(o => o.toLowerCase().startsWith(text.toLowerCase()));
+      const chosen = match >= 0 ? options[match] : text;
+      group.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if (match >= 0) group.querySelectorAll('.opt')[match].classList.add('selected');
+      awaitingResponse = false;
+      currentMCHandler = null;
+      resolve(chosen);
+    };
+
+    group.querySelectorAll('.opt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.idx);
+        addUserMessage(options[idx]);
+        group.querySelectorAll('.opt').forEach(b => b.disabled = true);
+        btn.classList.add('selected');
+        awaitingResponse = false;
+        currentMCHandler = null;
+        resolve(options[idx]);
+      });
+    });
+  });
+}
+
+function showConfirmation(html) {
+  return new Promise(resolve => {
+    const msg = document.createElement('div');
+    msg.className = 'msg cypher';
+    msg.innerHTML = `
+      <div class="msg-avatar">C</div>
+      <div class="msg-body">
+        <div class="confirm-block">
+          <div class="confirm-text">${html}</div>
+          <div class="confirm-actions">
+            <button class="confirm-btn yes">&#10003; That's right</button>
+            <button class="confirm-btn no">&#10007; Let me clarify</button>
+          </div>
+        </div>
+      </div>
+    `;
+    chatEl.appendChild(msg);
+    updateAvatars();
+    scrollChat();
+
+    msg.querySelector('.confirm-btn.yes').addEventListener('click', () => {
+      addUserMessage("That's right");
+      msg.querySelectorAll('.confirm-btn').forEach(b => b.disabled = true);
+      resolve(true);
+    });
+    msg.querySelector('.confirm-btn.no').addEventListener('click', () => {
+      addUserMessage("Let me clarify");
+      msg.querySelectorAll('.confirm-btn').forEach(b => b.disabled = true);
+      resolve(false);
+    });
+  });
+}
+
+function waitForUserInput() {
+  return new Promise(resolve => {
+    awaitingResponse = true;
+    currentMCHandler = (text) => {
+      awaitingResponse = false;
+      currentMCHandler = null;
+      resolve(text);
+    };
+  });
+}
+
+// ═══════════════════════════════════════════
+//  USER INPUT
+// ═══════════════════════════════════════════
+
+function sendUserMessage() {
+  const text = inputEl.value.trim();
+  if (!text) return;
+  inputEl.value = '';
+  inputEl.style.height = '44px';
+  addUserMessage(text);
+  if (currentMCHandler) currentMCHandler(text);
+}
+
+function handleInputKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendUserMessage(); }
+}
+
+function autoGrow(el) {
+  el.style.height = '44px';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+// ═══════════════════════════════════════════
+//  DOCUMENT SYSTEM
+// ═══════════════════════════════════════════
+
+function updateDoc(docNum, fieldKey, value) {
+  if (docNum === 4 && fieldKey === 'chapters') {
+    docs[4].fields.chapters = value;
+    renderChapters();
+  } else {
+    docs[docNum].fields[fieldKey] = value;
+  }
+  const el = document.getElementById(`doc${docNum}-${fieldKey}`);
+  if (el) {
+    el.textContent = value;
+    el.classList.remove('empty');
+    el.classList.add('highlight-update');
+    setTimeout(() => el.classList.remove('highlight-update'), 1600);
+  }
+  updateDocCompletion(docNum);
+  updateProgressBar();
+  updateTabDots();
+}
+
+function renderChapters() {
+  const container = document.getElementById('doc4-chapters');
+  if (!container) return;
+  const chapters = docs[4].fields.chapters;
+  if (!chapters.length) {
+    container.innerHTML = '<div class="doc-field-value empty">No chapters yet</div>';
+    return;
+  }
+  container.innerHTML = chapters.map(ch => `
+    <div class="chapter-card"><h4>${ch.title}</h4><p>${ch.objective}</p></div>
+  `).join('');
+}
+
+function updateDocCompletion(docNum) {
+  if (docNum === 6) return;
+  const fields = Object.values(docs[docNum].fields);
+  let filled = 0;
+  fields.forEach(v => {
+    if (Array.isArray(v)) { if (v.length) filled++; }
+    else if (v && v.length > 0) filled++;
+  });
+  const pct = Math.round((filled / fields.length) * 100);
+  const fillEl = document.getElementById(`doc${docNum}-fill`);
+  const pctEl = document.getElementById(`doc${docNum}-pct`);
+  if (fillEl) {
+    fillEl.style.width = pct + '%';
+    if (pct >= 100) fillEl.classList.add('complete');
+    else fillEl.classList.remove('complete');
+    // Pulse animation on change
+    fillEl.classList.remove('pulse');
+    void fillEl.offsetWidth; // trigger reflow
+    fillEl.classList.add('pulse');
+  }
+  if (pctEl) pctEl.textContent = pct + '%';
+  // Auto-expand the doc that's being updated
+  expandDoc(docNum);
+}
+
+function getOverallProgress() {
+  let total = 0, filled = 0;
+  for (let i = 1; i <= 5; i++) {
+    const fields = Object.values(docs[i].fields);
+    fields.forEach(v => {
+      total++;
+      if (Array.isArray(v)) { if (v.length) filled++; }
+      else if (v && v.length > 0) filled++;
+    });
+  }
+  return Math.round((filled / total) * 100);
+}
+
+function updateProgressBar() {
+  const pct = getOverallProgress();
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-pct').textContent = pct + '%';
+}
+
+function updateTabDots() {
+  // No-op: tabs replaced by accordion with progress bars
+}
+
+function setStateLabel(text) {
+  document.getElementById('state-label').textContent = text;
+}
+
+// ═══════════════════════════════════════════
+//  HYPOTHESES (Doc 6 — syncs throughout)
+// ═══════════════════════════════════════════
+
+function addHypothesis(status, text) {
+  // Truncate long hypothesis text
+  const maxLen = 120;
+  const truncated = text.length > maxLen ? text.substring(0, maxLen) + '...' : text;
+  docs[6].hypotheses.push({ status, text: truncated, time: new Date() });
+  renderHypotheses();
+}
+
+function renderHypotheses() {
+  const list = document.getElementById('hypotheses-list');
+  const panel = document.getElementById('hypotheses-panel');
+  const icon = panel ? panel.querySelector('.hypotheses-icon') : null;
+  const hypos = docs[6].hypotheses;
+
+  if (!hypos.length) {
+    list.innerHTML = '<div class="hypotheses-empty">Hypotheses will appear as the interview progresses</div>';
+    return;
+  }
+
+  // Show last 4 hypotheses to keep it concise
+  const recent = hypos.slice(-4);
+  const thinkingDots = '<span class="hypo-thinking"><span></span><span></span><span></span></span>';
+  list.innerHTML = recent.map(h => `
+    <div class="hypothesis-entry ${h.status}">
+      <div class="hypo-label">${h.status}${h.status === 'active' ? ' ' + thinkingDots : ''}</div>
+      ${h.text}
+    </div>
+  `).join('');
+
+  // BIG flash + bounce on the panel
+  if (panel) {
+    // Inject a flash overlay
+    const flash = document.createElement('div');
+    flash.className = 'thinking-flash';
+    panel.appendChild(flash);
+    flash.addEventListener('animationend', () => flash.remove());
+
+    // Bounce the panel
+    panel.classList.remove('thinking-update');
+    void panel.offsetWidth;
+    panel.classList.add('thinking-update');
+    panel.addEventListener('animationend', () => panel.classList.remove('thinking-update'), { once: true });
+  }
+
+  // Burst the icon
+  if (icon) {
+    icon.classList.remove('burst');
+    void icon.offsetWidth;
+    icon.classList.add('burst');
+    icon.addEventListener('animationend', () => icon.classList.remove('burst'), { once: true });
+  }
+
+  if (panel) panel.scrollTop = panel.scrollHeight;
+}
+
+// ═══════════════════════════════════════════
+//  RESOURCES
+// ═══════════════════════════════════════════
+
+function addResource(name, type, status) {
+  const list = document.getElementById('resources-list');
+  const icons = { PDF:'&#128196;', Word:'&#128196;', Link:'&#128279;', Video:'&#127909;' };
+  const card = document.createElement('div');
+  card.className = 'resource-card';
+  card.innerHTML = `
+    <div class="resource-icon">${icons[type] || '&#128196;'}</div>
+    <div class="resource-info">
+      <div class="resource-name">${name}</div>
+      <div class="resource-meta">${type}</div>
+      <span class="resource-status ${status}">${status === 'ready' ? 'Ready' : 'Processing...'}</span>
+    </div>
+    <button class="resource-delete" onclick="confirmDeleteResource(this, event)" title="Remove">&#x2715;</button>
+  `;
+  list.appendChild(card);
+  updateUploadLabel();
+}
+
+function updateUploadLabel() {
+  const label = document.getElementById('upload-label');
+  if (!label) return;
+  const hasResources = document.querySelectorAll('.resource-card').length > 0;
+  label.textContent = hasResources ? 'Add more files' : 'Drop files here';
+}
+
+function confirmDeleteResource(btn, event) {
+  event.stopPropagation();
+  const card = btn.closest('.resource-card');
+  // Don't add a second overlay
+  if (card.querySelector('.resource-confirm-delete')) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'resource-confirm-delete';
+  overlay.innerHTML = `
+    <span>Delete?</span>
+    <button class="confirm-del-btn yes" onclick="deleteResource(this, event)">Remove</button>
+    <button class="confirm-del-btn no" onclick="cancelDeleteResource(this, event)">Cancel</button>
+  `;
+  card.appendChild(overlay);
+}
+
+function deleteResource(btn, event) {
+  event.stopPropagation();
+  const card = btn.closest('.resource-card');
+  card.style.transition = 'opacity 0.2s, transform 0.2s';
+  card.style.opacity = '0';
+  card.style.transform = 'translateX(-10px)';
+  setTimeout(() => { card.remove(); updateUploadLabel(); }, 200);
+}
+
+function cancelDeleteResource(btn, event) {
+  event.stopPropagation();
+  btn.closest('.resource-confirm-delete').remove();
+}
+
+function updateResourceStatus(idx, status) {
+  const cards = document.querySelectorAll('.resource-card');
+  if (cards[idx]) {
+    const badge = cards[idx].querySelector('.resource-status');
+    badge.className = 'resource-status ' + status;
+    badge.textContent = status === 'ready' ? 'Ready' : 'Processing...';
+  }
+}
+
+function simulateUpload() {
+  addResource('New Document.pdf', 'PDF', 'processing');
+  setTimeout(() => {
+    const cards = document.querySelectorAll('.resource-card');
+    const last = cards[cards.length - 1];
+    if (last) {
+      const badge = last.querySelector('.resource-status');
+      badge.className = 'resource-status ready';
+      badge.textContent = 'Ready';
+    }
+  }, 2000);
+}
+
+// ═══════════════════════════════════════════
+//  PANELS, THEME, RESIZE
+// ═══════════════════════════════════════════
+
+function togglePanel(panel) {
+  if (panel === 'resources') {
+    document.getElementById('resources-panel').classList.toggle('collapsed');
+  }
+  // docs panel no longer collapses
+}
+
+// Accordion: toggle a doc section open/closed
+function toggleDoc(num, event) {
+  // Don't toggle if clicking inside the body content
+  if (event && event.target.closest('.doc-section-body')) return;
+  const section = document.querySelector(`.doc-section[data-doc="${num}"]`);
+  if (!section) return;
+  const wasExpanded = section.classList.contains('expanded');
+  if (wasExpanded) {
+    section.classList.remove('expanded');
+  } else {
+    section.classList.add('expanded');
+    // Scroll section into view
+    setTimeout(() => section.scrollIntoView({ behavior:'smooth', block:'nearest' }), 100);
+  }
+}
+
+// Expand a doc section programmatically — collapses all others
+function expandDoc(num) {
+  const section = document.querySelector(`.doc-section[data-doc="${num}"]`);
+  if (!section) return;
+  // Collapse all other sections
+  document.querySelectorAll('.doc-section.expanded').forEach(s => {
+    if (s.dataset.doc !== String(num)) s.classList.remove('expanded');
+  });
+  // Expand the target
+  if (!section.classList.contains('expanded')) {
+    section.classList.add('expanded');
+  }
+  setTimeout(() => section.scrollIntoView({ behavior:'smooth', block:'nearest' }), 100);
+}
+
+// For backward compat with addDocNotification onclick
+function switchDoc(num) { expandDoc(num); }
+
+// ── Project name + status ──
+function fillReturningProfiles() {
+  // Simulate loading existing data for a returning editor
+  // Fill all Editor Profile fields (Doc 1)
+  updateDoc(1, 'name', 'Returning Editor');
+  updateDoc(1, 'role', 'Senior Instructional Designer');
+  updateDoc(1, 'focus', 'Interactive e-learning & scenario-based training');
+  updateDoc(1, 'style', 'Visual & hands-on');
+  updateDoc(1, 'prefs', 'Prefers modular content, real-world examples');
+  addDocNotification(1, 'Editor Profile loaded from previous session');
+
+  // Fill all Company Profile fields (Doc 3)
+  updateDoc(3, 'name', 'Acme Corp');
+  updateDoc(3, 'industry', 'Technology / SaaS');
+  updateDoc(3, 'team', '120 employees, 15 in L&D');
+  updateDoc(3, 'tone', 'Casual & conversational');
+  updateDoc(3, 'terms', 'Standard industry terminology');
+  updateDoc(3, 'challenges', 'Onboarding speed, knowledge retention');
+  addDocNotification(3, 'Company Profile loaded from previous session');
+}
+
+function setProjectName(name) {
+  const el = document.getElementById('project-name');
+  if (el) el.textContent = name || 'Untitled project';
+}
+function setProjectStatus(status) {
+  const el = document.getElementById('project-status');
+  el.textContent = status === 'published' ? 'Published' : 'Draft';
+  el.className = 'status-badge ' + (status === 'published' ? 'published' : 'draft');
+}
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+  document.getElementById('theme-toggle').innerHTML = current === 'dark' ? '&#9789;' : '&#9788;';
+}
+
+document.querySelectorAll('.resize-handle').forEach(handle => {
+  let startX, startW, target;
+  handle.addEventListener('mousedown', (e) => {
+    target = document.getElementById(handle.dataset.target);
+    startX = e.clientX; startW = target.offsetWidth;
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+  function onMove(e) {
+    const dx = e.clientX - startX;
+    const isLeft = handle.dataset.target === 'resources-panel';
+    target.style.width = Math.max(180, Math.min(500, startW + (isLeft ? dx : -dx))) + 'px';
+  }
+  function onUp() {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  }
+});
+
+// ═══════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+function scrollChat() { chatEl.scrollTop = chatEl.scrollHeight; }
+function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+</script>
+
+</body>
+</html>
